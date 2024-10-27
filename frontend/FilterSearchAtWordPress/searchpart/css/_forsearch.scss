@@ -1,0 +1,352 @@
+#searchform {
+    width: clamp(320px, 100%, 1025px);
+    margin: 5em auto;
+
+    & input[type="search"] {
+        display: block;
+        margin: 1em auto;
+        -webkit-appearance: none;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        border: 1px solid #a3a3a3;
+        line-height: 4.4rem;
+        font-size: 1.4rem;
+        padding-left: .5em;
+        border-radius: .5em;
+        width: 100%;
+        max-width: 25rem;
+    }
+
+    & input[type="submit"] {
+        width: 100%;
+        max-width: 25rem;
+    }
+
+    & .selectschoolWrapper {
+        & select {
+            border: none;
+            border-radius: 4px;
+            padding: .5em .75em;
+            background-color: #dadada;
+            margin: .25em 0 1em;
+            font-size: 1rem;
+        }
+    }
+
+    & #search_details_box {
+        background-color: transparent;
+        padding: 0;
+
+        & #AreaBoxHeading {
+            padding-top: 6em;
+            margin-top: -6em;
+        }
+
+        & #MajorBoxHeading {
+            padding-top: 10em;
+            margin-top: -10em;
+        }
+
+        & .get_search {
+            & label {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 4%;
+            }
+        }
+    }
+}
+
+#search_result_details_search_btn {
+    justify-content: space-around;
+
+    & a {
+        &:last-of-type {
+            background-color: #0F3E89;
+        }
+    }
+}
+
+summary {
+    display: block;
+
+    & label {
+        display: block;
+        margin: 0.5em 0 0.25em;
+    }
+}
+
+/* for Chrome、Safari */
+summary::-webkit-details-marker {
+    display: none;
+}
+
+body.search {
+    & #array_word span:last-of-type {
+        font-size: 20px;
+        font-weight: bold;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    & #SerachKeywords {
+        font-size: 16px;
+        padding: 8px 16px 0;
+        line-height: 1.8;
+    }
+
+    & #array_word span:last-of-type::before {
+        top: 100%;
+        width: 8%;
+    }
+
+    & .searchAgain {
+        & button {
+            -webkit-appearance: none;
+            appearance: none;
+            border-radius: 0;
+            border: none;
+            display: block;
+            width: calc(100vw / 2);
+            max-width: 320px;
+            margin: 1.6rem auto;
+            padding: .8rem 0;
+            background-color: #6d6d6d;
+            border-bottom: 3px solid #333;
+            color: #fff;
+            text-align: center;
+            cursor: pointer;
+
+            &:active {
+                border-bottom-color: transparent;
+                transform: translateY(3px);
+            }
+
+            &:hover {
+                background-color: #333;
+            }
+        }
+
+        & #search_details_box {
+            max-width: 1080px;
+            margin: 0 auto;
+            height: 0;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+
+            &.SearchInview {
+                transition: .5s;
+                height: 100%;
+                opacity: 1;
+                visibility: visible;
+                pointer-events: visible;
+            }
+
+            & .SearchWrapper {
+                border-radius: 0;
+                padding-bottom: 8rem;
+            }
+        }
+    }
+}
+
+#search_details_box {
+    & select {
+        background-color: #dadada;
+        padding: 8px;
+        border-radius: 4px;
+        width: 100%;
+        margin-bottom: 16px;
+    }
+}
+
+#SearchMainWrapper {
+    & h3 {
+        width: 100%;
+        margin-bottom: 1.6rem;
+        font-size: 1.8rem;
+        border-bottom: 1px solid;
+        padding-bottom: .8rem;
+    }
+}
+
+.SearchWrapper {
+    padding: 2.5%;
+    background-color: #f5f5f5;
+
+    & details {
+        color: #333;
+        background-color: #dadada;
+        padding: 8px;
+        border-radius: 4px;
+        margin: 16px 0;
+
+        &:first-of-type {
+            margin-top: .25em;
+        }
+    }
+
+    & .UniChildren {
+        & details {
+            margin-left: 1em;
+            background-color: #bebebe;
+            color: #333;
+            box-shadow: 2px 2px 3px rgba(0, 0, 0, .25);
+            cursor: pointer;
+
+            &:hover {
+                transition: .25s;
+                box-shadow: none;
+            }
+        }
+    }
+
+    #department_btn {
+        margin: 0 auto;
+        width: 80%;
+        text-align: center;
+    }
+}
+
+#uniBox,
+#VocBox {
+    display: none;
+
+    &.inview {
+        display: block;
+    }
+}
+
+@media screen and(min-width:600px) {
+    summary {
+        font-size: 14px;
+    }
+
+    #searchform {
+
+        & input[type="search"],
+        & input[type="submit"] {
+            line-height: 44px;
+            font-size: 16px;
+            max-width: 500px;
+        }
+
+        & input[type="submit"] {
+            font-size: 14px;
+            max-width: 250px;
+        }
+
+        & .selectschoolWrapper {
+            & select {
+                font-size: 14px;
+            }
+        }
+    }
+
+    #search_details_box {
+        & .get_search input[type="search"] {
+            max-width: 400px;
+            font-size: 14px;
+            border-radius: 5px;
+            line-height: 44px;
+        }
+
+        & input[type="submit"] {
+            max-width: 250px;
+        }
+    }
+
+    body.search {
+        & .searchAgain {
+            & button {
+                margin: 8px auto;
+                padding: 8px 0;
+            }
+
+            & #search_details_box {
+                & .SearchWrapper {
+                    padding-bottom: 40px;
+                }
+            }
+        }
+    }
+
+    #SearchMainWrapper {
+        & h3 {
+            margin-bottom: 16px;
+            font-size: 24px;
+            padding-bottom: 8px;
+        }
+    }
+}
+
+
+
+@media screen and(min-width:1025px) {
+    .SearchWrapper {
+        font-size: 14px;
+        border-radius: 8px;
+        padding: 16px;
+
+        & #SearchMainWrapper,
+        .VocChilderen {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-flow: row wrap;
+
+            & .selectschoolWrapper {
+                width: 20%;
+            }
+
+            & .areaWrapper {
+                width: 28%;
+            }
+
+            & #MajorBox {
+                width: 48%;
+            }
+        }
+
+        & .VocChilderen {
+            & details {
+                width: 49%;
+                margin: 0 0 16px;
+            }
+        }
+    }
+}
+
+
+
+@media (min-width:960px) and (max-width:1385px) {
+    .SearchWrapper {
+        & #SearchMainWrapper {
+            font-size: 12px;
+        }
+
+        & #SearchMainWrapper,
+        .VocChilderen {
+            & .selectschoolWrapper {
+                width: 30%;
+            }
+
+            & .areaWrapper {
+                width: 22%;
+            }
+
+            & #MajorBox {
+                width: 46%;
+
+                & .UniChildren {
+                    & summary {
+                        text-indent: -1em;
+                        padding-left: 1em;
+                    }
+                }
+            }
+        }
+    }
+}
