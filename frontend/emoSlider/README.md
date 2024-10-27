@@ -1,5 +1,7 @@
 ## emoSlider
 
+【ネタコンポーネント】（個人的に）エモさを感じるスライダー
+
 ## Swiperについて
 Swiperはv10以降、従来のようなReact Componentsとして扱えなくなってしまった。
 - 参考：[Swiper v10からReact Componentsが非推奨になったのでWebコンポーネントを使う](https://zenn.dev/rsugi/articles/9d7479b7e3e27b)
