@@ -14,8 +14,8 @@ type sliderItems = {
 
 export default function SwiperLibs() {
     const theAry: sliderItems[] = [];
-    // 8枚まで（8枚以上は8枚目が何故か重複してうまく挙動しなくなる）
-    for (let i = 1; i < 9; i++) {
+    // PC（Mac）では8枚まで、スマホやPC（Win）では5枚まで（X枚以上はX枚目が何故か重複してうまく挙動しなくなる）
+    for (let i = 1; i < 6; i++) {
         const sliderItem: sliderItems = {
             imgSrc: `https://picsum.photos/id/${Math.floor(Math.random() * 99) + i}/800/450`, // https://picsum.photos/
             imgCap: `Slider ${i}`
