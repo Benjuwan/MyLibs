@@ -1,5 +1,5 @@
 ## emoSlider
-- [demo | ver - react,typescript](https://k2webservice.xsrv.jp/r0105/mylibs/emoslider/)
+- [demo | ver - react,typescript](https://k2webservice.xsrv.jp/r0105/mylibs/emoslider/)<br>
 【ネタコンポーネント】（個人的に）エモさを感じるスライダー
 
 ## Swiperについて
@@ -9,13 +9,16 @@ Swiperはv10以降、従来のようなReact Componentsとして扱えなくな�
 - 以下の手順で`swiper@11.1.14`を利用中
   - Swiperをインストール
 
-  - `index.html`（の`<head>`内）にCDNを記述z
+  - `index.html`（の`<head>`内）にCDNを記述
   ```html
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   ```
 
   - [公式デモページ](https://swiperjs.com/demos)から適用したいSwiperのスタイルを確認してコンポーネント（`src\libs\SwiperLibs.tsx`）に反映（※今回は`styled-components`を使用）
+
+- 注意事項
+スライダーの枚数がPC（Mac）では8枚まで、スマホやPC（Win）では5枚まででないとうまく挙動しなくなる。
 
 ## デフォルト設定からの変更箇所
 - `vite.config.ts`<br>
