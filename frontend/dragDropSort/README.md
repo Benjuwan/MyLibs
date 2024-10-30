@@ -1,7 +1,8 @@
 ## DragDropSort
-- [codepen](https://codepen.io/benjuwan/pen/xxvXGrQ)<br>
+- [demo | ver - react,typescript](https://k2webservice.xsrv.jp/r0105/mylibs/dragdropsort/)
+- [codepen](https://codepen.io/benjuwan/pen/xxvXGrQ)
 
-DragDropSort（`src/components/dragdropsort`）は、リストをドラッグ&ドロップで任意の順番に並び替えられる（ソート）機能です。
+DragDropSort（`src/components/dragdropsort`）は、リストをドラッグ&ドロップで任意の順番に並び替えられる（ソート）機能です。<br>※スマホ／タブレットでの挙動がチラついています。
 
 ### デフォルトからの変更箇所
 - `tsconfig.app.json`<br>

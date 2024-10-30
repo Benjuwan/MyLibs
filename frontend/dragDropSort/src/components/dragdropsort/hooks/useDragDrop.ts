@@ -18,6 +18,8 @@ export const useDragDrop = (dropzoneRef: React.RefObject<HTMLUListElement>) => {
     const _commonAction_Dragover_Drop = (e: DragEvent<HTMLElement> | React.TouchEvent<HTMLElement>) => {
         if (!isTouchEvent(e)) {
             e.preventDefault(); // デフォルトのドラッグ動作を防止（これがないとdropが発火しない）
+        } else {
+            document.querySelector('html')?.style.setProperty('overflow', 'hidden');
         }
 
         const targetElm: EventTarget | HTMLElement = e.target;
@@ -41,9 +43,13 @@ export const useDragDrop = (dropzoneRef: React.RefObject<HTMLUListElement>) => {
                 draggedElm.classList.add(ddsStyle.draggingUpper);
                 // マウスポインターの位置（posY）が要素の中心線（middle）より「上（半分）」にある場合、ドラッグ要素はターゲット要素（targetElm）の前に配置
                 if (!isTouchEvent(e)) {
-                    dropzoneRef.current?.insertBefore(draggedElm, targetElm);
+                    dropzoneRef.current?.insertBefore(draggedElm, targetElm); // insertBefore(newNode, referenceNode)：referenceNode の前に newNode を挿入
                 } else {
-                    dropzoneRef.current?.insertBefore(draggedElm, targetElm.previousSibling);
+                    // タッチ系イベント（スマホ／タブレット）
+                    if (targetElm.previousSibling !== null) {
+                        // draggedElm を targetElm の2つ前の位置に配置
+                        dropzoneRef.current?.insertBefore(draggedElm, targetElm.previousSibling);
+                    }
                 }
             } else {
                 draggedElm.classList.add(ddsStyle.draggingLower);
@@ -51,12 +57,10 @@ export const useDragDrop = (dropzoneRef: React.RefObject<HTMLUListElement>) => {
                 if (!isTouchEvent(e)) {
                     dropzoneRef.current?.insertBefore(draggedElm, targetElm.nextSibling);
                 } else {
-                    // dropzoneRef.current?.appendChild(draggedElm);
-                    const dropzoneChildren: NodeListOf<ChildNode> | undefined = dropzoneRef.current?.childNodes;
-                    const dropzoneChildrenAry: ChildNode[] | null = typeof dropzoneChildren !== 'undefined' ? Array.from(dropzoneChildren) : null;
-                    if (dropzoneChildrenAry !== null) {
-                        const draggedElmIndex: number = [...dropzoneChildrenAry].findIndex(child => child.textContent === draggedElm.textContent);
-                        console.log(draggedElmIndex);
+                    // タッチ系イベント（スマホ／タブレット）
+                    if (draggedElm.nextSibling !== null) {
+                        // draggedElm の次の要素を targetElm の直前に配置
+                        dropzoneRef.current?.insertBefore(draggedElm.nextSibling, targetElm);
                     }
                 }
             }

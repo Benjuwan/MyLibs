@@ -23,19 +23,17 @@ export const DragDropSort = () => {
                 lists: lists,
                 setLists: setLists
             }} />
-            <ul className={ddsStyle.dropzone}
+            <ul
+                className={ddsStyle.dropzone}
                 ref={dropzoneRef}
                 onDragStart={(e: DragEvent<HTMLUListElement>) => dragstart(e)}
                 onDragEnd={dragend}
                 onDragOver={(e: DragEvent<HTMLUListElement>) => dragover(e)}
                 onDrop={(e: DragEvent<HTMLUListElement>) => drop(e)}
-                // Touch 系統はスマホ用
+                // Touch 系統はスマホ／タブレット用
                 onTouchStart={(e: React.TouchEvent<HTMLUListElement>) => dragstart(e)}
                 onTouchMove={(e: React.TouchEvent<HTMLUListElement>) => dragover(e)}
-                onTouchEnd={(e: React.TouchEvent<HTMLUListElement>) => {
-                    drop(e);
-                    dragend();
-                }}
+                onTouchEnd={dragend}
             >
                 {lists.length > 0 && lists.map(list => (
                     // ドラッグ&ドロップを機能させるための必須属性（draggable）を付与

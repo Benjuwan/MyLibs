@@ -1,5 +1,5 @@
 ## emoSlider
-
+- [demo | ver - react,typescript](https://k2webservice.xsrv.jp/r0105/mylibs/emoslider/)
 【ネタコンポーネント】（個人的に）エモさを感じるスライダー
 
 ## Swiperについて
@@ -16,6 +16,17 @@ Swiperはv10以降、従来のようなReact Componentsとして扱えなくな�
   ```
 
   - [公式デモページ](https://swiperjs.com/demos)から適用したいSwiperのスタイルを確認してコンポーネント（`src\libs\SwiperLibs.tsx`）に反映（※今回は`styled-components`を使用）
+
+## デフォルト設定からの変更箇所
+- `vite.config.ts`<br>
+`base`の追加（ホスティング先の指定）
+
+```diff
+export default defineConfig({
+  plugins: [react()],
++ // base: 'r0105/mylibs/emoslider'
+})
+```
 
 ## 技術構成
 - @eslint/js@9.13.0
