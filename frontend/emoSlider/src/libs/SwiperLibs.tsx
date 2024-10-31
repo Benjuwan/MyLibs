@@ -42,6 +42,7 @@ export default function SwiperLibs() {
                     autoplay={{
                         delay: 2500
                     }}
+                    speed={1000}
                     modules={[EffectCards, Autoplay]}
                     className="theSwiper"
                 >
@@ -238,7 +239,7 @@ margin: 5em auto;
         opacity: 0;
     }
 
-    25%{
+    50%{
         filter: blur(8px);
         opacity: 1;
     }
