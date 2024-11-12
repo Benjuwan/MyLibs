@@ -22,6 +22,19 @@
 
   - すでに管理画面（サイトエディター）でテンプレートを制作・追加している場合（それらはDBに保存されているため）`xxxx.html`より優先的に使用されてしまう（※ケース・バイ・ケースでサイトエディターでのコード・タグなどの制作行為、検証・編集は避けたほうが無難）
 
+  - `add_theme_support`の自動設定
+  > ブロックテーマでは以下のtheme supportsが自動的に有効になります。
+  > ```
+  >  add_theme_support( 'post-thumbnails' );
+  >  add_theme_support( 'responsive-embeds' );
+  >  add_theme_support( 'editor-styles' );
+  >  add_theme_support( 'html5', array('style','script', ) );
+  >  add_theme_support( 'automatic-feed-links' );
+  > ```
+  > 一部のtheme supportsはtheme.jsonでテーマの設定をしていれば有効になります。
+  > theme.jsonの設定はadd_theme_support()より優先されることに気をつけましょう。
+  - 参照：[【WordPress】ブロックテーマのファイル構造やセットアップに関する基礎知識 | Theme supportについて](https://wp-manual.com/theme/block-theme/setup/#index_id7)
+
   > テンプレート情報の保存先<br><br>
   > このような手順でユーザーが管理画面から編集した、インデックステンプレートや単一テンプレートの設定はすべてデータベース※に保存されます。最初に用意した<br>HTMLファイルやJSONファイルなどに書き込まれるわけではありません。このように、同じテーマを有効化したであっても、エディターによって全く違う構成のサイトを作成できるのが、ブロックテーマの特徴です。<br><br>
   > ※実際はwp_template（テンプレートパーツはwp_template_part）というカスタム投稿タイプとして保存されます。
@@ -64,6 +77,126 @@
   > CSSの読み込みとブロック別CSS<br><br>
   > ブロックテーマでは、これまでのwp_enqueue_style()関数に加え、ブロックごとのCSSが追加できるようになりました。ブロックごとのCSSは該当のブロックが使われているページのみで読み込まれるのが特徴で、wp_enqueue_block_style()関数を使って設定します。
   - 参照：[WordPressサイトエディター対応のブロックテーマ開発（機能編）- CSSの読み込みとブロック別CSS](https://kiwi-dev.com/2022/12/03/wordpress-block-editor-functions/)
+
+- TOPページを作成
+  1. WordPressブロックテーマでTOPページを作る2つの方法：
+    - 固定ページ（スラッグは任意）+ フロントページ設定
+    - `templates/front-page.html`（または`home.html`）で直接作成
+  2. テンプレートファイルの配置：
+    - `templates`ディレクトリに配置
+    - `front-page.html`が最優先
+    - `parts`や`patterns`は再利用可能なコンポーネント用
+  3. コンテンツ作成方法：
+    - サイトエディター（テーマエディタ）での視覚的な編集が基本
+    - 既存HTMLを使う場合は`<!-- wp:html -->`ブロックで囲む。できるだけWordPressブロックの仕組みを活用することを推奨
+      ```
+      <!-- wp:pattern {"slug":"header"} /-->
+
+      <!-- wp:group {"tagName":"main"} -->
+      <main class="wp-block-group">
+          <!-- wp:group {"tagName":"section"} -->
+          <section class="wp-block-group">
+              <!-- wp:heading -->
+              <h2>article</h2>
+              <!-- /wp:heading -->
+
+
+
+              <!-- wp:html -->
+              <div class="custom-content">
+                  <!-- ここにHTMLをベタ打ち -->
+              </div>
+              <!-- /wp:html -->
+
+
+
+          </section>
+          <!-- /wp:group -->
+      </main>
+      <!-- /wp:group -->
+
+      <!-- wp:pattern {"slug":"footer"} /-->
+      ```
+  4. ファイル構成のベストプラクティス：
+    - メインテンプレート：`templates/front-page.html`
+    - 共通パーツ：`patterns/header.html`, `patterns/footer.html`
+
+- 任意のブロックを作成して、それをコンポーネントファイルのような使い方をする
+1. パターンの登録方法（`functions.php`で「パターン（コンポーネント）の設定」を登録）
+```
+// functions.php に追加
+register_block_pattern(
+    'my-theme/news-section',  // 任意のパターン名
+    array(
+        'title'       => 'ニュースセクション',
+        'description' => '最新のニュース一覧を表示',
+        'content'     => file_get_contents(
+            get_template_directory() . '/patterns/news-section.php'
+        ),
+        'categories'  => array('custom') // オプション：カテゴリー指定
+    )
+);
+```
+
+2. パターンファイルの作成（`patterns`dirに当該コンポーネントファイルを作ってphpまたはwordpressのテンプレートタグで処理記述）
+```
+// patterns/news-section.php
+<!-- wp:group {"className":"news-section"} -->
+<div class="wp-block-group news-section">
+    <?php
+    $news_query = new WP_Query(array(
+        'post_type' => 'post',
+        'posts_per_page' => 5
+    ));
+    
+    if ($news_query->have_posts()): ?>
+        <!-- wp:heading -->
+        <h2>最新ニュース</h2>
+        <!-- /wp:heading -->
+        
+        <?php while ($news_query->have_posts()): $news_query->the_post(); ?>
+            <!-- wp:group {"className":"news-item"} -->
+            <div class="news-item">
+                <?php the_title(); ?>
+            </div>
+            <!-- /wp:group -->
+        <?php endwhile; ?>
+    <?php endif; ?>
+</div>
+<!-- /wp:group -->
+```
+
+3. XXXXXX.htmlでの呼び出し（`templates`dirに用意したhtmlファイルでコンポーネントファイルを読み込む）
+```
+<!-- wp:pattern {"slug":"my-theme/news-section"} /-->
+```
+※パターンのスラッグ指定には2つの形式が使用可能
+  - 完全修飾形式
+  ```
+  <!-- wp:pattern {"slug":"my-theme/single"} /-->
+  ```
+
+  - 短縮形式
+  ```
+  <!-- wp:pattern {"slug":"single"} /-->
+  ```
+  - 短縮形式を使用する場合、WordPressは自動的に現在のテーマのパターンを探す。
+  - 同じテーマ内であれば、短縮形式で十分。
+  - 他のテーマやプラグインのパターンを使用する場合は、完全修飾形式を使用する必要がある
+  ```
+    同じテーマ内なら：
+    └── {"slug":"single"}     👍 OK
+    └── {"slug":"my-theme/single"}  👍 OK（より明示的）
+
+    他のテーマのパターンを使用する場合：
+    └── {"slug":"other-theme/pattern-name"}  ← 必須
+  ```
+
+> [!NOTE]  
+> 注意点：
+> - パターンのコンテンツは最終的にHTMLとして出力される必要がある
+> - 動的なデータ取得はPHPで可能だが、出力はブロック構文に従う
+> - パターンは登録して初めて使用可能になる
 
 ## `theme.json`について
 `theme.json`はテーマの見た目や設定を定義するためのファイルです。ブロックテーマを開発する上で必要なファイルの1つです。`theme.json`で設定する内容の例は以下の通りです。
@@ -209,3 +342,4 @@ theme/
   - [WordPressのブロックテーマつくるメモ](https://zenn.dev/chiilog/scraps/7ee31b4dd9d3e3)
   - [WordPressのブロックテーマとやらに入門してみる](https://zenn.dev/masa5714/scraps/973a8ab75f2c1f)
 - [クラシックテーマ制作者の私がブロックテーマ制作で悩んだこと](https://www.cherrypieweb.com/5938#google_vignette)
+- [【WordPress】ブロックテーマのファイル構造やセットアップに関する基礎知識](https://wp-manual.com/theme/block-theme/setup/)
