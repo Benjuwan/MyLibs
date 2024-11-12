@@ -10,11 +10,24 @@
 - カスタムプロパティの生成（各種ブロック{要素}へのスタイル指定+生成）
 - `functions.php`で行っていたテーマサポート（`add-theme-support()`）の設定など（※ブロックテーマでも`functions.php`は使用する）
 
-- ブロックテーマでは`language_attributes`, `wp_head`, `wp_body_open`, `wp_footer`などを`wp-includes/template-canvas.php`にて事前に用意してくれる。
+### ブロックテーマでは`language_attributes`, `wp_head`, `wp_body_open`, `wp_footer`などを`wp-includes/template-canvas.php`にて事前に用意してくれる。
   > ブロックテーマでは、基本的にすべてのページは「wp-includes/template-canvas.php」をテンプレートとして表示されます。
   - 参照：[【WordPress】ブロックテーマのテンプレート構造](https://zenn.dev/yggrit/articles/c9ab45f91c86cc)
 
-- ブロックテーマでは、エディター（旧サイトエディター）でカスタマイズした内容はデータベースに保存される（＝サイトエディターで編集した内容はテーマを変更しても維持される）
+### ブロックテーマはその名の通り各種ブロックを積み上げて構築していく
+> ブロックテーマには、ブロックマークアップ（block markup）と呼ばれる記述法があります。<br>
+> 例を出すと下記のようなものです。<br>
+> ```<!-- wp:site-title /-->```<br>
+> ▲ WordPressサイトのタイトルが出力される。<br>
+> ```<!-- wp:navigation /-->```<br>
+> ▲ ナビゲーションが出力される<br>
+> こんな感じのHTMLのコメントアウトで宣言的に記述していくものです。
+- 参照：(WordPressのブロックテーマとやらに入門してみる - ブロックマークアップ)[https://zenn.dev/link/comments/e7c17d1007bee3]
+
+> [!NOTE]  
+> ブロックテーマの場合、投稿（single）や固定（page）ページ用のテンプレートファイルにループを用意する必要はない。ループ設定はブロックエディターの`クエリループ`ブロックを使用して設定する。
+
+### ブロックテーマでは、エディター（旧サイトエディター）でカスタマイズした内容はデータベースに保存される（＝サイトエディターで編集した内容はテーマを変更しても維持される）
   > ブロックテーマでは、エディター（旧サイトエディター）でカスタマイズした内容はデータベースに保存されます。<br>
   > このため、テスト環境で作成したものを本番環境に適用するのが難しいです。<br>
   > また、クラシックテーマの時は編集内容をGitで管理していましたが、データベースに保存されてしまうのではGitが使えません。
@@ -22,41 +35,28 @@
 
   - すでに管理画面（サイトエディター）でテンプレートを制作・追加している場合（それらはDBに保存されているため）`xxxx.html`より優先的に使用されてしまう（※ケース・バイ・ケースでサイトエディターでのコード・タグなどの制作行為、検証・編集は避けたほうが無難）
 
-  - `add_theme_support`の自動設定
-  > ブロックテーマでは以下のtheme supportsが自動的に有効になります。
-  > ```
-  >  add_theme_support( 'post-thumbnails' );
-  >  add_theme_support( 'responsive-embeds' );
-  >  add_theme_support( 'editor-styles' );
-  >  add_theme_support( 'html5', array('style','script', ) );
-  >  add_theme_support( 'automatic-feed-links' );
-  > ```
-  > 一部のtheme supportsはtheme.jsonでテーマの設定をしていれば有効になります。
-  > theme.jsonの設定はadd_theme_support()より優先されることに気をつけましょう。
-  - 参照：[【WordPress】ブロックテーマのファイル構造やセットアップに関する基礎知識 | Theme supportについて](https://wp-manual.com/theme/block-theme/setup/#index_id7)
-
   > テンプレート情報の保存先<br><br>
   > このような手順でユーザーが管理画面から編集した、インデックステンプレートや単一テンプレートの設定はすべてデータベース※に保存されます。最初に用意した<br>HTMLファイルやJSONファイルなどに書き込まれるわけではありません。このように、同じテーマを有効化したであっても、エディターによって全く違う構成のサイトを作成できるのが、ブロックテーマの特徴です。<br><br>
   > ※実際はwp_template（テンプレートパーツはwp_template_part）というカスタム投稿タイプとして保存されます。
   - 参照：[WordPressサイトエディター対応のブロックテーマ開発（基本編） - テンプレート情報の保存先](https://kiwi-dev.com/2022/11/27/wordpress-block-editor-basic/)
 
-- ブロックテーマはその名の通り各種ブロックを積み上げて構築していく
-  > ブロックテーマには、ブロックマークアップ（block markup）と呼ばれる記述法があります。<br>
-  > 例を出すと下記のようなものです。<br>
-  > ```<!-- wp:site-title /-->```<br>
-  > ▲ WordPressサイトのタイトルが出力される。<br>
-  > ```<!-- wp:navigation /-->```<br>
-  > ▲ ナビゲーションが出力される<br>
-  > こんな感じのHTMLのコメントアウトで宣言的に記述していくものです。
-- 参照：(WordPressのブロックテーマとやらに入門してみる - ブロックマークアップ)[https://zenn.dev/link/comments/e7c17d1007bee3]
+### `add_theme_support`の自動設定
+> ブロックテーマでは以下のtheme supportsが自動的に有効になります。
+> ```
+>  add_theme_support( 'post-thumbnails' );
+>  add_theme_support( 'responsive-embeds' );
+>  add_theme_support( 'editor-styles' );
+>  add_theme_support( 'html5', array('style','script', ) );
+>  add_theme_support( 'automatic-feed-links' );
+> ```
+> 一部のtheme supportsはtheme.jsonでテーマの設定をしていれば有効になります。
+> theme.jsonの設定はadd_theme_support()より優先されることに気をつけましょう。
+- 参照：[【WordPress】ブロックテーマのファイル構造やセットアップに関する基礎知識 | Theme supportについて](https://wp-manual.com/theme/block-theme/setup/#index_id7)
 
-> [!NOTE]  
-> ブロックテーマの場合、投稿（single）や固定（page）ページ用のテンプレートファイルにループを用意する必要はない。ループ設定はブロックエディターの`クエリループ`ブロックを使用して設定する。
-
-- 設定したブロックテーマのエクスポート方法
+### 設定したブロックテーマのエクスポート方法
 エディター画面の右上にある「`︙`（縦三点リーダー）」を クリックしてエクスポート
 
-- ブロックテーマでも`css`, `js`の読込は`functions.php`で行う
+### ブロックテーマでも`css`, `js`の読込は`functions.php`で行う
   > ブロックテーマでは、 wp_head() などを自動的に出力してくれる。
   > そのため、CSSを呼び出すような機構が無く、全て functions.php から指示を投げる必要がある。
   - 参照：[WordPressのブロックテーマとやらに入門してみる](https://zenn.dev/masa5714/scraps/973a8ab75f2c1f)
@@ -78,50 +78,50 @@
   > ブロックテーマでは、これまでのwp_enqueue_style()関数に加え、ブロックごとのCSSが追加できるようになりました。ブロックごとのCSSは該当のブロックが使われているページのみで読み込まれるのが特徴で、wp_enqueue_block_style()関数を使って設定します。
   - 参照：[WordPressサイトエディター対応のブロックテーマ開発（機能編）- CSSの読み込みとブロック別CSS](https://kiwi-dev.com/2022/12/03/wordpress-block-editor-functions/)
 
-- TOPページを作成
-  1. WordPressブロックテーマでTOPページを作る2つの方法：
-    - 固定ページ（スラッグは任意）+ フロントページ設定
-    - `templates/front-page.html`（または`home.html`）で直接作成
-  2. テンプレートファイルの配置：
-    - `templates`ディレクトリに配置
-    - `front-page.html`が最優先
-    - `parts`や`patterns`は再利用可能なコンポーネント用
-  3. コンテンツ作成方法：
-    - サイトエディター（テーマエディタ）での視覚的な編集が基本
-    - 既存HTMLを使う場合は`<!-- wp:html -->`ブロックで囲む。できるだけWordPressブロックの仕組みを活用することを推奨
-      ```
-      <!-- wp:pattern {"slug":"header"} /-->
+### TOPページを作成
+1. WordPressブロックテーマでTOPページを作る2つの方法：
+  - 固定ページ（スラッグは任意）+ フロントページ設定
+  - `templates/front-page.html`（または`home.html`）で直接作成
+2. テンプレートファイルの配置：
+  - `templates`ディレクトリに配置
+  - `front-page.html`が最優先
+  - `parts`や`patterns`は再利用可能なコンポーネント用
+3. コンテンツ作成方法：
+  - サイトエディター（テーマエディタ）での視覚的な編集が基本
+  - 既存HTMLを使う場合は`<!-- wp:html -->`ブロックで囲む。できるだけWordPressブロックの仕組みを活用することを推奨
+  ```
+  <!-- wp:pattern {"slug":"header"} /-->
 
-      <!-- wp:group {"tagName":"main"} -->
-      <main class="wp-block-group">
-          <!-- wp:group {"tagName":"section"} -->
-          <section class="wp-block-group">
-              <!-- wp:heading -->
-              <h2>article</h2>
-              <!-- /wp:heading -->
-
-
-
-              <!-- wp:html -->
-              <div class="custom-content">
-                  <!-- ここにHTMLをベタ打ち -->
-              </div>
-              <!-- /wp:html -->
+  <!-- wp:group {"tagName":"main"} -->
+  <main class="wp-block-group">
+      <!-- wp:group {"tagName":"section"} -->
+      <section class="wp-block-group">
+          <!-- wp:heading -->
+          <h2>article</h2>
+          <!-- /wp:heading -->
 
 
 
-          </section>
-          <!-- /wp:group -->
-      </main>
+          <!-- wp:html -->
+          <div class="custom-content">
+              <!-- ここにHTMLをベタ打ち -->
+          </div>
+          <!-- /wp:html -->
+
+
+
+      </section>
       <!-- /wp:group -->
+  </main>
+  <!-- /wp:group -->
 
-      <!-- wp:pattern {"slug":"footer"} /-->
-      ```
-  4. ファイル構成のベストプラクティス：
-    - メインテンプレート：`templates/front-page.html`
-    - 共通パーツ：`patterns/header.html`, `patterns/footer.html`
+  <!-- wp:pattern {"slug":"footer"} /-->
+  ```
+4. ファイル構成のベストプラクティス：
+  - メインテンプレート：`templates/front-page.html`
+  - 共通パーツ：`patterns/header.html`, `patterns/footer.html`
 
-- 任意のブロックを作成して、それをコンポーネントファイルのような使い方をする
+### 任意のブロックを作成して、それをコンポーネントファイルのような使い方をする
 1. パターンの登録方法（`functions.php`で「パターン（コンポーネント）の設定」を登録）
 ```
 // functions.php に追加
