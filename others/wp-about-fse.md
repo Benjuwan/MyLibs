@@ -22,10 +22,48 @@
 > ```<!-- wp:navigation /-->```<br>
 > ▲ ナビゲーションが出力される<br>
 > こんな感じのHTMLのコメントアウトで宣言的に記述していくものです。
-- 参照：(WordPressのブロックテーマとやらに入門してみる - ブロックマークアップ)[https://zenn.dev/link/comments/e7c17d1007bee3]
+- 参照：(WordPressのブロックテーマとやらに入門してみる - ブロックマークアップ)[https://zenn.dev/link/comments/e7c17d1007bee3]<br>
+
+```html
+<!-- wp:group {"tagName":"main","layout":{"inherit":true}} -->
+<main class="wp-block-group">
+	<!-- wp:query -->
+	<div class="wp-block-query">
+
+    <!-- ループの中（wp:query-loop 内）に記事コンテンツ情報ブロックを配置 -->
+		<!-- wp:query-loop -->
+
+    <!-- wp:post-featured-image /-->
+    <!-- wp:post-title {"isLink":true} /-->
+    <!-- wp:post-author {"showAvatar":false} /-->
+    <!-- wp:post-date /-->
+    <!-- wp:post-terms {"term":"category"} /-->
+    <!-- wp:post-excerpt /-->
+
+		<!-- /wp:query-loop -->
+
+		<!-- wp:query-pagination -->
+		<div class="wp-block-query-pagination">
+			<!-- wp:query-pagination-previous /-->
+			<!-- wp:query-pagination-next /-->
+		</div>
+		<!-- /wp:query-pagination -->
+
+	</div>
+	<!-- /wp:query -->
+</main>
+<!-- /wp:group -->
+```
+- 参照：(フルサイト編集に対応したブロックテーマを作ってみる)[https://olein-design.com/blog/tried-to-create-block-theme#:~:text=%E3%81%9D%E3%81%AE%E4%B8%AD%E3%81%AB%E3%80%81-,%E3%82%AF%E3%82%A8%E3%83%AA%E3%83%AB%E3%83%BC%E3%83%97%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF,-%E3%82%92%E9%85%8D%E7%BD%AE%E3%81%97]
 
 > [!NOTE]  
 > ブロックテーマの場合、投稿（single）や固定（page）ページ用のテンプレートファイルにループを用意する必要はない。ループ設定はブロックエディターの`クエリループ`ブロックを使用して設定する。
+
+> 恐らくブロックマークアップは手動で行うものではなく、WordPress管理画面のエディタ上で作って、コードエディタで出力されたものを貼り付けて使うものだと思う<br>
+> じゃないとあまりにも作るのが厳しすぎる。<br>
+> パターンはあくまでテーマとして何度でも呼び出したいものを作る。パーツとパターンの使い分けが難しいところ。
+- 参照：(恐らくブロックマークアップは手動で行うものではなく、WordPress管理画面のエディタ上で作って、コードエディタで出力されたものを貼り付けて使うものだと思う | フルサイト編集に対応したブロックテーマを作ってみる)[https://zenn.dev/masa5714/scraps/973a8ab75f2c1f#comment-e7c17d1007bee3]
+
 
 ### ブロックテーマでは、エディター（旧サイトエディター）でカスタマイズした内容はデータベースに保存される（＝サイトエディターで編集した内容はテーマを変更しても維持される）
   > ブロックテーマでは、エディター（旧サイトエディター）でカスタマイズした内容はデータベースに保存されます。<br>
@@ -39,6 +77,13 @@
   > このような手順でユーザーが管理画面から編集した、インデックステンプレートや単一テンプレートの設定はすべてデータベース※に保存されます。最初に用意した<br>HTMLファイルやJSONファイルなどに書き込まれるわけではありません。このように、同じテーマを有効化したであっても、エディターによって全く違う構成のサイトを作成できるのが、ブロックテーマの特徴です。<br><br>
   > ※実際はwp_template（テンプレートパーツはwp_template_part）というカスタム投稿タイプとして保存されます。
   - 参照：[WordPressサイトエディター対応のブロックテーマ開発（基本編） - テンプレート情報の保存先](https://kiwi-dev.com/2022/11/27/wordpress-block-editor-basic/)
+
+### ブロックテーマのテンプレート階層
+> - HTMLテンプレートのファイル名はクラシックテーマと同じ規則が使える<br>
+> ブロックテーマのHTMLテンプレートは、最低 index.html ひとつがあればよく、画面ごとにレイアウトが異なる場合は追加していきます。<br>
+> このときのファイル名の法則はクラシックテーマと同じで、フロントページであれば home.html か front-page.html ですし、カスタム投稿タイプ「book」専用の詳細ページであれば single-book.html になります。<br>
+> ということは、「page-ほげほげ.phpテンプレートにHTMLを直書きしたクラシックテーマ」の方が、ブロックテーマに楽に変換できるのかもしれません（よくないですが）。
+- 参照：[WordPressのブロックテーマで判明している、できること・できないこと](https://webbingstudio.com/wordpress-blocktheme-possible-or-not-possible/)
 
 ### `add_theme_support`の自動設定
 > ブロックテーマでは以下のtheme supportsが自動的に有効になります。
@@ -341,5 +386,8 @@ theme/
   - [【WordPress】ブロックテーマのテンプレート構造](https://zenn.dev/yggrit/articles/c9ab45f91c86cc)
   - [WordPressのブロックテーマつくるメモ](https://zenn.dev/chiilog/scraps/7ee31b4dd9d3e3)
   - [WordPressのブロックテーマとやらに入門してみる](https://zenn.dev/masa5714/scraps/973a8ab75f2c1f)
-- [クラシックテーマ制作者の私がブロックテーマ制作で悩んだこと](https://www.cherrypieweb.com/5938#google_vignette)
-- [【WordPress】ブロックテーマのファイル構造やセットアップに関する基礎知識](https://wp-manual.com/theme/block-theme/setup/)
+- others
+  - [クラシックテーマ制作者の私がブロックテーマ制作で悩んだこと](https://www.cherrypieweb.com/5938#google_vignette)
+  - [【WordPress】ブロックテーマのファイル構造やセットアップに関する基礎知識](https://wp-manual.com/theme/block-theme/setup/)
+  - [WordPressのブロックテーマで判明している、できること・できないこと](https://webbingstudio.com/wordpress-blocktheme-possible-or-not-possible/)
+  - 参照：(フルサイト編集に対応したブロックテーマを作ってみる)[https://olein-design.com/blog/tried-to-create-block-theme]
