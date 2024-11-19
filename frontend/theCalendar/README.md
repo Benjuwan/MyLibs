@@ -3,8 +3,6 @@
 - カレンダー（簡易なスケジュール管理）<br />
 各日付にある`［+アイコン］`を押して表示される登録フォームから当該日のスケジュール（予定内容と開始・終了時間）を設定できます。
 
-<img width="1143" alt="calendar" src="https://github.com/Benjuwan/korekau/assets/90702379/5d038b70-fd89-4012-aa16-268b1e49d973">
-
 ## 技術構成
 - @eslint/js@9.13.0
 - @types/react-dom@18.3.1
