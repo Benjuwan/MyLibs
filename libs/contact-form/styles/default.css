@@ -1,0 +1,146 @@
+@charset "utf-8";
+
+html {
+    scroll-behavior: smooth;
+    /* overflow-x: hidden; コンテンツ・要素のはみ出しによる横スクロール防止 */
+    overflow-x: hidden;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+img {
+    width: 100%;
+    height: auto;
+    vertical-align: bottom;
+}
+
+section {
+    & h2 {
+        margin-bottom: 1.5em;
+    }
+}
+
+.com-hd {
+    & h1 {
+        font-size: 16px;
+        margin-bottom: 1em;
+
+        & span {
+            font-size: 20px;
+        }
+    }
+
+    margin-bottom: 3em;
+}
+
+.formTable {
+    text-align: left;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+
+    & tr {
+        border-bottom: 1px solid #333;
+
+        & th {
+            padding: .25em;
+            width: 25%;
+        }
+    }
+}
+
+.com-inner {
+    text-align: center;
+    margin: 5em auto;
+}
+
+.formTableWrapper {
+    padding: 1em;
+    box-shadow: 0px 0px 8px rgba(178 178 178) inset;
+    border-radius: 4px;
+}
+
+#formWrap {
+    max-width: 960px;
+    margin: auto;
+    padding: 0 2.5%;
+    font-size: 16px;
+
+    & div {
+        padding: 1em;
+        box-shadow: 0px 0px 8px rgba(178 178 178) inset;
+        border-radius: 4px;
+
+        &:not(:last-of-type) {
+            margin-bottom: 3em;
+        }
+
+        & label {
+            display: block;
+
+            &:not(:last-of-type) {
+                margin-bottom: 1.5em;
+            }
+
+            & span {
+                display: block;
+                padding-left: .5em;
+                border-left: 4px solid #333;
+                margin-bottom: .5em;
+            }
+
+            & input[type="text"],
+            & textarea {
+                padding-left: .25em;
+            }
+
+            & input[type="text"],
+            & input[type="tel"],
+            & input[type="email"] {
+                width: 100%;
+            }
+
+            & textarea {
+                width: 100%;
+                min-height: 240px;
+                line-height: 1.5;
+            }
+
+            &.flexBoxes {
+                display: flex;
+                gap: 2%;
+                padding-left: .5em;
+                border-left: 4px solid #333;
+
+                & span {
+                    border: none;
+                    padding: 0;
+                }
+            }
+        }
+    }
+
+    & button[type="submit"] {
+        display: block;
+        width: 100%;
+        margin: 3em auto;
+        line-height: 44px;
+        appearance: none;
+        border-radius: 4px;
+        background-color: #333;
+        border: 1px solid transparent;
+        color: #fff;
+        cursor: pointer;
+
+        &:hover {
+            transition: all .25s;
+            color: #333;
+            border-color: #333;
+            background-color: transparent;
+        }
+    }
+}
