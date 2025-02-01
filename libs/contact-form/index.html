@@ -15,50 +15,114 @@
         <form method="post" action="./mail.php">
             <!-- 各項目の name属性の値は、問い合わせ確認ページの各項目名として反映されるので日本語での指定を推奨 -->
             <div>
-                <label for="theName">
+                <label>
                     <span>お名前</span>
                     <input type="text" name="お名前" id="theName" required>
                 </label>
             </div>
             <div>
-                <label for="theMail">
+                <label><span>性別</span></label>
+                <label><input type="radio" name="性別" value="男" required>男</label>
+                <label><input type="radio" name="性別" value="女" required>女</label>
+            </div>
+            <div>
+                <label>
                     <span>メールアドレス</span>
                     <input type="email" name="メールアドレス" id="theMail" required>
                 </label>
             </div>
             <div>
-                <label for="theTel">
+                <label><span>SNS チャットサービス</span></label>
+                <ul class="theCheckers">
+                    <!-- name 属性値： スペースは指定できない（＝ `一意の文字列[]`という指定方法な）のでスネークケースで対応 -->
+                    <li>
+                        <label>
+                            <input type="checkbox" name="SNS_チャットサービス[]" value="Facebook" />Facebook
+                            <div hidden class="snsIds">
+                                <span>Facebook-id：を入力してください</span>
+                                <input type="text">
+                            </div>
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="SNS_チャットサービス[]" value="WeChat" />WeChat
+                            <div hidden class="snsIds">
+                                <span>WeChat-id：を入力してください</span>
+                                <input type="text">
+                            </div>
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="SNS_チャットサービス[]" value="LINE" />LINE
+                            <div hidden class="snsIds">
+                                <span>LINE-id：を入力してください</span>
+                                <input type="text">
+                            </div>
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="SNS_チャットサービス[]" value="X(Twitter)" />X(Twitter)
+                            <div hidden class="snsIds">
+                                <span>X(Twitter)-id：を入力してください</span>
+                                <input type="text">
+                            </div>
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="SNS_チャットサービス[]" value="WhatsApp" />WhatsApp
+                            <div hidden class="snsIds">
+                                <span>WhatsApp-id：を入力してください</span>
+                                <input type="text">
+                            </div>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <label>
                     <span>電話番号</span>
                     <input type="tel" name="電話番号" id="theTel" required>
                 </label>
             </div>
             <div>
-                <label for="thePortalNumbers">
+                <label>
                     <span>郵便番号</span>
                     <input type="text" name="郵便番号" id="thePortalNumbers" pattern="[0-9]{7}" inputmode="numeric"
                         maxlength="7">
                 </label>
-                <label for="theAddress">
+                <label>
                     <span>住所</span>
                     <input type="text" name="住所" id="theAddress">
                 </label>
             </div>
             <div>
-                <label for="theContent">
-                    <span>お問い合わせの種類</span>
-                    <textarea name="お問い合わせの種類" id="theContent" required></textarea>
+                <label><span>お問い合わせの種類</span></label>
+                <ul>
+                    <li class="inquiry-label">
+                        <label><input type="checkbox" name="お問い合わせの種類[]" value="資料請求" />資料請求</label>
+                    </li>
+                    <li class="inquiry-label">
+                        <label><input type="checkbox" name="お問い合わせの種類[]" value="打ち合わせ・相談" />打ち合わせ・相談</label>
+                    </li>
+                    <li class="inquiry-label">
+                        <label><input type="checkbox" name="お問い合わせの種類[]" value="その他" />その他</label>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <label>
+                    <span>お問い合わせの詳細</span>
+                    <textarea name="お問い合わせの詳細" id="theContent" required></textarea>
                 </label>
             </div>
             <div>
-                <label for="thePrivacyPlociy" class="flexBoxes">
-                    <input type="checkbox" name="プライバシーポリシー" id="thePrivacyPlociy" required>
+                <label class="flexBoxes">
+                    <input type="checkbox" name="プライバシーポリシー" id="thePrivacyPlociy" value="送信確認" required>
                     <span><a href="./" target="_blank">プライバシーポリシー</a>の確認</span>
-                </label>
-            </div>
-            <div>
-                <label for="theConfirm" class="flexBoxes">
-                    <input type="checkbox" name="送信確認" id="theConfirm" required>
-                    <span>送信確認</span>
                 </label>
             </div>
             <button type="submit">送信</button>
