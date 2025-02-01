@@ -1,5 +1,11 @@
 @charset "utf-8";
 
+/* checkCheckedSNSlables_ViewEntryIdForm メソッドで付与・解除されるクラス */
+.snsIdsView {
+    margin-top: .5em;
+    padding-left: 1.5em;
+}
+
 html {
     scroll-behavior: smooth;
     /* overflow-x: hidden; コンテンツ・要素のはみ出しによる横スクロール防止 */
@@ -10,6 +16,13 @@ html {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+}
+
+ul,
+ol {
+    padding: 0;
+    text-indent: 0;
+    list-style: none;
 }
 
 img {
