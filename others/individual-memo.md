@@ -178,6 +178,18 @@ function sayHello() {
 sayHello();  // "Hello" が出力される
 ```
 
+- `includes`メソッドについて
+`includes`メソッドの挙動は**配列では完全一致、文字列では部分一致**となる。ただし、文字列の部分一致を判定する際には、左辺オペランド（レシーバ）と右辺オペランド（引数）の関係が適切である必要がある。<br>具体的には、以下の条件が満たされる場合に`true`となる。
+  - 左辺オペランドが右辺オペランドを部分文字列として含んでいる
+  - 型が適切であり、比較可能な文字列である
+```js
+'SpecialGreatMeals'.includes('SpecialGreatMeals[]');
+// 'SpecialGreatMeals'（という文字列内）に 'SpecialGreatMeals[]' は存在しない（`[]`がない）ため false
+
+'SpecialGreatMeals[]'.includes('SpecialGreatMeals');
+// true： `SpecialGreatMeals[]`（という文字列内）に`SpecialGreatMeals`が含まれているので true
+```
+
 > [!NOTE]
 > - ソフトナビゲーションとハードナビゲーションについて
 >   - ソフトナビゲーション：<br>フレームワークやライブラリ（`React Router（Remix）`、`Next.js`の`Link`など）が提供するナビゲーション機能を使用し、`JavaScript`を使用してクライアントサイドで画面遷移を制御する。SPA（CSR）なのでアプリケーションの状態を維持したまま画面遷移が可能で、ブラウザの履歴API（ヒストリーAPI）を適切に制御し、ブラウザの戻る/進むボタンも正しく機能する。差分検知～更新（必要な部分のみを更新）というフローなため高速な画面遷移が特徴。

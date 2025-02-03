@@ -39,4 +39,77 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     }
+
+    const targetCheckbox_labelName = ['SNS_チャットサービス', 'お問い合わせの種類'];
+    const isCheckTargetCheckboxes = () => {
+        const checkBoxes = document.querySelectorAll('input[type="checkbox"]');
+
+        // targetCheckbox_labelName 内の各種 name属性値を持った input要素を抽出
+        const targetItems = [];
+        for (const checkBox of checkBoxes) {
+            for (const targetName of targetCheckbox_labelName) {
+                if (checkBox.getAttribute('name').includes(targetName)) {
+                    const targetItem = {
+                        itemName: checkBox.getAttribute('name'),
+                        itemChecked: checkBox.checked
+                    }
+                    targetItems.push(targetItem);
+                }
+            }
+        }
+
+        // targetCheckbox_labelName 内の文字列に合致するチェック済み要素を抽出
+        const checkedTargetItems = targetItems.filter(targetItem => {
+            if (
+                (targetCheckbox_labelName.includes(`${targetItem.itemName.split('[]')[0]}`)) &&
+                (targetItem.itemChecked === true)
+            ) {
+                return targetItem;
+            }
+        });
+
+        if (checkedTargetItems.length > 0) {
+            // 非チェックの対象項目名を抽出
+            const noCheckedLabel = [];
+            targetCheckbox_labelName.forEach(targetName => {
+                for (const checkedItemName of checkedTargetItems) {
+                    if (!checkedItemName.itemName.includes(targetName)) {
+                        noCheckedLabel.push(targetName);
+                    }
+                }
+            });
+
+            // 重複排除した非チェックの input要素名（の配列）を返す
+            return Array.from(new Set(noCheckedLabel));
+        }
+
+        return undefined;
+    }
+
+    // 送信アクション
+    const submitBtn = document.querySelector('button[type="submit"]');
+    submitBtn.addEventListener('click', (e) => submit_isTargetCheckBoxesAllChecked(e));
+
+    const theForm = document.querySelector('form');
+    theForm.addEventListener('submit', (e) => submit_isTargetCheckBoxesAllChecked(e));
+
+    /**
+     * targetCheckbox_labelName の各項目で一つでもチェックされているかどうか確認
+     * @param { HashChangeEvent<HTMLFormElement | HTMLButtonElement>} e 
+     * @returns void
+     */
+    const submit_isTargetCheckBoxesAllChecked = (e) => {
+        const noCheckedLabel = isCheckTargetCheckboxes();
+        if (typeof noCheckedLabel === 'undefined') {
+            alert(`対象項目「${[...targetCheckbox_labelName].join(' | ')}」\nそれぞれで最低一つはチェックしてください`);
+            e.preventDefault();
+            return;
+        } else {
+            if (noCheckedLabel.length < targetCheckbox_labelName.length) {
+                alert(`対象項目「${[...noCheckedLabel]}」\n最低一つはチェックしてください`);
+                e.preventDefault();
+                return;
+            }
+        }
+    }
 });
