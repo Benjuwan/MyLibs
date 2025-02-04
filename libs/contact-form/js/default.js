@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // 特定チェックボックス（ targetCheckbox_labelName ）のチェック検証機能
     const targetCheckbox_labelName = ['SNS_チャットサービス', 'お問い合わせの種類'];
     const isCheckTargetCheckboxes = () => {
         const checkBoxes = document.querySelectorAll('input[type="checkbox"]');
@@ -61,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // targetCheckbox_labelName 内の文字列に合致するチェック済み要素を抽出
         const checkedTargetItems = targetItems.filter(targetItem => {
             if (
+                // targetCheckbox_labelName は配列なので includesメソッドの実行において完全一致の形式を取るため targetItem.itemNameを調整
                 (targetCheckbox_labelName.includes(`${targetItem.itemName.split('[]')[0]}`)) &&
                 (targetItem.itemChecked === true)
             ) {
@@ -69,18 +71,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         if (checkedTargetItems.length > 0) {
-            // 非チェックの対象項目名を抽出
-            const noCheckedLabel = [];
-            targetCheckbox_labelName.forEach(targetName => {
-                for (const checkedItemName of checkedTargetItems) {
-                    if (!checkedItemName.itemName.includes(targetName)) {
-                        noCheckedLabel.push(targetName);
-                    }
-                }
-            });
+            // targetCheckbox_labelName の各文字列と完全一致させるために checkedTargetItem.itemNameを調整（[]を除去）
+            const checkedTargetItemsName = checkedTargetItems.map(checkedTargetItem => checkedTargetItem.itemName.replace('[]', ''));
 
-            // 重複排除した非チェックの input要素名（の配列）を返す
-            return Array.from(new Set(noCheckedLabel));
+            // 先に調整済みの配列（ checkedTargetItemsName ）から項目名を重複排除して labelNameに含まれていない＝チェックされていない labelNameを取得（差集合）
+            const diff = targetCheckbox_labelName.filter(labelName => !Array.from(new Set(checkedTargetItemsName)).includes(labelName));
+
+            // 非チェックのlabelName（項目名）の配列を返す 
+            return diff;
         }
 
         return undefined;
@@ -99,17 +97,15 @@ document.addEventListener("DOMContentLoaded", () => {
      * @returns void
      */
     const submit_isTargetCheckBoxesAllChecked = (e) => {
-        const noCheckedLabel = isCheckTargetCheckboxes();
-        if (typeof noCheckedLabel === 'undefined') {
+        const noCheckedLabels = isCheckTargetCheckboxes();
+        if (typeof noCheckedLabels === 'undefined') {
             alert(`対象項目「${[...targetCheckbox_labelName].join(' | ')}」\nそれぞれで最低一つはチェックしてください`);
             e.preventDefault();
             return;
-        } else {
-            if (noCheckedLabel.length < targetCheckbox_labelName.length) {
-                alert(`対象項目「${[...noCheckedLabel]}」\n最低一つはチェックしてください`);
-                e.preventDefault();
-                return;
-            }
+        } else if (noCheckedLabels.length > 0) {
+            alert(`対象項目「${[...noCheckedLabels]}」\n最低一つはチェックしてください`);
+            e.preventDefault();
+            return;
         }
     }
 });

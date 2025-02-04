@@ -22,7 +22,8 @@
 - As-Is：現状把握
 - To-Be：本来あるべき姿
 
-- RAG(Retrieval Augmented Generation)：検索拡張生成
+- `RAG`(Retrieval Augmented Generation)：検索拡張生成<br>
+大まかに言うと「（ブラウザの自然）検索と生成を組み合わせた仕組み」のこと。生成AI（LLM： 自然言語の処理と理解に特化したモデル）が単独で回答を作るのではなく、事前に検索エンジンやデータベースから関連情報を取得（検索）して、その情報をもとに回答を生成する仕組み。
 
 - `IO`：入出力 / input | output
 
