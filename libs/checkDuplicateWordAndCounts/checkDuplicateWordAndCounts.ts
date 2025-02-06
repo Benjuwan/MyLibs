@@ -54,4 +54,17 @@ const checkDuplicateWordAndCounts: (theWords: string[]) => checkDuplicateWordAnd
 const targetStrAry: string[] = ["beer", "www", "apple", "banana", "soda", "benjuwan jijao"];
 
 const theCheckDuplicateWordAndCounts: checkDuplicateWordAndCounts_resultType[] = checkDuplicateWordAndCounts(targetStrAry);
-console.log(theCheckDuplicateWordAndCounts);
+// console.log(theCheckDuplicateWordAndCounts);
+
+// ソート処理（別に不要）
+const sort_theCheckDuplicateWordAndCounts = [...theCheckDuplicateWordAndCounts].sort((
+    a: checkDuplicateWordAndCounts_resultType,
+    b: checkDuplicateWordAndCounts_resultType
+) => {
+    if (a.chars > b.chars) {
+        return 1; // 昇順（ask）
+    } else {
+        return -1; // 降順（desk）
+    }
+});
+console.log(sort_theCheckDuplicateWordAndCounts);
