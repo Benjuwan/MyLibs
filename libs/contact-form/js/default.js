@@ -10,10 +10,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.target.checked) {
             snsIds.removeAttribute('hidden');
             snsIds.querySelector('input').setAttribute('name', `${e.target.value}-id:`);
+            snsIds.querySelector('input').setAttribute('required', 'true');
             snsIds.classList.add('snsIdsView');
         } else {
             snsIds.setAttribute('hidden', 'true');
             snsIds.querySelector('input').removeAttribute('name');
+            snsIds.querySelector('input').removeAttribute('required');
             snsIds.classList.remove('snsIdsView');
         }
     }
@@ -33,6 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const snsIds = list.querySelector('.snsIds');
             // `SNS_チャットサービス`という文字列を含む name属性値を持った input要素の場合は以下のクリックイベントを設置
             if (targetInput.getAttribute('name').includes('SNS_チャットサービス')) {
+                // 送信確認から戻ってきた場合に既存のチェック内容を保持するため遅延処理で処置
+                if (targetInput.hasAttribute('checked')) {
+                    setTimeout(() => checkCheckedSNSlables_ViewEntryIdForm(targetInput, snsIds));
+                }
                 targetInput.addEventListener('change', (e) => {
                     checkCheckedSNSlables_ViewEntryIdForm(e, snsIds);
                 });
@@ -86,10 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 送信アクション
     const submitBtn = document.querySelector('button[type="submit"]');
-    submitBtn.addEventListener('click', (e) => submit_isTargetCheckBoxesAllChecked(e));
-
     const theForm = document.querySelector('form');
-    theForm.addEventListener('submit', (e) => submit_isTargetCheckBoxesAllChecked(e));
+    // 送信確認画面でのみ送信イベントを実行
+    if (location.pathname.split('/').at(-1).startsWith('mail') !== true) {
+        submitBtn.addEventListener('click', (e) => submit_isTargetCheckBoxesAllChecked(e));
+        theForm.addEventListener('submit', (e) => submit_isTargetCheckBoxesAllChecked(e));
+    }
 
     /**
      * targetCheckbox_labelName の各項目で一つでもチェックされているかどうか確認
