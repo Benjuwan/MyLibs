@@ -35,9 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const snsIds = list.querySelector('.snsIds');
             // `SNS_チャットサービス`という文字列を含む name属性値を持った input要素の場合は以下のクリックイベントを設置
             if (targetInput.getAttribute('name').includes('SNS_チャットサービス')) {
-                // 送信確認から戻ってきた場合に既存のチェック内容を保持するため遅延処理で処置
+                // 送信確認画面から戻ってきた（ブラウザバックした）場合に既存のチェック内容を保持
                 if (targetInput.hasAttribute('checked')) {
-                    setTimeout(() => checkCheckedSNSlables_ViewEntryIdForm(targetInput, snsIds));
+                    checkCheckedSNSlables_ViewEntryIdForm(targetInput, snsIds);
                 }
                 targetInput.addEventListener('change', (e) => {
                     checkCheckedSNSlables_ViewEntryIdForm(e, snsIds);
@@ -90,12 +90,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return undefined;
     }
 
-    // 送信アクション
-    const submitBtn = document.querySelector('button[type="submit"]');
-    const theForm = document.querySelector('form');
-    // 送信確認画面への遷移時のみ以下の送信イベント及び処理を実行
+    // 送信アクション： 送信確認画面への遷移時のみ以下の送信イベント及び処理を実行
     if (location.pathname.split('/').at(-1).startsWith('mail') !== true) {
+        const submitBtn = document.querySelector('button[type="submit"]');
         submitBtn.addEventListener('click', (e) => submit_isTargetCheckBoxesAllChecked(e));
+
+        const theForm = document.querySelector('form');
         theForm.addEventListener('submit', (e) => submit_isTargetCheckBoxesAllChecked(e));
     }
 

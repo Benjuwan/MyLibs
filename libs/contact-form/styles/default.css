@@ -31,6 +31,14 @@ img {
     vertical-align: bottom;
 }
 
+form {
+
+    & input,
+    & textarea {
+        font-size: 16px;
+    }
+}
+
 section {
     & h2 {
         margin-bottom: 1.5em;
@@ -125,6 +133,7 @@ section {
 
             &.flexBoxes {
                 display: flex;
+                align-items: center;
                 gap: 2%;
                 padding-left: .5em;
                 border-left: 4px solid #333;
@@ -132,6 +141,7 @@ section {
                 & span {
                     border: none;
                     padding: 0;
+                    margin: 0;
                 }
             }
         }
