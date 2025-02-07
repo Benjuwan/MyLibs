@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 送信アクション
     const submitBtn = document.querySelector('button[type="submit"]');
     const theForm = document.querySelector('form');
-    // 送信確認画面でのみ送信イベントを実行
+    // 送信確認画面への遷移時のみ以下の送信イベント及び処理を実行
     if (location.pathname.split('/').at(-1).startsWith('mail') !== true) {
         submitBtn.addEventListener('click', (e) => submit_isTargetCheckBoxesAllChecked(e));
         theForm.addEventListener('submit', (e) => submit_isTargetCheckBoxesAllChecked(e));
