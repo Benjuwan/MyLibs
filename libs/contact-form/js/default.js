@@ -65,7 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // targetCheckbox_labelName 内の文字列に合致するチェック済み要素を抽出
+        // filter 処理： targetCheckbox_labelName内の文字列に合致するチェック済み要素を抽出
+        // map 処理： targetCheckbox_labelNameの各文字列と完全一致させるために checkedTargetItem.itemNameを調整（[]を除去）
         const checkedTargetItems = targetItems.filter(targetItem => {
             if (
                 // targetCheckbox_labelName は配列なので includesメソッドの実行において完全一致の形式を取るため targetItem.itemNameを調整
@@ -74,14 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
             ) {
                 return targetItem;
             }
-        });
+        }).map(checkedTargetItem => checkedTargetItem.itemName.replace('[]', ''));
 
         if (checkedTargetItems.length > 0) {
-            // targetCheckbox_labelName の各文字列と完全一致させるために checkedTargetItem.itemNameを調整（[]を除去）
-            const checkedTargetItemsName = checkedTargetItems.map(checkedTargetItem => checkedTargetItem.itemName.replace('[]', ''));
-
-            // 先に調整済みの配列（ checkedTargetItemsName ）から項目名を重複排除して labelNameに含まれていない＝チェックされていない labelNameを取得（差集合）
-            const diff = targetCheckbox_labelName.filter(labelName => !Array.from(new Set(checkedTargetItemsName)).includes(labelName));
+            // 先に調整済みの配列（ checkedTargetItems ）から項目名を重複排除して labelNameに含まれていない＝チェックされていない labelNameを取得（差集合）
+            const diff = targetCheckbox_labelName.filter(labelName => !Array.from(new Set(checkedTargetItems)).includes(labelName));
 
             // 非チェックのlabelName（項目名）の配列を返す 
             return diff;
