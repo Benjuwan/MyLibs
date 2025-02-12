@@ -66,67 +66,6 @@ Qiitaに記事としても紹介しています。<br />
 ### 注意点
 検索履歴の保存機能に関して：「localStorage」はJavaScriptから自由にアクセスできる性質のため「メールアドレス・住所・氏名など個人情報」に関する内容がある場合はセキュリティ面で大きな懸念がある。**デリケートな内容・項目がある場合は使用しない**こと（＝コメントアウトで機能停止させておく）
 
-
-### 改良点
-【検索結果表示に関する条件分岐に関して（search.php）】
-
-現状、**検索項目をまとめて格納している変数（$get_cats）の中身を「検索結果ごとに区分け」して条件分岐**しており、**検索結果の項目表示用見出し(h2)と当該コンテンツ用の2箇所に同じ記述**を行っている。
-
-    
-（例：検索結果ごとに区分け）
-```
-（search.php）
-|--- ?php if( 
-    get_search_query() && 
-    $get_cats = 
-        !isset($get_searcharea) && 
-        !isset($get_major) && 
-        isset($get_searches) 
-    ): //（キーワード(get_search_query())とget_searchesがセットされている場合） ?
-        
-        
-|--- ?php elseif( 
-    $get_cats = 
-        isset($get_searches) && 
-        isset($get_searcharea) && 
-        isset($get_major)
-    ): // get_searches + get_searcharea + get_major の3種がセットされて（存在して）いる場合 ?
-        
-        
-|--- ?php elseif( 
-    $get_cats = 
-        isset($get_searches) && 
-        !isset($get_searcharea) && 
-        isset($get_major)
-    ): // get_searches + get_major の2種がセット ?
-        
-        
-|--- ?php elseif( 
-    $get_cats = 
-        isset($get_searches) && 
-        isset($get_searcharea) && 
-        !isset($get_major) 
-    ): // get_searches + get_searcharea の2種がセット ?
-```
-
-つまり、**各項目ごとにAND検索したい場合は各項目ごとに条件分岐を作って行く必要**がある。
-```
-?php elseif( 
-    $get_cats = 
-        isset($カテゴリA) && 
-        isset($カテゴリB) && 
-        isset($カテゴリC) && 
-        isset($カテゴリD) && 
-        !isset($カテゴリE) // **falseの分岐も各項目ごとに指定**していかなくてならない....
-        ・
-        ・
-        ・
-    ): 
-?
-```
-
-**条件ごとに随時分けて記述していく煩雑性を無くしたい、または、もう少し整理してスマートにできればと試行錯誤....**
-
 【wpdb::prepare() のクエリー引数にはプレースホルダーが必要（functions.php）】
 ```
 （functions.php）
