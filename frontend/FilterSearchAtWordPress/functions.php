@@ -23,8 +23,8 @@ function include_cpt_search($query)
         return;
     }
     if ($query->is_search) {
-        $query->set('post_type', '-----「カスタム投稿タイプ名」を記述-----');
-        // $query->set( 'post_type', [ 'hoge', 'foo' ] ); // CPTが複数ある場合は配列で指定 
+        $query->set('post_type', 'カスタム投稿タイプ名を記述');
+        // $query->set('post_type', ['hoge', 'foo']); // CPTが複数ある場合は配列で指定 
     }
 }
 add_filter('pre_get_posts', 'include_cpt_search');
@@ -66,7 +66,7 @@ function custom_search($search, $wp_query)
                    OR {$wpdb->posts}.ID IN (
                      SELECT distinct post_id
                      FROM {$wpdb->postmeta}
-                     WHERE {$wpdb->postmeta}.meta_key IN ('-----「メタ：フィールド名」を記述-----','-----「メタ：フィールド名」を記述-----','-----「メタ：フィールド名」を記述-----') AND meta_value LIKE '{$search_word}'
+                     WHERE {$wpdb->postmeta}.meta_key IN ('メタ：フィールド名を記述', 'meta_hoge', 'meta_foo', 'meta_bar', 'meta_piyo') AND meta_value LIKE '{$search_word}'
         			)
                ) ";
             }

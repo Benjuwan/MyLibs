@@ -13,7 +13,7 @@
 
         // クエリの基本設定
         $query_args = [
-            'post_type' => ['info', 'news'], // コンテンツデータを取得したい投稿タイプのスラッグ名（複数指定は配列形式）
+            'post_type' => ['hoge', 'foo'], // コンテンツデータを取得したい投稿タイプのスラッグ名（複数指定は配列形式）
             'posts_per_page' => 6,
             'paged' => get_query_var('paged', 1),
             's' => get_search_query(),
@@ -50,6 +50,7 @@
             }
         }
 
+        // サブループ・サブクエリを返す
         return new WP_Query($query_args);
     }
 ?>
@@ -67,7 +68,7 @@
         
         // GETパラメータから動的にタクソノミー検索条件を構築
         $taxonomy_mapping = [
-            'school_cat' => 'get_schooltype',
+            'category_cat' => 'get_categorytype',
             'search_area' => 'get_searcharea',
             'bunkei' => 'get_bunkei',
             'bunri' => 'get_bunri',
