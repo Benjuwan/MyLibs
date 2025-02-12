@@ -3,9 +3,6 @@
 ### 概要
 WordPressサイトで使用できる「絞り込み（複数）検索機能」を実装するためのファイルセットです。検索項目（カテゴリー）の設定は《カスタムタクソノミー》を使用（左記や以下の説明で出てくるカテゴリーはタクソノミーを指します）
 
-Qiitaに記事としても紹介しています。<br />
-[カスタム投稿タイプとタクソノミーを使った絞り込み検索機能を作りたい](https://qiita.com/benjuwan/items/605cd52078b2af903acd)
-
 【ファイルセット】
 ```
 |--- img：ダミーサムネイルの画像
@@ -25,9 +22,8 @@ Qiitaに記事としても紹介しています。<br />
 |--- search.php：検索結果ページ。part-filtersearch.php内で処理される配列（各検索項目の内容が格納された箱）から渡ってきた検索項目を取得し、WP_Query（とtaxQuery）を使ってコンテンツを表示させている。ページャーは the_posts_pagination を使用。
 ```
 
-
 ### 使い方・使用時の変更必要箇所
-・part-filtersearch.php
+- `part-filtersearch.php`
 ```
 |--- $term_id = 123; // tag_id=xxxx：タグID（数値）を指定
    $taxonomy_name = 'tax_slug'; // taxonomy=xxxx：タクソノミーSlug（文字列）を指定
@@ -40,7 +36,7 @@ Qiitaに記事としても紹介しています。<br />
 |--- input type="hidden" name="投稿タイプ" value="カスタム投稿タイプ（のスラッグ）名" // 呼び出したいカスタム投稿タイプの数だけ記述
 ```  
     
-・functions.php
+- `functions.php`
 ```
 |--- include_cpt_search：当該関数の第二引数に「-----「検索でヒットさせたいカスタム投稿タイプ名」を必要な分だけ記述----- 」
 
@@ -66,21 +62,22 @@ Qiitaに記事としても紹介しています。<br />
 ### 注意点
 検索履歴の保存機能に関して：「localStorage」はJavaScriptから自由にアクセスできる性質のため「メールアドレス・住所・氏名など個人情報」に関する内容がある場合はセキュリティ面で大きな懸念がある。**デリケートな内容・項目がある場合は使用しない**こと（＝コメントアウトで機能停止させておく）
 
-【wpdb::prepare() のクエリー引数にはプレースホルダーが必要（functions.php）】
+【wpdb::prepare() のクエリー引数にはプレースホルダーが必要（`functions.php`）】
 ```
 （functions.php）
 |--- $wpdb->prepare("%%{$word}%%"); 
 ```
-**prepare(第一引数：実行するsql, 第二引数：プレースホルダー)**を使うには、第一引数と第二引数ともに記述必須だが、以下の内容では「wpdb::prepare() のクエリー引数にはプレースホルダーが必要」というエラー(notice)が表示されてしまう。
 
-```
+ **prepare(第一引数：実行するsql, 第二引数：プレースホルダー)** を使うには、第一引数と第二引数ともに記述必須だが、以下の内容では「`wpdb::prepare()`のクエリー引数にはプレースホルダーが必要」というエラー(notice)が表示されてしまう。
+
+```php
 $search_words = explode(' ', isset($wp_query->query_vars['s']) ? $wp_query->query_vars['s'] : ''); // 検索データが存在する場合（三項演算子：条件? true: false）は、取得した検索データを半角スペース区切りで配列へ変換
  if ( count($search_words) > 0 ) { // 配列の中身が存在すれば下記の処理へ移行
    $search = ''; // プレースホルダー用の変数
    foreach ( $search_words as $word ) { // 配列（$search_words）の中身をそれぞれ $word に
 if ( !empty($word) ) { // $wordが 空 || null の状態でない（falseの場合）なら下記の処理へ移行
 
-      $sql_act = " AND ( // 実行するsql（※ここの記述に問題がある？？？）
+      $sql_act = " AND (
           {$wpdb->posts}.post_title LIKE '{$word}'
           OR {$wpdb->posts}.post_content LIKE '{$word}'
           

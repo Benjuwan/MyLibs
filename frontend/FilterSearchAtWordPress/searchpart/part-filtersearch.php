@@ -27,6 +27,7 @@
                         <?php echo esc_html($parent_term->name); ?>
                     <?php endif; ?>
                 </summary>
+
                 <?php
                 // 子タームを取得
                 $child_terms = get_terms([
@@ -56,14 +57,12 @@
             </details>
             <?php
         }
-        
         // バッファリングのクリーンアップ処理： バッファリングされた内容を取得し、出力をクリアして返す。ob_get_clean() は ob_get_contents() + ob_end_clean() の処理をまとめたもので、出力内容を取得しつつ、バッファを終了する
         return ob_get_clean();
     }
 ?>
 
 <form role="search" method="get" id="searchform" class="searchform" action="<?php echo esc_url(home_url('/')); ?>">
-
 <div class="department_wrapper">
     <div class="SearchWrapper">
         <div id="SearchMainWrapper">
@@ -76,9 +75,9 @@
                     'taxonomy'  => 'category_cat', 		//タクソノミー
                     'name' => 'get_categorytype[]',
                     'id' => 'categorySelect', 			//初期値だと'name'に指定した内容になる
-                    // 'show_option_none' =>('学校を選択'),	//初期プレースホルダー
+                    // 'show_option_none' => ('○○を選択'),	//初期プレースホルダー
                     'option_none_value' => '', 			//未選択時のoption要素のvalue属性値を指定（空 = %5B%5D = []）
-                    'exclude' => [43, 2], 				// 'tag_id=xxxx'のタームを除外
+                    'exclude' => [43, 2]                // 'tag_id=xxxx'のタームを除外
                 ]; 
                 ?>
                 <?php wp_dropdown_categories( $CategoriesType ); ?>
@@ -127,9 +126,9 @@
             <label><input type="search" placeholder="フリーワードを入力" value="" name="s" id="s"></label>
 		</div>
     
-        <input type="hidden" name="post_type" value="category">
+        <input type="hidden" name="post_type" value="hoge">
+        <input type="hidden" name="post_type" value="foo">
         <p id="department_btn"><input type="submit" value="検索"></p>
     </div>
 </div>
-
 </form>
