@@ -1,7 +1,8 @@
 <!-- フィルター検索（ユーザー選択またはキーワード入力）のデータ取得 -->
 <?php 
     function get_filtered_contents() {
-        // GETパラメータから動的にタクソノミー検索条件を構築
+        // タクソノミーとGETパラメータのプレフィックスのマッピング
+        // キー: タクソノミー名, 値: 対応するGETパラメータのプレフィックス
         $taxonomy_mapping = [
             'category_cat' => 'get_categorytype',
             'search_area' => 'get_searcharea',
@@ -13,21 +14,21 @@
 
         // クエリの基本設定
         $query_args = [
-            'post_type' => ['hoge', 'foo'], // コンテンツデータを取得したい投稿タイプのスラッグ名（複数指定は配列形式）
+            'post_type' => ['hoge', 'foo'],         // コンテンツデータを取得したい投稿タイプのスラッグ名（複数指定は配列形式）
             'posts_per_page' => 6,
-            'paged' => get_query_var('paged', 1),
-            's' => get_search_query(),
+            'paged' => get_query_var('paged', 1),   // 現在のページ番号（デフォルト: 1）
+            's' => get_search_query(),              // 検索キーワード
             'tax_query' => ['relation' => 'AND']
         ];
 
         // 各タクソノミーごとのサブクエリを準備
+        // $taxonomy_mapping をループして $taxonomy にタクソノミー名（例:'bunkei'）を代入し、$param_prefix に対応するプレフィックス（例:'get_bunkei'）を代入する。
         foreach ($taxonomy_mapping as $taxonomy => $param_prefix) {
-            $terms = [];
+            $terms = []; // 検索条件となるタームIDを格納する配列
             
-            // GETパラメータを走査して、指定のprefixで始まるものを全て取得
+            // $_GET のクエリパラメータをループして、$key にパラメータ名（例:'get_bunkei01'）を、$value にその値（例:'bunkei01_a'）を代入する。
             foreach ($_GET as $key => $value) {
-                // strpos('get_bunkei01', 'get_bunkei') === 0 ← get_bunkei という文字列が get_bunkei01 という文字列内に含まれていて、どの部分が一致しているかどうかをチェックし、0文字目が一致しているので === 0 が成立すると true.
-                // $param_prefix が $key に「含まれていて先頭一致」している かつ $value が空でない場合
+                // $key が $param_prefix で始まるか確認（例:'get_bunkei01'が'get_bunkei'で始まる）
                 if (strpos($key, $param_prefix) === 0 && !empty($value)) {
                     // 配列の場合は展開、そうでない場合はそのまま追加
                     if (is_array($value)) {
@@ -66,7 +67,8 @@
             $display_terms[] = sprintf('フリーワード：%s', esc_html(get_search_query()));
         }
         
-        // GETパラメータから動的にタクソノミー検索条件を構築
+        // タクソノミーとGETパラメータのプレフィックスのマッピング
+        // キー: タクソノミー名, 値: 対応するGETパラメータのプレフィックス
         $taxonomy_mapping = [
             'category_cat' => 'get_categorytype',
             'search_area' => 'get_searcharea',
