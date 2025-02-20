@@ -42,6 +42,30 @@
 
 - シングルサインオン：親会社の社員証を持っていれば子会社でも身分確認できますよ的な「一つの権限・アカウントで関連する全体へ関われる」ようになる認証で、一般的には大規模なシステムで導入されるような代物。
 
+- ` Maintenance LTS`（メンテナンスLTS）<br>
+すでにアクティブな開発・新機能追加が終了し、今後は主にセキュリティ修正や重大なバグ修正のみが行われるフェーズ。<br>
+既に次の LTS バージョンが登場し、役割が移行している段階。一定期間後にサポート終了（EOL: End of Life） となる。<br>
+  - `Node.js`の[リリーススケジュール](https://nodejs.org/ja/about/previous-releases)を確認
+  - 各プロジェクト（※`Next.js`が例）における`Node.js`のアップデートコマンド
+```bash
+npm install --save-dev @types/node@latest
+```
+
+---
+
+> [!NOTE]
+> - `Windows OS`限定： `Node.js`アップデート後に`VSCode`で`npm`コマンドが実行できなくなった際の対処法<br>
+> `Windows`の`PowerShell`のセキュリティポリシーに関連する問題で、`Node.js`アップデート後に`npm`コマンドが実行できなくなるケースがある。<br>
+> 今回、`コマンド プロンプト`では実行できるが、`VSCode`で`npm`コマンドが実行できないというケースだった。<br>
+> 対処法は以下<br>
+> - `VSCode`で`Ctrl + ,`を押して設定を開く
+>   - 検索バーに「`terminal.integrated.defaultProfile.windows`」と入力
+>   - `null` → `Command Prompt`または`Git Bash`を選択
+> 
+> ※ `Mac`（および`Linux`）では、`Unix`ベースのシェル（`bash`, `zsh`など）を使用しており、`PowerShell`のような実行ポリシーの制限はないため、メジャーバージョンアップデート時にこのような権限の問題は発生しない
+
+---
+
 > [!NOTE]
 > - `package.json`と`package-lock.json`について
 >   - `package.json`：<br>`package.json`は、インストールした各`npm`パッケージ(`node_modules`内の各種ファイルやデータ)のバージョンや依存関係、コマンドラインなどの情報が記載されたインストール済み`npm`リストのようなもの。<br>`npm init -y`でオールデフォルト設定の`package.json`を生成できる（**※ホームディレクトリではなく当該ディレクトリで行うこと**）。
@@ -138,6 +162,11 @@
   - サーバー設定やデプロイが自動化されている
   - AI機能の組み込みが簡単
   - 必要に応じて`HTML`や`JavaScript`によるカスタマイズも可能
+
+- `Temperature`について<br>
+0〜1で創造性や回答の多様性をコントロールできる<br>
+  - 創造的なアイデアが欲しいとき: `Temperature`を0.7〜1.0に設定。<br>
+  - 正確な回答（ファクトに基づく）を求めるとき: `Temperature`を0.0〜0.3に設定。
 
 ## フロントエンド
 - `Bun`<br>
