@@ -51,6 +51,41 @@
 npm install --save-dev @types/node@latest
 ```
 
+  - `npm`のアップデートコマンド
+```bash
+npm install -g npm
+```
+
+実行後に以下を行って動作確認してみる
+
+1. `npm doctor`：各種`OK`が表示されるかどうか
+```
+C:\Users\username>npm doctor
+Connecting to the registry
+Ok
+
+Checking npm version
+Ok
+current: v11.1.0, latest: v11.1.0
+
+Checking node version
+Ok
+current: v22.14.0, recommended: v22.14.0
+
+Checking configured npm registry
+Ok
+using default registry (https://registry.npmjs.org/)
+
+Checking for git executable in PATH
+Ok
+C:\Program Files\Git\cmd\git.EXE
+
+Checking for global bin folder in PATH
+Ok
+```
+
+2. `node -p "console.log('Node.js 動作確認')"`：ログ出力されるかどうか
+
 ---
 
 > [!NOTE]
