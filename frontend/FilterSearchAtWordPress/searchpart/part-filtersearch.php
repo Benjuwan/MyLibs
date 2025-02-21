@@ -28,6 +28,17 @@
                     <?php endif; ?>
                 </summary>
 
+                <!-- タクソノミー（親のみ：parent_term）を対象にチェックボックスを描画したい場合 -->
+                <!-- <div class="taxonomy-checkbox-item">
+                    <label>
+                        <input type="checkbox" 
+                            name="<?php echo esc_attr('get_' .$parent_term[0]. '[]'); ?>"
+                            value="<?php echo esc_attr($parent_term->slug); ?>">
+                        <?php echo esc_html($parent_term->name); ?>
+                    </label>
+                </div> -->
+
+                <!-- タクソノミー配下の子ターム（子のみ：child_term）を対象にチェックボックスを描画したい場合 -->
                 <?php
                 // 子タームを取得
                 $child_terms = get_terms([
