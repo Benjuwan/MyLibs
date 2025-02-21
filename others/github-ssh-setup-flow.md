@@ -1,5 +1,7 @@
 # GitHub SSH認証セットアップと開発フロー
 
+- 参照記事：[【🔰初心者向け】Git入門 [GitHub登録→SSH接続→Cloneまで]](https://qiita.com/ikemura-ren/items/b0d02af934853dc5fbde)
+
 ## 1. SSH認証の初期設定
 
 ### 1.1. SSHキーペアの生成

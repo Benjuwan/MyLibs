@@ -1,5 +1,24 @@
 # `GitHub`関連のメモ・備忘録
 
+## 差分チェック
+- `git diff`<br>
+`add`されていないファイルとの差分を見ることができます。
+  - ステージングされた（addされた）ファイルの差分をみる
+    - `git diff --staged`
+  - 最新のコミットとの差分をみる場合
+```bash
+git diff HEAD   # 最新のコミット
+git diff HEAD^  # 最新のコミットの1つ前
+git diff HEAD^^ # 最新のコミットから2つ前
+git diff HEAD~2 # HEAD^^（最新のコミットから2つ前）と一緒
+```
+
+  - 特定のコミットの状態との差分チェック
+```bash
+git diff abc123 def456  # コミットIDの頭文字を使う
+git diff main topic   # ブランチごとの差分チェック
+```
+
 ## 特定のファイルをアンステージ
 - `git restore --staged`
 ```bash
@@ -33,12 +52,12 @@ git restore .
     - ※ 必要に応じて`git fetch origin main`で最新の状態を確認
 2. `git pull origin main`を実行してリモートの`main`リポジトリ最新内容の反映を試みる
     - ※`git checkout <他のブランチ>`で上記を実行するのも可
-3. `already up to data`と表示された場合<br>`git checkout <他のブランチ>`で`main`ブランチまたは`feature`ブランチなどに一旦切り替える
+3. `Already up to data`と表示された場合<br>`git checkout <他のブランチ>`で`main`ブランチまたは`feature`ブランチなどに一旦切り替える
 4. `git log`でログを確認して、最新のコミットIDを取得する
 5. `git reset --soft <コミットID>`でコンフリクト前のデータやファイルを復元
     - ※ または`git merge --abort`でマージを中止し、クリーンな状態に戻す
 6. `git stash`を行ってデータやファイルを一時退避
-7. `git pull origin main`を実行して最新内容が反映されているかを確認<br>`already up to data`と表示されたらok.
+7. `git pull origin main`を実行して最新内容が反映されているかを確認<br>`Already up to data`と表示されたらok.
 8. `git stash pop`を実行して一時退避させていたデータやファイルを復元
     - ※`git checkout <他のブランチ>`で`feature`ブランチなどにいる場合は、`git push -u origin <ブランチ名>`を行って「ローカルのブランチをリモートリポジトリにアップロードし、追跡ブランチを設定」する
 9. `git diff`で変更内容を確認
@@ -72,6 +91,18 @@ git tag backup-YYYYMMDD # 現在の状態をタグとして保存
 > ```
 
 4.  再修正して再度、`git add` → `git commit` → `git push`
+
+## `git reset --hard`で削除した内容を復元する
+```bash
+git reflog  # HEADの変更を確認する（※この記録は約30日間保持される）
+
+# 上記の実行結果
+e5f1c7b HEAD@{0}: reset: moving to 1a2b3c4
+bf5f890 HEAD@{1}: commit: Fix login bug
+
+# 間違ったresetを元に戻す（※ HEAD@{1} を指定）
+git reset --hard HEAD@{1}
+```
 
 ## `git revert`
 コミットの変更を**取り消すための新しいコミットを作成**する。<br>
