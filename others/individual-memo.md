@@ -203,6 +203,31 @@ Ok
   - 創造的なアイデアが欲しいとき: `Temperature`を0.7〜1.0に設定。<br>
   - 正確な回答（ファクトに基づく）を求めるとき: `Temperature`を0.0〜0.3に設定。
 
+#### Cline（クライン）
+`Cline`は、`GitHub Copilot`のようなコーディング・プログラミングの最適化・向上、補助（支援）を担うツール（自律AI / コーディングエージェント）で、`VSCode`の拡張機能として提供されている。<br>
+`Cline`自体は無料でインストール・利用できるが、それをハンドリングするためのブレイン（生成AI）がないと十全に活用できず、費用がかかるとすれば利用する生成AIのプラン料金（及び使用料）となる。
+- `Cline`で使用できるモデルやプロバイダー（2025/02）
+  - OpenAI (GPTシリーズ)
+  - Anthropic (Claude)
+  - Google Gemini
+  - DeepSeek
+  - AWS Bedrock
+  - GCP Vertex AI
+  - Mistral
+  - OpenRouter
+  - OpenAI Compatible
+  - LM Studio
+  - Ollama
+
+- `perplexity`の回答
+> 費用が発生するのは、選択したAIモデルのAPI利用料金です。これはトークン使用量に応じて課金されます。<br>
+> API利用料金は、選択するAIモデルやプロバイダーによって異なります。例えば、GPT-4oは100万トークンあたり入力$2.5、出力$10、Claude 3.5 Sonnetは入力$3、出力$15です。<br>
+> Clineは、プロンプトキャッシングなどの機能を通じてAPIコストの削減を支援しています。<br>
+> ユーザーはCline内でトークン使用量とAPIコストをリアルタイムで追跡・管理できます。
+
+- 参照記事：[【完全比較】VS Code最強の3大AIアシスタント！Cline vs Roo Code vs CoolCline](https://qiita.com/syukan3/items/0b91c26fccb7a3550111#1-cline%E3%82%AF%E3%83%A9%E3%82%A4%E3%83%B3)
+> `GitHub Copilot`のようなコード補完とは異なり、プロジェクト全体を理解して複数ファイルにわたる修正やビルド・テスト実行まで自律的に行える点が強み
+
 ## フロントエンド
 - `Bun`<br>
 トランスパイラー、ミニファイヤー、タスクランナー、バンドラー、ビルド、ポリフィルなどの諸機能を一纏めにしたツール(コード整形やコード規約は未対応)
