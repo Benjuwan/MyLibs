@@ -109,6 +109,31 @@ Ok
 >     - `devDependencies`：開発時のみ必要なパッケージ（テストツール、ビルドツールなど）
 >   - `package-lock.json`：<br>他方、`package-lock.json`は各`npm`パッケージをインストールした時点のバージョンや依存関係を管理する詳細情報リストのようなもの。例えば、異なる時期に別の環境でインストールした際、都度`package.json`が生成されてしまうのでバージョンや依存関係に齟齬が出てアプリケーションが機能しない可能性がある。それを防止するためにインストール時の`package.json` の情報をロックした`package-lock.json`が必要となる。<br>※`package.json`の依存関係を更新する場合は、必ず`package-lock.json`も更新する必要がある。
 
+---
+
+> [!NOTE]
+> - パーミッションの数値について
+> 「数値が高い / 少ない」は全く関係なく **`r`,`w`,`x`という三項目ごとの和** から成る<br>
+> ```
+> `r` // 読み込み（`Readable`：4）
+> `w` // 書き込み（`Writable`：2）
+> `x` // 実行（`eXecutable`：1）
+> `-` // なにもできない：0
+> ```
+> 属性値 = 読み込み（r）+ 書き込み（w）+ 実行（x）
+> 
+> - 例：`644`というパーミッションの場合<br>
+> ```
+> 属性値 6：自分      = 4（r）+ 2（w）+ 0（x）
+> 属性値 4：グループ   = 4（r）+ 0（x）+ 0（x）
+> 属性値 4：他人      = 4（r）+ 0（x）+ 0（x）
+> ```
+> 
+> - `Cyberduck`では、`当該ファイルを右クリック` -> `情報` -> `アクセス権` ->` unixアクセス権`（※これがパーミッション）に`数値を記入`して`enter`押下で更新完了
+
+- `PoC`（`Proof of Concept`）：概念実証<br>
+新しいアイデアや技術の実現可能性を検証すること。技術検証との違いは、あくまで技術の実現可能性のみをスコープとするか、概念（ビジネスのアイデア全体）の実現可能性をスコープとするかという点で異なる。
+
 ### 多言語対応について
 - モダンなフロントエンド（`React`, `Vue.js`, `Next.js`等）
   - 組み込み`i18n`ライブラリ活用
@@ -273,6 +298,50 @@ sayHello();  // "Hello" が出力される
 > - ソフトナビゲーションとハードナビゲーションについて
 >   - ソフトナビゲーション：<br>フレームワークやライブラリ（`React Router（Remix）`、`Next.js`の`Link`など）が提供するナビゲーション機能を使用し、`JavaScript`を使用してクライアントサイドで画面遷移を制御する。SPA（CSR）なのでアプリケーションの状態を維持したまま画面遷移が可能で、ブラウザの履歴API（ヒストリーAPI）を適切に制御し、ブラウザの戻る/進むボタンも正しく機能する。差分検知～更新（必要な部分のみを更新）というフローなため高速な画面遷移が特徴。
 >   - ハードナビゲーション：<br>通常のHTMLの`<a>`タグによる遷移で、ブラウザの標準的なページ読み込みが発生するため**アプリケーションの状態が完全にリセットされる**。つまり、ページ全体が再読み込みされるためソフトナビゲーションに比べると遅く、フレームワークによる遷移の制御や最適化の恩恵も受けられない。外部サイトへのリンクやログアウトなどに使用するのが一般的。
+
+- `JavaScript`での無名関数とアロー関数における`this`の違い
+  - 無名関数<br>イベントの発生元が`this`になる
+  - アロー関数<br>呼び出し元のオブジェクト（※何もない場合は`Window`）が`this`になる
+```js
+const btn = document.querySelector('button');
+
+// アロー関数
+btn.addEventListener('click', ()=>{
+    console.log(this); // Window
+});
+
+// 無名関数
+btn.addEventListener('click',function() {
+    console.log(this); // <button type="button">run</button>
+});
+
+// オブジェクト（無名関数）
+const asObjMethod = {
+    btnClicked: function() {
+        btn.addEventListener('click',function() {
+            console.log(this); // <button type="button">run</button>
+        });
+    }
+}
+asObjMethod.btnClicked();
+
+// オブジェクト（アロー関数）
+const asObjMethodAllowFu = {
+    btnClicked: () => {
+        btn.addEventListener('click', ()=>{
+            console.log(this); // Window
+        });
+    }
+}
+asObjMethodAllowFu.btnClicked();
+
+const obj = {
+    method: ()=> {
+        console.log(this); // obj （{method: ƒ}）
+    }
+};
+obj.method();
+```
 
 ## バックエンド
 ### Python
