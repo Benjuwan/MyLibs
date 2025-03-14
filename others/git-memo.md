@@ -19,7 +19,7 @@ git diff abc123 def456  # コミットIDの頭文字を使う
 git diff main topic   # ブランチごとの差分チェック
 ```
 
-## 特定のファイルをアンステージ
+## 特定のファイルをアンステージ（`add`を取り消す）
 - `git restore --staged`
 ```bash
 # 指定したファイルをインデックス（ステージングエリア）から外す。
@@ -46,6 +46,26 @@ git restore .
 > git stash push -m "一時保存"
 > ```
 
+### `commit`や`push`を取り消す場合
+基本的には`git reset`コマンドか、（チーム開発の場合では）`git revert`コマンドを使用
+
+> [!NOTE]
+> ```bash
+> git reset --hard # コミットとワークツリーの内容を完全に戻す（危険な操作）
+> git reset --soft # コミットだけを戻し、変更内容は維持
+> git revert       # 新しいコミットとして戻す変更を作成（履歴が残るため安全）
+> ```
+
+- 具体例
+```bash
+# 直前のコミットを取り消してステージに戻す
+git reset --soft HEAD~
+
+# コミットと変更内容の両方を完全に取り消す（※変更内容が完全に消えるため取り戻せない）
+git reset --hard HEAD~
+```
+PS. [後述の救済措置](#救済措置-git-reset---hard-で削除した内容を復元する)を行えば`git reset --hard`を取り消せる。
+
 ## コンフリクトが起きた時
 すでにステージングしてコミット、プッシュまで行ってコンフリクトしたと想定して進めます。
 1. `git status`で状態確認
@@ -64,7 +84,7 @@ git restore .
 10. あとは従来通り`add`（ステージング）して`commit`（ローカルリポジトリへ変更を記録）して`push`（当該リモートリポジトリへ変更をアップ）する
 11. プルリクエストを処理（マージまたはクローズ）
 
-## データ復元（差し戻し）
+## データ復元（`add`や`commit`, `push`後の差し戻し方法）
 1. `git log`で差し戻したいコミットIDを確認する
 ```bash
 git log --oneline    # 1行表示で見やすく
@@ -92,7 +112,7 @@ git tag backup-YYYYMMDD # 現在の状態をタグとして保存
 
 4.  再修正して再度、`git add` → `git commit` → `git push`
 
-## `git reset --hard`で削除した内容を復元する
+## 【救済措置】 `git reset --hard` で削除した内容を復元する
 ```bash
 git reflog  # HEADの変更を確認する（※この記録は約30日間保持される）
 
