@@ -219,17 +219,17 @@ git stash drop stash@{3}     # 手動で削除
 
 ## `Squash Merge`（細かな修正・作業内容を一つにまとめてマージする）
 （`GitHub Flow`を前提で述べると）`topic`または`feature`ブランチで作業を行い、当該ブランチにて都度コミットし、ある程度まとめて`main`ブランチにマージする、という手法。<br>
-マージする際に、そのブランチの**全てのコミットを1つの単一のコミットに圧縮（squash）**する。結果として`main`ブランチには`topic`ブランチの作業内容を**1つのクリーンなコミットとして統合**される。
+マージする際、そのブランチの**全てのコミットを1つの単一のコミットに圧縮（squash）**する。結果として`main`ブランチには`topic`ブランチの作業内容が**1つのクリーンなコミットとして統合**される。
 
 ### 具体的な処理例
 1. `git checkout -b topic`（または`feature`）
-2. `git push -u origin topic`（または`feature`）
-※ここまでは事前準備フェーズ
+2. `git push -u origin topic`（または`feature`）<br>
+※ここまでは事前準備フェーズ<br><br>
 
 3. （`git status` -> ）`git add <ファイル>`（または`.`）
-4. `git commit -m"fix: ..."`
-※ここで作業・修正を重ねる（squash用の各commitをためる）
+4. `git commit -m"fix: ..."`<br>
+※ここで作業・修正を重ねる（squash用の各commitをためる）<br><br>
 
-5. `git push`
+5. `git push`<br>
 最後にプッシュして`main`ブランチにマージ（`Squash Merge`の実施）
   - ※`Pull Request`画面で`Squash and merge`を選択すること<br>マージ後は通常通り、使用した作業ブランチを削除する
