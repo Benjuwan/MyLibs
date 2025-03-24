@@ -145,7 +145,9 @@ git revert <DのコミットID>
 
 ## `git rebase`
 コミット履歴の整理を行う（切ったブランチの分岐をまとめて一直線の履歴に修正する）。<br><br>
-*例： 作業ブランチ（`feature`）を、最新の主ブランチ（`main`）の先端に移動して再構成する。*<br><br>
+
+*例： 作業ブランチ（`feature`）を、最新の主ブランチ（`main`）の先端に適用する（移動して再構成する）*<br><br>
+
 これにより作業履歴が一直線になり、きれいに整理される。<br>
 注意点として`git rebase`では、**あくまで作業ブランチ側が変更**されて（プッシュしてマージするまでは）主ブランチは変更されない。
 
@@ -163,6 +165,31 @@ git push --force-with-lease origin feature
 ```
 
 結局のところ、`rebase`でしていることは「履歴の管理（見え方）が異なる」だけで、一般的な手法で行うとすれば`git add <変更ファイル>`, `git commit -m"featureブランチの変更をmainブランチにマージ（プルリク）"`, `git push`してマージするのと同じ。
+
+---
+
+> [!NOTE]
+> ### `git rebase --onto`
+> 上記で説明したフローをより端的に行える`git rebase --onto`というものもある。
+> ```bash
+> git rebase --onto <新しいベース> <古いベース> <移動させたいブランチ>
+> ```
+> 
+> - 具体例
+> ```bash
+> # branch2 に移動（※ branch2 がすでにある前提）
+> git checkout branch2 # checkout は非推奨なのでブランチ切替・移動の場合は switch 推奨
+> 
+> # branch2 の基点を branch1 から main に変える
+> # 1. branch1 のコミットのうち main に含まれていないものを特定する。
+> # 2. branch2 のコミットのうち branch1 由来のものを除外する。
+> # 3. branch2 の変更を main の先端に適用する。
+> git rebase --onto main branch1 branch2
+> ```
+
+- 参考情報：[Gitの衝突を回避！ git rebase --onto の活用法](https://qiita.com/schoo_y_kawamura/items/57c8eeedf9e9259cf707)
+
+---
 
 ```bash
 - `git rebase`： ひとつにまとめる一元管理
@@ -189,3 +216,20 @@ git stash pop stash@{3}    # 3番目の作業内容を取り出して削除
 git stash apply stash@{3}    # 特定の作業内容を取り出して適用（ただし削除しない）
 git stash drop stash@{3}     # 手動で削除
 ```
+
+## `Squash Merge`（細かな修正・作業内容を一つにまとめてマージする）
+（`GitHub Flow`を前提で述べると）`topic`または`feature`ブランチで作業を行い、当該ブランチにて都度コミットし、ある程度まとめて`main`ブランチにマージする、という手法。<br>
+マージする際に、そのブランチの**全てのコミットを1つの単一のコミットに圧縮（squash）**する。結果として`main`ブランチには`topic`ブランチの作業内容を**1つのクリーンなコミットとして統合**される。
+
+### 具体的な処理例
+1. `git checkout -b topic`（または`feature`）
+2. `git push -u origin topic`（または`feature`）
+※ここまでは事前準備フェーズ
+
+3. （`git status` -> ）`git add <ファイル>`（または`.`）
+4. `git commit -m"fix: ..."`
+※ここで作業・修正を重ねる（squash用の各commitをためる）
+
+5. `git push`
+最後にプッシュして`main`ブランチにマージ（`Squash Merge`の実施）
+  - ※`Pull Request`画面で`Squash and merge`を選択すること<br>マージ後は通常通り、使用した作業ブランチを削除する
