@@ -19,6 +19,12 @@ git diff abc123 def456  # コミットIDの頭文字を使う
 git diff main topic   # ブランチごとの差分チェック
 ```
 
+> [!NOTE]
+> ### 直近のコミット「メッセージ」の変更（修正）
+> ```bash
+> git commit --amend -m "変更したいメッセージ"
+> ```
+
 ## 特定のファイルをアンステージ（`add`を取り消す）
 - `git restore --staged`
 ```bash
