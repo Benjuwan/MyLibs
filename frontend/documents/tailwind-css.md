@@ -40,11 +40,15 @@ export default defineConfig({
 ### `Tailwind`の標準クラス（一部）
 `Tailwind CSS`の標準クラス（ユーティリティクラス）は公式ドキュメントに詳しく載っていますが、大まかに分けると以下のようなカテゴリがあります
 
+> [!NOTE]
+> #### プロパティの**値におけるスペースの取り扱い**について
+> - 各値の**間は詰めないと働かない**ので注意<br>（`clamp`の例：`w-[clamp(80px,calc(100vw/2),320px)]`）
+> - または **`_`（アンダースコア）を用いる** <br>（`box-shadow`の例：`shadow-[0_0_4px_rgba(0,0,0,.45)_inset]`）
+
 #### レイアウト関連
 - `container`（コンテナ）
 - `block` / `inline-block` / `flex` / `grid` / `hidden`（※`display`プロパティ）
 - `w-`（幅: w-1/2, w-full など）
-  - ※`clamp`では**各値（※`calc`の値含む）の間は詰めないと働かない** （例：`w-[clamp(17.5rem,90%,35rem)]`）
 - `h-`（高さ: h-16, h-screen など）
 - `min-w-`, `min-h-`, `max-w-`, `max-h-`（最小・最大サイズ）
 
@@ -88,6 +92,12 @@ export default defineConfig({
 <!-- 中間色を追加 -->
 <div class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 p-4 text-white">
   3色グラデーション
+</div>
+
+<!-- カスタム値 -->
+<div class="bg-[linear-gradient(to_bottom,rgba(255,225,225,0)_70%,gold_30%)]">
+  <!-- background-image: linear-gradient(#ffe1e100 70%, gold 30%); と出力される -->
+  疑似的な下半分の黄色マーカースタイル
 </div>
 ```
 
@@ -161,7 +171,7 @@ export default defineConfig({
 - `@layer utilities`<br>
 カスタムの`@keyframes`を定義するには`@layer utilities`を使用する
 ```css
-@layer utilities {
+@layer utilities（など任意の名前を付ける） {
   @keyframes fade-in {
     from {
       opacity: 0;
