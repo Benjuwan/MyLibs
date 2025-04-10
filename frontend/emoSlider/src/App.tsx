@@ -1,11 +1,7 @@
 import SwiperLibs from "./libs/SwiperLibs";
 
 function App() {
-  return (
-    <>
-      <SwiperLibs />
-    </>
-  );
+  return <SwiperLibs />;
 }
 
 export default App

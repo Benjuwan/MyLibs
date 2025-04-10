@@ -1,40 +1,17 @@
 import { useAtom } from "jotai"
 import { countTimerAtom } from "../ts/atom"
-import styled from "styled-components";
 
 export const RemandViewer = () => {
     const [countTimer] = useAtom(countTimerAtom);
 
     return (
-        <Result id="result">
-            <p>残り：
-                <span id="year">{countTimer?.year}</span>年
-                <span id="month">{countTimer?.month}</span>ヶ月
-                <span id="daydate">{countTimer?.dayDate}</span>日
-                <span id="hour">{countTimer?.hour}</span>：<span id="minutes">{countTimer?.minute}</span>：<span id="seconds">{countTimer?.second}</span>
+        <section id="result" className="my-[1em] mx-auto text-[#333]">
+            <p className="leading-[2] flex items-center justify-center font-bold">残り：
+                <span id="year" className="inline-block border border-[0.125rem] border-[#333] bg-[#dadada] rounded-[.5rem] px-[1em] mx-[.25em]">{countTimer?.year}</span>年
+                <span id="month" className="inline-block border border-[0.125rem] border-[#333] bg-[#dadada] rounded-[.5rem] px-[1em] mx-[.25em]">{countTimer?.month}</span>ヶ月
+                <span id="daydate" className="inline-block border border-[0.125rem] border-[#333] bg-[#dadada] rounded-[.5rem] px-[1em] mx-[.25em]">{countTimer?.dayDate}</span>日
+                <span id="hour" className="inline-block border border-[0.125rem] border-[#333] bg-[#dadada] rounded-[.5rem] px-[1em] mx-[.25em]">{countTimer?.hour}</span>：<span id="minutes" className="inline-block border border-[0.125rem] border-[#333] bg-[#dadada] rounded-[.5rem] px-[1em] mx-[.25em]">{countTimer?.minute}</span>：<span id="seconds" className="inline-block border border-[0.125rem] border-[#333] bg-[#dadada] rounded-[.5rem] px-[1em] mx-[.25em]">{countTimer?.second}</span>
             </p>
-        </Result>
+        </section>
     );
 }
-
-const Result = styled.div`
-margin: 1em auto;
-
-    & p {
-        line-height: 2;
-        display: flex;
-        align-items: center;
-        font-weight: bold;
-
-            & span {
-                display: inline-block;
-                font-weight: normal;
-                color: #333;
-                border: 3px solid;
-                background-color: #dadada;
-                border-radius: 8px;
-                padding: 0 1em;
-                margin: 0 .25em;
-            }
-    }
-`;

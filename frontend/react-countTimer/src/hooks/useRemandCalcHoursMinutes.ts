@@ -1,5 +1,5 @@
 export const useRemandCalcHoursMinutes = () => {
-    const remandCalcHours = (
+    const remandCalcHours: (userSelectedHours: string, userSelectedMinutes: string) => number = (
         userSelectedHours: string,
         userSelectedMinutes: string
     ) => {

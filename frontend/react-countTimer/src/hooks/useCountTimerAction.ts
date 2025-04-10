@@ -14,17 +14,17 @@ export const useCountTimerAction = () => {
     const [, setRemandView] = useAtom(remandViewAtom);
     const { inputValSplitUserSelectedTime } = useInputValSplitUserSelectedTime();
 
+    const { remandCalcYear, remandCalcMonth } = useRemandCalcYearMonths();
+    const { remandCalc_DayDate } = useRemandCalcDayDate();
+    const { remandCalcHours, remandCalcMinutes } = useRemandCalcHoursMinutes();
+    const { remandCalc_Seconds } = useRemandCalcSeconds();
+    const { remandCalcVerFuture_GetMonthsDays } = useRemandCalcVerFutureGetMonthsDays();
+
     const countTimerAction: (isInputVal: string) => void = (isInputVal: string) => {
         const userSelectedTimeObj: countTimerType = inputValSplitUserSelectedTime(isInputVal);
 
         const thisYear: number = new Date().getFullYear();
         const thisMonth: number = new Date().getMonth() + 1;
-
-        const { remandCalcYear, remandCalcMonth } = useRemandCalcYearMonths();
-        const { remandCalc_DayDate } = useRemandCalcDayDate();
-        const { remandCalcHours, remandCalcMinutes } = useRemandCalcHoursMinutes();
-        const { remandCalc_Seconds } = useRemandCalcSeconds();
-        const { remandCalcVerFuture_GetMonthsDays } = useRemandCalcVerFutureGetMonthsDays();
 
         const currTimeInterval: number = setInterval(() => {
             let remandTime_Year: number = remandCalcYear(
@@ -90,8 +90,8 @@ export const useCountTimerAction = () => {
                 minute: remandTime_Minutes.toString().padStart(2, '0'),
                 second: theSeconds.toString().padStart(2, '0')
             }
-            setCountTimer((_prevCountTimer) => newCountTimerItem);
-            setTimeInterval((_prevTimeInterval) => currTimeInterval);
+            setCountTimer(newCountTimerItem);
+            setTimeInterval(currTimeInterval);
             setRemandView(true);
         }, 1000);
     }

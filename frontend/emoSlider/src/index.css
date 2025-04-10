@@ -1,202 +1,97 @@
-@charset "utf-8";
+@import "tailwindcss";
 
-/* 
-html5doctor.com Reset Stylesheet
-v1.6.1
-Last Updated: 2010-09-17
-Author: Richard Clark - http://richclarkdesign.com 
-Twitter: @rich_clark
-*/
+@layer libs {
+    .TheWrapper {
+        &::before {
+            animation: colorful_bg infinite 5s linear;
+        }
 
-html,
-body,
-div,
-span,
-object,
-iframe,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-blockquote,
-pre,
-abbr,
-address,
-cite,
-code,
-del,
-dfn,
-em,
-img,
-ins,
-kbd,
-q,
-samp,
-small,
-strong,
-sub,
-sup,
-var,
-b,
-i,
-dl,
-dt,
-dd,
-ol,
-ul,
-li,
-fieldset,
-form,
-label,
-legend,
-table,
-caption,
-tbody,
-tfoot,
-thead,
-tr,
-th,
-td,
-article,
-aside,
-canvas,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-menu,
-nav,
-section,
-summary,
-time,
-mark,
-audio,
-video {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  font-size: 100%;
-  vertical-align: baseline;
-  background: transparent;
-}
+        & .SwiperWrapper {
+            & .swiper-wrapper {
+                gap: 2.5em;
 
-article,
-aside,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-menu,
-nav,
-section {
-  display: block;
-}
+                & .swiper-slide {
+                    &.swiper-slide-active {
+                        animation: sliderMove 1 .75s ease-in-out;
+                        position: relative;
 
-nav li {
-  list-style: none;
-}
+                        & figcaption {
+                            display: block;
+                            position: absolute;
+                            line-height: 1.8;
+                            padding-right: 1.5em;
+                            bottom: 1em;
+                            left: 1.5em;
+                            z-index: 1;
 
-a {
-  margin: 0;
-  padding: 0;
-  font-size: 100%;
-  vertical-align: baseline;
-  background: transparent;
-}
+                            &::before {
+                                content: "";
+                                width: 100vw;
+                                height: 100%;
+                                background-color: rgba(0, 0, 0, .5);
+                                position: absolute;
+                                bottom: 0;
+                                left: -1.5em;
+                                z-index: -1;
+                            }
+                        }
 
-/* change colours to suit your needs */
-ins {
-  background-color: #ff9;
-  color: #000;
-  text-decoration: none;
-}
+                        &::before,
+                        &::after {
+                            content: "";
+                            width: 100%;
+                            height: 16px;
+                            background-color: #fff;
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                        }
 
-/* change colours to suit your needs */
-mark {
-  background-color: #ff9;
-  color: #000;
-  font-style: italic;
-  font-weight: bold;
-}
+                        &::after {
+                            top: auto;
+                            left: auto;
+                            bottom: 0;
+                            right: 0;
+                        }
 
-del {
-  text-decoration: line-through;
-}
+                        & div.swiper-slide-shadow {
+                            opacity: 1 !important;
+                            background: transparent !important;
 
-abbr[title],
-dfn[title] {
-  border-bottom: 1px dotted;
-  cursor: help;
-}
+                            &::before,
+                            &::after {
+                                content: "";
+                                width: 16px;
+                                height: 100%;
+                                background-color: #fff;
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                            }
 
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-}
+                            &::after {
+                                top: auto;
+                                left: auto;
+                                bottom: 0;
+                                right: 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-/* change border colour to suit your needs */
-hr {
-  display: block;
-  height: 1px;
-  border: 0;
-  border-top: 1px solid #cccccc;
-  margin: 1em 0;
-  padding: 0;
-}
+    /* https://webgradients.com */
+    @keyframes colorful_bg {
+        0% {
+            background-image: linear-gradient(to top, #d299c2 0%, #fef9d7 100%);
+            transform: rotate(0deg) scale(2.5);
+        }
 
-input,
-select {
-  vertical-align: middle;
-}
-
-/* 
-html5doctor.com Reset Stylesheet
-v1.6.1
-Last Updated: 2010-09-17
-Author: Richard Clark - http://richclarkdesign.com 
-Twitter: @rich_clark
-*/
-
-html {
-  font-size: 62.5%;
-  scroll-behavior: smooth;
-  /* overflow-x: hidden; コンテンツ・要素のはみ出しによる横スクロール防止 */
-  overflow-x: hidden;
-}
-
-* {
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-}
-
-img {
-  width: 100%;
-  height: auto;
-  vertical-align: bottom;
-}
-
-body {
-  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-  font-size: 1.6rem;
-  color: #333;
-  line-height: 1.8;
-  overflow-x: hidden;
-}
-
-@media screen and (min-width: 1025px) {
-  html {
-    font-size: 100%;
-  }
-
-  body {
-    font-size: 16px;
-  }
+        100% {
+            background-image: linear-gradient(to top, #d299c2 0%, #fef9d7 100%);
+            transform: rotate(360deg) scale(2.5);
+        }
+    }
 }

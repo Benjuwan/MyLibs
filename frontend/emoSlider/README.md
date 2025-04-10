@@ -15,7 +15,7 @@ Swiperはv10以降、従来のようなReact Componentsとして扱えなくな�
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   ```
 
-  - [公式デモページ](https://swiperjs.com/demos)から適用したいSwiperのスタイルを確認してコンポーネント（`src\libs\SwiperLibs.tsx`）に反映（※今回は`styled-components`を使用）
+  - [公式デモページ](https://swiperjs.com/demos)から適用したいSwiperのスタイルを確認してコンポーネント（`src\libs\SwiperLibs.tsx`）に反映
 
 - 注意事項
 スライダーの枚数がPC（Mac）では8枚まで、スマホやPC（Win）では5枚まででないとうまく挙動しなくなる。
@@ -32,21 +32,22 @@ export default defineConfig({
 ```
 
 ## 技術構成
-- @eslint/js@9.13.0
-- @types/react-dom@18.3.1
-- @types/react@18.3.12
-- @vitejs/plugin-react@4.3.3
-- eslint-plugin-react-hooks@5.0.0
-- eslint-plugin-react-refresh@0.4.14
-- eslint@9.13.0
-- globals@15.11.0
+- @eslint/js@9.24.0
+- @tailwindcss/vite@4.1.3
+- @types/react-dom@18.3.6
+- @types/react@18.3.20
+- @vitejs/plugin-react@4.3.4
+- eslint-plugin-react-hooks@5.2.0
+- eslint-plugin-react-refresh@0.4.19
+- eslint@9.24.0
+- globals@15.15.0
 - react-dom@18.3.1
 - react@18.3.1
-- styled-components@6.1.13
-- swiper@11.1.14
-- typescript-eslint@8.11.0
+- swiper@11.2.6
+- tailwindcss@4.1.3
+- typescript-eslint@8.29.1
 - typescript@5.6.3
-- vite@5.4.10
+- vite@6.2.5
 
 ## 備忘録
 - `SyntheticEvent`は各種イベントハンドラーを包含しているので `ChangeEvent`, `drag`, `mouse`など各種イベントハンドラーの型をカバーできる（＝型エラーを防げる）

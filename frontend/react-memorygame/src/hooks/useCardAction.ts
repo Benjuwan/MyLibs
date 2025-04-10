@@ -1,10 +1,10 @@
-import React from "react";
-import { GlobalContext } from "../store/TheGlobalState";
-import { useCardActionInertRemove } from "./libs/useCardActionInertRemove";
-import { useCardMatchedJudgement } from "./libs/useCardMatchedJudgement";
+import { useContext } from "react";
+import { GlobalContext } from "../providers/TheGlobalContext";
+import { useCardActionInertRemove } from "./useCardActionInertRemove";
+import { useCardMatchedJudgement } from "./useCardMatchedJudgement";
 
 export const useCardAction = () => {
-    const { clickedCardNumbers } = React.useContext(GlobalContext);
+    const { clickedCardNumbers } = useContext(GlobalContext);
 
     // 特定の属性値を取り除く hook
     const { cardActionInertRemoveAttr, cardActionInertRemoveClass } = useCardActionInertRemove();
@@ -12,7 +12,7 @@ export const useCardAction = () => {
     // カードマッチの成立可否時の処理に関する hook
     const { cardMatched, cardMissMatched } = useCardMatchedJudgement();
 
-    const cardAction = (
+    const cardAction: (cardNumberEls: HTMLLIElement) => void = (
         cardNumberEls: HTMLLIElement
     ) => {
         const cardNumberStr = cardNumberEls.textContent;
@@ -43,7 +43,7 @@ export const useCardAction = () => {
             // マッチ成立
             if (clickedCardNumbers[0] === cardNumberStr) {
                 // TypeScript では if 文の引数に alert() を指定できないので非同期処理で対応
-                new Promise((resolve, rejuct) => {
+                new Promise((resolve) => {
                     resolve(alert(`選んだカードは「${cardNumberStr}」でマッチします！\n引き続きトライしてください。`));
 
                     // rejuct('rejuct が呼ばれた');

@@ -1,11 +1,9 @@
-import { Calendar } from "./components/calendar/Calendar";
+import { Calendar } from "./schedule/calendar/Calendar";
 
-function App() {
+export const App = () => {
   return (
-    <>
+    <main className="px-[1em] max-w-[60rem] my-[5em] mx-auto lg:px-0">
       <Calendar />
-    </>
+    </main>
   );
 }
-
-export default App

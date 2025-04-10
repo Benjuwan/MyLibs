@@ -13,8 +13,8 @@ export const DateInputer = () => {
     const { countAction_Judgement } = useCountActionJudgement();
 
     const [isInputVal, setInputVal] = useState<string>('');
-    const handleInput = (inputVal: string) => {
-        setInputVal((_prevInputVal) => inputVal);
+    const handleInput: (inputVal: string) => void = (inputVal: string) => {
+        setInputVal(inputVal);
 
         const splitDateTime = inputVal.split('-');
         const userSelectedHoursMinutes = [...splitDateTime][splitDateTime.length - 1].split('T')[1].split(':');
@@ -32,11 +32,14 @@ export const DateInputer = () => {
             hour: userSelectedHours,
             minute: userSelectedMinutes
         }
-        setCountTimer((_prevCountTimer) => newCountTimerItem);
+        setCountTimer(newCountTimerItem);
     }
 
-    const handleClick = () => {
-        if (countTimer !== null) countAction_Judgement(isInputVal);
+    const handleClick: () => void = () => {
+        if (countTimer === null) {
+            return;
+        }
+        countAction_Judgement(isInputVal);
     }
 
     useEffect(() => {
@@ -49,15 +52,21 @@ export const DateInputer = () => {
     }, [countTimer]);
 
     return (
-        <>
-            <input id="datetime" type="datetime-local" value={isInputVal} onInput={(inputVal: ChangeEvent<HTMLInputElement>) => handleInput(inputVal.target.value)} />
-            <button type="button" id="runBtn" onClick={handleClick}>run</button>
+        <form action="" className="w-[calc(100vw/2)] my-[5em] mx-auto text-center">
+            <input id="datetime" className="border border-[#dadada] rounded py-[.5em] px-[1em]" type="datetime-local" value={isInputVal} onInput={(inputVal: ChangeEvent<HTMLInputElement>) => handleInput(inputVal.target.value)} />
+            <button
+                type="button"
+                id="runBtn"
+                className="tracking-[0.25em] py-[.5em] px-[1em] ml-[1em] bg-[#333] text-white rounded border border-transparent transition duration-[.25s] disabled:bg-[#dadada] disabled:text-[#333] not-disabled:hover:text-[#333] not-disabled:hover:cursor-pointer not-disabled:hover:border-[#333] not-disabled:hover:bg-white"
+                disabled={countTimer === null}
+                onClick={handleClick}
+            >run</button>
             {remandView &&
                 <>
                     <p style={{ 'lineHeight': '2', 'marginTop': '.5em' }}>現在 / {currTime}</p>
                     <RemandViewer />
                 </>
             }
-        </>
+        </form>
     );
 }

@@ -6,8 +6,8 @@ import { useHandleInputValueSanitize } from "../../../hooks/useHandleInputValueS
 
 type formProps = {
     lists: listsType[];
-    setLists: React.Dispatch<React.SetStateAction<listsType[]>>
-}
+    setLists: React.Dispatch<React.SetStateAction<listsType[]>>;
+};
 
 export const Form = ({ props }: { props: formProps }) => {
     const { lists, setLists } = props;
@@ -15,7 +15,7 @@ export const Form = ({ props }: { props: formProps }) => {
     const [entryWord, setEntryWord] = useState<string>('');
     const { handleInputValueSanitize } = useHandleInputValueSanitize();
     const handleEntryWord: (entry: ChangeEvent<HTMLInputElement>) => void = (entry: ChangeEvent<HTMLInputElement>) => {
-        setEntryWord((_prevEntryWord) => handleInputValueSanitize(entry.target.value));
+        setEntryWord(handleInputValueSanitize(entry.target.value));
     }
 
     /* 新規リスト生成 */
@@ -25,7 +25,7 @@ export const Form = ({ props }: { props: formProps }) => {
             listName: entryWord,
             id: uuidv4()
         }
-        setLists((_prevLists) => [...lists, newLists]);
+        setLists([...lists, newLists]);
     }
 
     const handleSubmit: () => void = () => {
