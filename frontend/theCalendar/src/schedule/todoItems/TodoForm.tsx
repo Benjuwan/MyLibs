@@ -79,14 +79,14 @@ export const TodoForm = ({ props }: { props: TodoFormType }) => {
                     <input
                         type="time"
                         id="startTime"
-                        className="block text-[1rem] leading-[2] border border-[#919191] bg-white rounded w-full min-w-[calc(100vw/3)] pl-[.25em] md:min-w-auto"
+                        className="appearance-none block text-[1rem] leading-[2] border border-[#919191] bg-white rounded w-full pl-[.25em]"
                         value={todoItems.startTime}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => handleFormEntries<todoItemType>(e, todoItems, setTodoItems)} /></label>
                 <label className="block w-full text-left mb-[1em] text-[clamp(0.625rem,100%,0.875rem)] my-[1em]">終了時刻
                     <input
                         type="time"
                         id="finishTime"
-                        className="block text-[1rem] leading-[2] border border-[#919191] bg-white rounded w-full min-w-[calc(100vw/3)] pl-[.25em] md:min-w-auto"
+                        className="appearance-none block text-[1rem] leading-[2] border border-[#919191] bg-white rounded w-full pl-[.25em]"
                         value={todoItems.finishTime}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => handleFormEntries<todoItemType>(e, todoItems, setTodoItems)} /></label>
             </div>
