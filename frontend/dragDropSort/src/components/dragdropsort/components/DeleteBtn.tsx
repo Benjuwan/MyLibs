@@ -4,14 +4,14 @@ type formProps = {
     lists: listsType[];
     setLists: React.Dispatch<React.SetStateAction<listsType[]>>;
     listId: string
-}
+};
 
 export const DeleteBtn = ({ props }: { props: formProps }) => {
     const { lists, setLists, listId } = props;
 
     const listDelete = (id: string) => {
         const filterLists: listsType[] = [...lists].filter(list => list.id !== id);
-        setLists((_prevLists) => filterLists);
+        setLists(filterLists);
     }
 
     return (

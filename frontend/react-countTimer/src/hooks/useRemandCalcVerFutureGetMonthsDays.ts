@@ -77,7 +77,7 @@ export const useRemandCalcVerFutureGetMonthsDays = () => {
                 futureTargetPassedMonths.push(finalDayDate);
             }
         }
-        let futureTargetPassedDays: number = futureTargetPassedMonths.reduce((acuu, curr) => acuu + curr);
+        const futureTargetPassedDays: number = futureTargetPassedMonths.reduce((acuu, curr) => acuu + curr);
 
         /* 今月に対して（未来の）過去月を指定した場合 */
         const isFuture_but_pastMonthsAgainstThisMonths: boolean = parseInt(userSelectedMonth) <= thisMonth;

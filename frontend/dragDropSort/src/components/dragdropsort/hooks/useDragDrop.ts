@@ -69,7 +69,7 @@ export const useDragDrop = (dropzoneRef: React.RefObject<HTMLUListElement>) => {
 
     // dragstart: ドラッグ操作の開始時に1回だけ発火
     const dragstart: (e: DragEvent<HTMLElement> | React.TouchEvent<HTMLElement>) => void = (e: DragEvent<HTMLElement> | React.TouchEvent<HTMLElement>) => {
-        setDraggedElm((_prevDraggedElm) => e.target);
+        setDraggedElm(e.target);
         if (draggedElm instanceof HTMLElement) {
             draggedElm.classList.add(ddsStyle.dragging);
         }

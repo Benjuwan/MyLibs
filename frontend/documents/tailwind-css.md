@@ -24,10 +24,7 @@ export default defineConfig({
 ```
 
 ## リセットCSSについて
-`Tailwind`には[`Preflight`](https://tailwindcss.com/docs/preflight)というデフォルトの CSS リセットが組み込まれているので追加でリセット CSS を用意する必要はない。そのため、従来は独自の記述を行っていた`src/index.css`は以下の記述（1行）に変更。
-```css
-@import "tailwindcss";
-```
+`Tailwind`には[`Preflight`](https://tailwindcss.com/docs/preflight)というデフォルトの CSS リセットが組み込まれているので追加でリセット CSS を用意する必要はない。
 
 ## デフォルト： `1単位 0.25rem（4px）`
 `Tailwind CSS`ではデフォルトで`1単位が 0.25rem（4px）`に相当（＝`1rem は 16px`）
@@ -35,7 +32,16 @@ export default defineConfig({
 ## その他の補足情報
 - em値を再現したい場合は、カスタム値`mt-[5em]`を使用するのがよい
   - カスタム値`[]`について<br>
-  角括弧`[]`内に任意の値を指定することで`Tailwind CSS`のユーティリティクラスで対応していない値を使用できる。（例：`w-[32%]`, `text-[#f5a623]`, `mt-[16px]`）
+  角括弧`[]`内に任意の値を指定することで`Tailwind CSS`のユーティリティクラスで対応していない値を使用できる。（例：`w-[32%]`, `text-[#f5a623]`, `mt-[1rem]`）
+
+- `input type="file"`のようなフォーム要素に関するもの（[`::file`](https://tailwindcss.com/docs/hover-focus-and-other-states#file)）<br>
+`file:`プレフィックスを付与してスタイリングする。
+```html
+<input
+  type="file"
+  class="file:mr-4 file:rounded-full file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-violet-700 hover:file:bg-violet-100 dark:file:bg-violet-600 dark:file:text-violet-100 dark:hover:file:bg-violet-500 ..."
+/>
+```
 
 ### `Tailwind`の標準クラス（一部）
 `Tailwind CSS`の標準クラス（ユーティリティクラス）は公式ドキュメントに詳しく載っていますが、大まかに分けると以下のようなカテゴリがあります
@@ -59,6 +65,10 @@ export default defineConfig({
 - `tracking-`（文字間隔{`letter-spacing`}: `tracking-wide`, `tracking-tighter`）
 - `text-`（色: `text-red-500`, `text-gray-700` など）
   - `no-underline`（`text-decoration: none`）
+
+> [!NOTE]
+> - [`font-size`早見表](https://tailwindcss.com/docs/font-size)<br>
+> 12 〜 20px までは 2px ずつステップアップ
 
 #### スペーシング
 - `m-`（マージン: `m-4`, `mt-2`, `mx-auto` など）
@@ -169,9 +179,9 @@ export default defineConfig({
 
 #### アニメーション（`@keyframes`） | [`animation`](https://tailwindcss.com/docs/animation)
 - `@layer utilities`<br>
-カスタムの`@keyframes`を定義するには`@layer utilities`を使用する
+カスタムの`@keyframes`を定義するには`@layer {任意の名前}`を使用する
 ```css
-@layer utilities（など任意の名前を付ける） {
+@layer utilities {
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -186,6 +196,27 @@ export default defineConfig({
   }
 }
 ```
+
+※その他、`JavaScript`と連動して特定クラスの付与解除を行いたい場合にも重宝する。
+```css
+@layer common {
+  .modalElm {
+    opacity: 0;
+    visibility: hidden;
+
+    &.onView {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+```
+
+> [!NOTE]
+> - `@layer`に関するより詳細な参照記事：[CSS のカスケードレイヤー `@layer` を使ってスタイルを階層化して管理する
+](https://azukiazusa.dev/blog/manage-styles-structurally-with-css-cascade-layer/)
+
+---
 
 - `tailwind.config.js`で設定<br>
 ```js
@@ -303,6 +334,15 @@ module.exports = {
 <div class="not-third">要素 5</div>
 ```
 
+### [`:has()`](https://tailwindcss.com/docs/hover-focus-and-other-states#has)
+```html
+<label
+  class="has-checked:bg-indigo-50 has-checked:text-indigo-900 has-checked:ring-indigo-200"
+>...
+```
+
+> You can use has-* with a pseudo-class, like has-[:focus], to style an element based on the state of its descendants. You can also use element selectors, like has-[img] or has-[a], to style an element based on the content of its descendants.
+
 ### データ属性と属性セレクタ
 属性セレクタは`[]`（角括弧）で表現
 ```html
@@ -314,4 +354,16 @@ module.exports = {
 <!-- カスタムデータ属性 -->
 <!-- data-[属性名=値]:クラス名 の形式でスタイルを適用 -->
 <button data-state="active" class="data-[state=active]:bg-blue-500">アクティブボタン</button>
+```
+
+- [カスタムデータ属性（`data-*`）](https://tailwindcss.com/docs/hover-focus-and-other-states#data-attributes)<br>
+```html
+<!-- Will apply -->
+<div data-active class="border border-gray-300 data-active:border-purple-500">
+  <!-- ... -->
+</div>
+<!-- Will not apply -->
+<div class="border border-gray-300 data-active:border-purple-500">
+  <!-- ... -->
+</div>
 ```

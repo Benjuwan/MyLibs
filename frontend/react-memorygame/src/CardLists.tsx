@@ -1,5 +1,4 @@
-import React, { memo } from 'react';
-import styled from 'styled-components';
+import { memo, SyntheticEvent } from 'react';
 import { useCardShuffle } from './hooks/useCardShuffle';
 import { useCardAction } from './hooks/useCardAction';
 
@@ -7,7 +6,7 @@ type CardAry = {
     cards: Array<number>;
     tabIndexOffset: number;
     specificClassName?: true;
-}
+};
 
 export const CardLists: React.FC<CardAry> = memo((props) => {
     const { cards, tabIndexOffset, specificClassName } = props;
@@ -32,83 +31,33 @@ export const CardLists: React.FC<CardAry> = memo((props) => {
 
     const { cardAction } = useCardAction();
 
+    const handleCardAction: (e: SyntheticEvent<HTMLLIElement>) => void = (e: SyntheticEvent<HTMLLIElement>) => {
+        cardAction(e.currentTarget);
+        tabCtrlJudgement();
+    }
+
     return (
-        <CardListEls className={specificClassName ? 'rightLists' : 'leftLists'}>
+        <ul className={`CardListEls ${specificClassName ? 'rightLists' : 'leftLists'} grid grid-cols-[repeat(3,1fr)] gap-[2em] w-[45%] max-w-40rem] md:grid-cols-[repeat(5,1fr)]`}>
             {
                 shuffledCard.map((card, cardIndex) => (
-                    <li key={cardIndex} onClick={(cardEl) => {
-                        cardAction(cardEl.currentTarget);
-                        tabCtrlJudgement();
-                    }}>
+                    <li
+                        key={cardIndex}
+                        className={`${specificClassName ? 'bg-[#dadada]' : 'bg-[#eaeaea]'} grid place-items-center self-center mb-[2%]hover:brightness-[1.25]`}
+                        onClick={handleCardAction}>
                         {/* tabIndex は offset でスタート数値を指定して昇順になるように調整 */}
-                        <button tabIndex={tabIndexOffset + (cardIndex + 1)}>
+                        <button
+                            type='button'
+                            className='cursor-pointer p-[2em] h-full'
+                            tabIndex={tabIndexOffset + (cardIndex + 1)}
+                        >
                             {Number(card) < 10 ?
-                                <span>0{card}</span> :
-                                <span>{card}</span>
+                                <span className='opacity-[0]'>0{card}</span> :
+                                <span className='opacity-[0]'>{card}</span>
                             }
                         </button>
                     </li>
                 ))
             }
-        </CardListEls>
+        </ul>
     )
 });
-
-const CardListEls = styled.ul`
-display: flex;
-flex-flow: row wrap;
-justify-content: center;
-gap: 2%;
-width: calc(100vw/2);
-
-&.rightLists{
-    & li {
-        background-color: #dadada;
-    }
-}
-
-&.inertState {
-    filter: invert(.75);
-    /* hooks で setAttribute('inert', 'true') が指定できないので CSS で対応 */
-    pointer-events: none;
-}
-
-    & li{
-        display: grid;
-        place-items: center;
-        align-items: center;
-        background-color: #eaeaea;
-        margin-bottom: 2%;
-
-        & button{
-            appearance: none;
-            border: none;
-            border-radius: 0;
-            background-color: transparent;
-            cursor: pointer;
-            padding: 2em;
-            height: 100%;
-
-            & span{
-                opacity: 0;
-            }
-        }
-
-        &.listOnView,
-        &.matching {
-            & button{
-                & span {
-                    opacity: 1;
-                }
-            }
-        }
-        
-        &.matching {
-             filter: invert(.75);
-        }
-
-        &:hover{
-            filter: brightness(1.25);
-        }
-    }
-`;

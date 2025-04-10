@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { todoItemType } from "../components/todoItems/ts/todoItemType";
+import { todoItemType } from "../schedule/todoItems/ts/todoItemType";
 import { localstorageLabelName } from "./calendar-localstorageLabel";
 
 const localstorageLabel: string = localstorageLabelName;

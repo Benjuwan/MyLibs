@@ -31,3 +31,20 @@ export default defineConfig({
 + // base: 'r0105/mylibs/'
 })
 ```
+
+### 技術構成
+- @eslint/js@9.24.0
+- @types/react-dom@18.3.6
+- @types/react@18.3.20
+- @types/uuid@10.0.0
+- @vitejs/plugin-react@4.3.4
+- eslint-plugin-react-hooks@5.2.0
+- eslint-plugin-react-refresh@0.4.19
+- eslint@9.24.0
+- globals@15.15.0
+- react-dom@18.3.1
+- react@18.3.1
+- typescript-eslint@8.29.1
+- typescript@5.8.3
+- uuid@10.0.0
+- vite@6.2.5

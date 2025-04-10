@@ -1,26 +1,24 @@
-import React from "react";
-
 export const useCardShuffle = () => {
-    const CardShuffle = React.useCallback((
-        targetAry: Array<number>
+    const CardShuffle: (cardsNumber: Array<number>) => number[] = (
+        cardsNumber: Array<number>
     ) => {
-        targetAry.forEach((el, i) => {
+        cardsNumber.forEach((cardNumber, i) => {
             // 順列の要素を代入（保存）
-            let els = el;
+            const card: number = cardNumber;
 
             // 配列の数だけランダム数を生成
-            let rand = Math.floor(Math.random() * i);
+            const rand: number = Math.floor(Math.random() * i);
 
             // 配列の順列別要素に、ランダム数値に準じた配列の要素を代入
-            targetAry[i] = targetAry[rand];
+            cardsNumber[i] = cardsNumber[rand];
 
             // ランダム数値に準じた配列の要素に（保存していた）順列の要素を代入（インデックス番号の重複回避）
-            targetAry[rand] = els;
+            cardsNumber[rand] = card;
         });
-        console.log(targetAry);
-        
-        return targetAry;
-    }, []);
+        console.log(cardsNumber);
+
+        return cardsNumber;
+    }
 
     return { CardShuffle }
 }
