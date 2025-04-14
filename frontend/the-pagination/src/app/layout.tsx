@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { PagerContextFlagment } from "@/providers/PagerContextFragment";
+import { PagerContextFragment } from "@/providers/PagerContextFragment";
 
 export const metadata: Metadata = {
-  title: "thePagination",
-  description: "ページネーションコンポーネントのサンプルページ",
+  title: "Next.js - thePagination",
+  description: "Next.jsのシンプルで汎用的なページネーションコンポーネント",
 };
 
 export default function RootLayout({
@@ -15,9 +15,9 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <PagerContextFlagment>
+        <PagerContextFragment>
           {children}
-        </PagerContextFlagment>
+        </PagerContextFragment>
       </body>
     </html>
   );

@@ -6,10 +6,13 @@ import { PagerContext } from "./PagerContext";
 
 type defaultContext = {
     children: ReactNode
-}
+};
 
-export const PagerContextFlagment = (props: defaultContext) => {
+export const PagerContextFragment = (props: defaultContext) => {
+    // ページャ数
     const [pagerNum, setPagerNum] = useState<number>(1);
+
+    // ページに表示するコンテンツデータ数（posts_per_page）
     const [offset, setOffset] = useState<number>(OFFSET_NUMBER);
 
     return (

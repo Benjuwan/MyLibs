@@ -11,20 +11,35 @@ function PagerContents({ getData }: { getData: jsonPostType[] }) {
 
     const getCurrUrlPath = useSearchParams();
     const targetPagesPathStr: string | null = getCurrUrlPath.get('pages');
+    const getPager: number | undefined = targetPagesPathStr !== null ? parseInt(targetPagesPathStr.split('-')[0]) : undefined;
+    const getOffset: number | undefined = targetPagesPathStr !== null ? parseInt(targetPagesPathStr.split('-')[1]) : undefined;
 
     useEffect(() => {
-        if (targetPagesPathStr !== null) {
-            const getPager: number = parseInt(targetPagesPathStr.split('-')[0]);
-            const getOffset: number = parseInt(targetPagesPathStr.split('-')[1]);
-            setPagerNum(getPager);
-            setOffset(getOffset);
+        if (typeof getPager === 'undefined' || typeof getOffset === 'undefined') {
+            return;
         }
+        setPagerNum(getPager);  // ページャ数を更新
+        setOffset(getOffset);   // オフセット数を更新
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getCurrUrlPath]);
 
+    const pagersNumber: number = Math.floor(getData.length / OFFSET_NUMBER);
+    const isFinalPage: boolean = useMemo(() => {
+        return pagerNum === pagersNumber;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pagerNum]);
+
     const adjustData: jsonPostType[] = useMemo(() => {
-        const begin: number = pagerNum === 1 ? 0 : offset;
-        const finish: number = pagerNum === 1 ? offset : offset + OFFSET_NUMBER;
-        return [...getData].slice(begin, finish);
+        // 開始値
+        const begin: number = typeof getOffset !== 'undefined' ? getOffset - OFFSET_NUMBER :
+            pagerNum === 1 ? 0 : offset;
+        // 通常（最終ページ以外）の終了値
+        const regularFinish: number = typeof getOffset !== 'undefined' ? getOffset :
+            pagerNum === 1 ? offset : offset + OFFSET_NUMBER;
+        // 最終ページにおける終了値（※最終ページ以外では regularFinish となる）
+        const finalFinish: number = isFinalPage ? regularFinish + (getData.length - offset) : regularFinish;
+        return [...getData].slice(begin, finalFinish);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [offset]);
 
     return (
