@@ -1,6 +1,9 @@
 ## thePagination
 `Next.js`のシンプルで汎用的なページネーションコンポーネント
 
+- [デモサイト](https://k2webservice.xsrv.jp/r0105/the-pagination)<br>
+※`next.config.ts`でデプロイ設定
+
 - `src\providers\PagerContextFragment.tsx`<br>
 「ページャ数」と「ページに表示するコンテンツデータ数（`posts_per_page`）」のグローバルステートを管理しているファイル
 - `src\app\layout.tsx`<br>

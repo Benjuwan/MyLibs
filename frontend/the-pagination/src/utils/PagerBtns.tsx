@@ -11,22 +11,20 @@ function Pagers({ maxPage }: { maxPage: number }) {
     const { pagerNum } = useContext(PagerContext);
 
     const createPagers: () => number[] = () => {
-        const srcAry: number[] = [];
         let srcNum: number = maxPage;
 
-        /* 各ページャー項目の data-pager の値を生成（引算用途の上限数値：srcNum が 0 を切るまでオフセット数を倍数していくループ処理）*/
+        // 各ページャー項目を生成
+        // srcNum（引算用途の上限数値）が 0 を切るまでオフセット数を倍数していくループ処理
         let Accumuration = 0;
         while (srcNum >= 0) {
-            srcAry.push(OFFSET_NUMBER * Accumuration);
             Accumuration++;
             srcNum = srcNum - OFFSET_NUMBER;
         }
 
-        //（コンテンツデータに応じた）ページャー数の要素を持つ配列を用意して（初期値として）0をセット
+        //（コンテンツデータに応じた）ページャー（項目）数の要素を持つ配列を用意して（初期値として）0をセット
         // map 処理で各初期値をインデックスインクリメント（順次繰り上げ）した数に置換（加工）する
-        return Array(srcAry.length).fill(0).map((_, i) => i + 1);
+        return Array(Accumuration).fill(0).map((_, i) => i + 1);
     }
-
     const thePagers: number[] = createPagers();
 
     const scrollTop: () => void = () => {
