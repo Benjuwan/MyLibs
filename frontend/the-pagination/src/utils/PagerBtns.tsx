@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useContext, useMemo } from "react";
+import { memo, useContext } from "react";
 import { OFFSET_NUMBER } from "@/constant/offsetnum";
 import { ROUTING_PASS } from "@/constant/routingpass";
 import { PagerContext } from "@/providers/PagerContext";
@@ -10,14 +10,24 @@ import Link from "next/link";
 function Pagers({ maxPage }: { maxPage: number }) {
     const { pagerNum } = useContext(PagerContext);
 
-    const pagersNumber: number = Math.floor(maxPage / OFFSET_NUMBER);
-    const thePagers: number[] = useMemo(() => {
-        // pagersNumber 個の要素を持つ配列を用意して（初期値として）0をセット
-        // map 処理で各初期値をインデックスインクリメント（順次繰り上げ）した数に置換（加工）する
-        return Array(pagersNumber).fill(0).map((_, i) => i + 1);
+    const createPagers: () => number[] = () => {
+        const srcAry: number[] = [];
+        let srcNum: number = maxPage;
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [maxPage]);
+        /* 各ページャー項目の data-pager の値を生成（引算用途の上限数値：srcNum が 0 を切るまでオフセット数を倍数していくループ処理）*/
+        let Accumuration = 0;
+        while (srcNum >= 0) {
+            srcAry.push(OFFSET_NUMBER * Accumuration);
+            Accumuration++;
+            srcNum = srcNum - OFFSET_NUMBER;
+        }
+
+        //（コンテンツデータに応じた）ページャー数の要素を持つ配列を用意して（初期値として）0をセット
+        // map 処理で各初期値をインデックスインクリメント（順次繰り上げ）した数に置換（加工）する
+        return Array(srcAry.length).fill(0).map((_, i) => i + 1);
+    }
+
+    const thePagers: number[] = createPagers();
 
     const scrollTop: () => void = () => {
         window.scrollTo(0, 0);
@@ -52,7 +62,7 @@ function PagerBtns({ maxPage }: { maxPage: number }) {
     }
 
     const nextAction = () => {
-        if (pagerNum >= Math.floor(maxPage / OFFSET_NUMBER)) {
+        if (pagerNum > Math.floor(maxPage / OFFSET_NUMBER)) {
             return;
         }
         window.scrollTo(0, 0);
@@ -72,7 +82,7 @@ function PagerBtns({ maxPage }: { maxPage: number }) {
             <Link
                 href={`${ROUTING_PASS}${pagerNum + 1}-${offset + OFFSET_NUMBER}`}
                 className="rounded bg-[#333] text-white border border-transparent text-center leading-[2.75rem] w-fit px-[1em] transition duration-[.25s] hover:bg-white hover:text-[#333] hover:border-[#333] active:bg-white active:text-[#333] active:border-[#333] data-[disabled=true]:pointer-events-none data-[disabled=true]:bg-[#919191] data-[disabled=true]:text-[#dadada]"
-                data-disabled={pagerNum >= Math.floor(maxPage / OFFSET_NUMBER)}
+                data-disabled={pagerNum > Math.floor(maxPage / OFFSET_NUMBER)}
                 onClick={nextAction}
             >次へ</Link>
         </div>

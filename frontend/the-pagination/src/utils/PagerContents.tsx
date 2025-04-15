@@ -23,22 +23,14 @@ function PagerContents({ getData }: { getData: jsonPostType[] }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getCurrUrlPath]);
 
-    const pagersNumber: number = Math.floor(getData.length / OFFSET_NUMBER);
-    const isFinalPage: boolean = useMemo(() => {
-        return pagerNum === pagersNumber;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pagerNum]);
-
     const adjustData: jsonPostType[] = useMemo(() => {
         // 開始値
         const begin: number = typeof getOffset !== 'undefined' ? getOffset - OFFSET_NUMBER :
             pagerNum === 1 ? 0 : offset;
-        // 通常（最終ページ以外）の終了値
-        const regularFinish: number = typeof getOffset !== 'undefined' ? getOffset :
+        // 終了値
+        const finish: number = typeof getOffset !== 'undefined' ? getOffset :
             pagerNum === 1 ? offset : offset + OFFSET_NUMBER;
-        // 最終ページにおける終了値（※最終ページ以外では regularFinish となる）
-        const finalFinish: number = isFinalPage ? regularFinish + (getData.length - offset) : regularFinish;
-        return [...getData].slice(begin, finalFinish);
+        return [...getData].slice(begin, finish);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [offset]);
 
