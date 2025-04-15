@@ -43,10 +43,10 @@ function PagerContents({ getData }: { getData: jsonPostType[] }) {
     }, [offset]);
 
     return (
-        <div className="contens mb-[5em]">
+        <div className="contens mb-[5em] md:grid md:gap-[2em] md:grid-cols-[repeat(3,1fr)]">
             {
                 adjustData.map(data => (
-                    <article key={data.id} className="not-last-of-type:mb-[2.5em]">
+                    <article key={data.id} className="bg-[#eaeaea] p-[1em] rounded not-last-of-type:mb-[2.5em]">
                         <p className="text-sm">- data:id | {data.id}</p>
                         <h3 className="text-lg font-bold border-b border-b-dotted border-b-[#333] pb-[.5em] mb-[.5em]">{data.title}</h3>
                         <p>{data.body}</p>

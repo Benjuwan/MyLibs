@@ -19,17 +19,22 @@ function Pagers({ maxPage }: { maxPage: number }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [maxPage]);
 
+    const scrollTop: () => void = () => {
+        window.scrollTo(0, 0);
+    }
+
     return (
-        <>
+        <div className="w-full flex flex-wrap justify-start items-center gap-[1em] mb-[2em] md:justify-center">
             {thePagers.map(pager => (
                 <Link
                     key={pager}
                     href={`${ROUTING_PASS}${pager}-${OFFSET_NUMBER * pager}`}
                     className="rounded-full grid place-items-center text-xs bg-[#333] text-white border border-transparent text-center w-[2rem] h-[2rem] transition duration-[.25s] hover:bg-white hover:text-[#333] hover:border-[#333] active:bg-white active:text-[#333] data-[current=true]:pointer-events-none data-[current=true]:bg-[#2b2bd3] data-[current=true]:text-[#fff]"
                     data-current={pagerNum === pager}
+                    onClick={scrollTop}
                 >{pager}</Link>
             ))}
-        </>
+        </div>
     );
 }
 
@@ -41,6 +46,7 @@ function PagerBtns({ maxPage }: { maxPage: number }) {
         if (pagerNum === 1) {
             return;
         }
+        window.scrollTo(0, 0);
         setPagerNum((prevPager) => prevPager - 1);
         setOffset((prevOffset) => prevOffset - OFFSET_NUMBER);
     }
@@ -49,19 +55,20 @@ function PagerBtns({ maxPage }: { maxPage: number }) {
         if (pagerNum >= Math.floor(maxPage / OFFSET_NUMBER)) {
             return;
         }
+        window.scrollTo(0, 0);
         setPagerNum((prevPager) => prevPager + 1);
         setOffset((prevOffset) => prevOffset + OFFSET_NUMBER);
     }
 
     return (
-        <div className="ctrlBtns flex justify-between items-center">
+        <div className="ctrlBtns flex flex-wrap justify-between items-center">
+            <Pagers maxPage={maxPage} />
             <Link
                 href={pagerNum === 1 ? '/' : `${ROUTING_PASS}${pagerNum - 1}-${offset - OFFSET_NUMBER}`}
                 className="rounded bg-[#333] text-white border border-transparent text-center leading-[2.75rem] w-fit px-[1em] transition duration-[.25s] hover:bg-white hover:text-[#333] hover:border-[#333] active:bg-white active:text-[#333] active:border-[#333] data-[disabled=true]:pointer-events-none data-[disabled=true]:bg-[#919191] data-[disabled=true]:text-[#dadada]"
                 data-disabled={pagerNum === 1}
                 onClick={prevAction}
             >前へ</Link>
-            <Pagers maxPage={maxPage} />
             <Link
                 href={`${ROUTING_PASS}${pagerNum + 1}-${offset + OFFSET_NUMBER}`}
                 className="rounded bg-[#333] text-white border border-transparent text-center leading-[2.75rem] w-fit px-[1em] transition duration-[.25s] hover:bg-white hover:text-[#333] hover:border-[#333] active:bg-white active:text-[#333] active:border-[#333] data-[disabled=true]:pointer-events-none data-[disabled=true]:bg-[#919191] data-[disabled=true]:text-[#dadada]"
