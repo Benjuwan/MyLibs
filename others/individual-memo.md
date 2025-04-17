@@ -368,6 +368,31 @@ function sayHello() {
 sayHello();  // "Hello" が出力される
 ```
 
+#### `Promise`の引数と`Promise`内での遅延処理について
+- 遅延処理の実装は`Promise`インスタンスを用いる
+- `Promise`インスタンスの引数には必ず2つ指定する（※`resolve`のみ使用の場合は第二引数は省略可能）
+- 引数の命名は自由（`resolve`,`rejuct`でも、`success`,`failed`）
+```js
+const fetchdata = async () => {
+  // Promise インスタンスの引数には必ず2つ指定する（※ resolve のみ使用の場合は第二引数は省略可能）
+  // 引数の命名は自由（ resolve, rejuct でも、 success, failed ）
+  await new Promise((resolve, reject) => setTimeout(() => reject('reject'), 3000)).catch((d) => console.error(d)); // 3秒の遅延を追加
+
+  const res = await fetch(fetchPathUrl);
+  const resObj = res.json();
+  return resObj;
+}
+const fetchdataPromise = fetchdata();
+
+// Promise インスタンスの引数には必ず2つ指定する（※ resolve のみ使用の場合は第二引数は省略可能）
+// 引数の命名は自由（ resolve, rejuct でも、 success, failed ）
+const fetchdataPromise = new Promise(resolve => {
+  setTimeout(() => {
+    fetch(fetchPathUrl).then(res => res.json()).then((resData) => resolve(resData)).then((resData) => console.log(resData)).catch((resData) => console.error(resData));
+  }, 3000);
+});
+```
+
 #### `includes`メソッドについて
 `includes`メソッドの挙動は**配列では完全一致、文字列では部分一致**となる。ただし、文字列の部分一致を判定する際には、左辺オペランド（レシーバ）と右辺オペランド（引数）の関係が適切である必要がある。<br>具体的には、以下の条件が満たされる場合に`true`となる。
   - 左辺オペランドが右辺オペランドを部分文字列として含んでいる

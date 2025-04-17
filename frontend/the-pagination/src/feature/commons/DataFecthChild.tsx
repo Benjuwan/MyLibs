@@ -1,7 +1,7 @@
 import { memo, use } from "react";
-import { jsonPostType } from "@/ts/json-post";
-import PagerContents from "@/utils/PagerContents";
-import PagerBtns from "@/utils/PagerBtns";
+import { jsonPostType } from "../ts/json-post";
+import PagerBtns from "../utils/PagerBtns";
+import PagerContents from "../utils/PagerContents";
 
 function DataFecthChild({ fetchdataPromise }: { fetchdataPromise: Promise<jsonPostType[]> }) {
     // use()でPromiseの中身を取得（Promiseが未完了ならこのコンポーネントはサスペンドする）

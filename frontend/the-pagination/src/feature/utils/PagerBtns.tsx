@@ -48,15 +48,13 @@ function Pagers({ maxPage }: { maxPage: number }) {
 
 /* 前へ / 次へ ページャボタン */
 function PagerBtns({ maxPage }: { maxPage: number }) {
-    const { pagerNum, setPagerNum, offset, setOffset } = useContext(PagerContext);
+    const { pagerNum, offset } = useContext(PagerContext);
 
     const prevAction = () => {
         if (pagerNum === 1) {
             return;
         }
         window.scrollTo(0, 0);
-        setPagerNum((prevPager) => prevPager - 1);
-        setOffset((prevOffset) => prevOffset - OFFSET_NUMBER);
     }
 
     const nextAction = () => {
@@ -64,8 +62,6 @@ function PagerBtns({ maxPage }: { maxPage: number }) {
             return;
         }
         window.scrollTo(0, 0);
-        setPagerNum((prevPager) => prevPager + 1);
-        setOffset((prevOffset) => prevOffset + OFFSET_NUMBER);
     }
 
     return (

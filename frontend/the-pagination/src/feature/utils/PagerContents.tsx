@@ -2,8 +2,8 @@
 
 import { memo, useContext, useEffect, useMemo } from "react";
 import { PagerContext } from "@/providers/PagerContext";
-import { jsonPostType } from "@/ts/json-post";
 import { OFFSET_NUMBER } from "@/constant/offsetnum";
+import { jsonPostType } from "../ts/json-post";
 import { useSearchParams } from "next/navigation";
 
 function PagerContents({ getData }: { getData: jsonPostType[] }) {
@@ -11,8 +11,8 @@ function PagerContents({ getData }: { getData: jsonPostType[] }) {
 
     const getCurrUrlPath = useSearchParams();
     const targetPagesPathStr: string | null = getCurrUrlPath.get('pages');
-    const getPager: number | undefined = targetPagesPathStr !== null ? parseInt(targetPagesPathStr.split('-')[0]) : undefined;
-    const getOffset: number | undefined = targetPagesPathStr !== null ? parseInt(targetPagesPathStr.split('-')[1]) : undefined;
+    const getPager: number | undefined = targetPagesPathStr !== null ? parseInt(targetPagesPathStr.split('-')[0]) : 1; // false の場合は初期値を設定
+    const getOffset: number | undefined = targetPagesPathStr !== null ? parseInt(targetPagesPathStr.split('-')[1]) : OFFSET_NUMBER; // false の場合は初期値を設定
 
     useEffect(() => {
         if (typeof getPager === 'undefined' || typeof getOffset === 'undefined') {
