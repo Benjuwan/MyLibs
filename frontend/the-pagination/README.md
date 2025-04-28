@@ -13,11 +13,11 @@
 ## 技術構成
 - @eslint/eslintrc@3.3.1
 - @tailwindcss/postcss@4.1.4
-- @types/node@20.17.30
+- @types/node@20.17.31
 - @types/react-dom@19.1.2
 - @types/react@19.1.2
 - eslint-config-next@15.3.0
-- eslint@9.24.0
+- eslint@9.25.1
 - next@15.3.0
 - react-dom@19.1.0
 - react@19.1.0
