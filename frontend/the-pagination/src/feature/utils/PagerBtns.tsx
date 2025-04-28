@@ -68,7 +68,7 @@ function PagerBtns({ maxPage }: { maxPage: number }) {
         <div className="ctrlBtns flex flex-wrap justify-between items-center">
             <Pagers maxPage={maxPage} />
             <Link
-                href={pagerNum === 1 ? '/' : `${ROUTING_PASS}${pagerNum - 1}-${offset - OFFSET_NUMBER}`}
+                href={pagerNum === 1 ? `${ROUTING_PASS}${pagerNum}-${OFFSET_NUMBER}` : `${ROUTING_PASS}${pagerNum - 1}-${offset - OFFSET_NUMBER}`}
                 className="rounded bg-[#333] text-white border border-transparent text-center leading-[2.75rem] w-fit px-[1em] transition duration-[.25s] hover:bg-white hover:text-[#333] hover:border-[#333] active:bg-white active:text-[#333] active:border-[#333] data-[disabled=true]:pointer-events-none data-[disabled=true]:bg-[#919191] data-[disabled=true]:text-[#dadada]"
                 data-disabled={pagerNum === 1}
                 onClick={prevAction}
