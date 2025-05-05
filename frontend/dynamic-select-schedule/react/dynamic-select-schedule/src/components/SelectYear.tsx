@@ -26,6 +26,7 @@ export const SelectYear = () => {
         <select name="schedule-year" id="schedule-year"
             defaultValue={year} // option に selected を付与するとエラーが発生するので React のエラー指示通り親（select）の defaultValue に指定
             onChange={handleChangeYear}
+            className="bg-gray-200 rounded"
         >
             {options.length > 0 &&
                 options.map((optionElm) => (
