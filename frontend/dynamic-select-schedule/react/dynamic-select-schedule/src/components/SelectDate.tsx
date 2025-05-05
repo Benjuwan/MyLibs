@@ -17,6 +17,7 @@ export const SelectDate = () => {
         <select name="schedule-date" id="schedule-date"
             defaultValue={date}
             onChange={handleChangeDate}
+            className="bg-gray-200 rounded"
         >
             {dateOptions.length > 0 &&
                 dateOptions.map((optionElm) => (
