@@ -202,7 +202,7 @@ git push --force-with-lease origin feature
 - `git add` → `git commit` → `git push`： 一般的なコミット履歴管理
 ```
 
-## `git stash` / `git stash pop`
+## `git stash` / `git stash pop`（作業の一時保存/復元）
 例えば、実際の作業場所（デスク）があって、作業内容を一時保存できる箱があるとします。<br>
 途中で別の作業が入った場合など、デスクで作業していた内容を箱に保存するのが`stash`です。<br><br>
 そして別の作業が済んで、元の作業を行いたいときに`stash pop`すると箱の中の**直近の作業内容をデスクに取り出せます**。<br>
@@ -220,8 +220,10 @@ git stash pop stash@{3}    # 3番目の作業内容を取り出して削除
 
 ```bash
 git stash apply stash@{3}    # 特定の作業内容を取り出して適用（ただし削除しない）
-git stash drop stash@{3}     # 手動で削除
+git stash drop stash@{3}     # 手動で特定のスタッシュを削除
 ```
+
+- 参照[【Git】 git stash について 簡単に説明するよ](https://qiita.com/tsubasa_k0814/items/73b76a3a2a6a4099ab99)
 
 ## バックアップ用に日付付きでブランチを切る
 ```bash
