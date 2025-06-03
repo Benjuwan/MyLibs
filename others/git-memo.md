@@ -253,3 +253,12 @@ git branch develop-backup-20250511 develop
 5. `git push`<br>
 最後にプッシュして`main`ブランチにマージ（`Squash Merge`の実施）
   - ※`Pull Request`画面で`Squash and merge`を選択すること<br>マージ後は通常通り、使用した作業ブランチを削除する
+
+## 既存のリポジトリから接続解除
+```bash
+# 削除されたリモートリポジトリとの接続を削除
+git remote remove origin
+
+# 必要に応じてブランチ名を変更（topicからmainへ）
+git branch -m topic main
+```
