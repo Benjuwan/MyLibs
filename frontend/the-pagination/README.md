@@ -12,14 +12,14 @@
 
 ## 技術構成
 - @eslint/eslintrc@3.3.1
-- @tailwindcss/postcss@4.1.4
-- @types/node@20.17.31
-- @types/react-dom@19.1.2
-- @types/react@19.1.2
+- @tailwindcss/postcss@4.1.8
+- @types/node@20.17.57
+- @types/react-dom@19.1.5
+- @types/react@19.1.6
 - eslint-config-next@15.3.0
-- eslint@9.25.1
+- eslint@9.28.0
 - next@15.3.0
 - react-dom@19.1.0
 - react@19.1.0
-- tailwindcss@4.1.4
+- tailwindcss@4.1.8
 - typescript@5.8.3

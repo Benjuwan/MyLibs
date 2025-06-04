@@ -32,22 +32,22 @@ export default defineConfig({
 ```
 
 ## 技術構成
-- @eslint/js@9.24.0
-- @tailwindcss/vite@4.1.3
-- @types/react-dom@18.3.6
-- @types/react@18.3.20
-- @vitejs/plugin-react@4.3.4
+- @eslint/js@9.28.0
+- @tailwindcss/vite@4.1.8
+- @types/react-dom@18.3.7
+- @types/react@18.3.23
+- @vitejs/plugin-react@4.5.1
 - eslint-plugin-react-hooks@5.2.0
-- eslint-plugin-react-refresh@0.4.19
-- eslint@9.24.0
+- eslint-plugin-react-refresh@0.4.20
+- eslint@9.28.0
 - globals@15.15.0
 - react-dom@18.3.1
 - react@18.3.1
-- swiper@11.2.6
-- tailwindcss@4.1.3
-- typescript-eslint@8.29.1
+- swiper@11.2.8
+- tailwindcss@4.1.8
+- typescript-eslint@8.33.1
 - typescript@5.6.3
-- vite@6.2.5
+- vite@6.3.5
 
 ## 備忘録
 - `SyntheticEvent`は各種イベントハンドラーを包含しているので `ChangeEvent`, `drag`, `mouse`など各種イベントハンドラーの型をカバーできる（＝型エラーを防げる）
