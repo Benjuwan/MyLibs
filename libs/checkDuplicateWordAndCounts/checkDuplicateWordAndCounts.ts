@@ -2,7 +2,7 @@ type checkDuplicateWordAndCounts_resultType = {
     chars: string;
     char: string;
     count: number;
-}
+};
 
 // 引数に指定した文字列配列内の各文字列における「文字列内での重複文字と重複回数」をチェックする処理
 const checkDuplicateWordAndCounts: (theWords: string[]) => checkDuplicateWordAndCounts_resultType[] = (
