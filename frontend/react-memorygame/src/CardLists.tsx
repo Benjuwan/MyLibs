@@ -5,7 +5,7 @@ import { useCardAction } from './hooks/useCardAction';
 type CardAry = {
     cards: Array<number>;
     tabIndexOffset: number;
-    specificClassName?: true;
+    specificClassName?: boolean;
 };
 
 export const CardLists: React.FC<CardAry> = memo((props) => {
@@ -14,26 +14,10 @@ export const CardLists: React.FC<CardAry> = memo((props) => {
     const { CardShuffle } = useCardShuffle();
     const shuffledCard = CardShuffle(cards);
 
-    // クリック or Enter キー の度に Tab 操作の可否判定を行う
-    /**
-     * 当初（クリック処理に応じる boolean の）グローバル State を用意して React.useEffect の依存配列に指定して上記処理を行う形にしていたが、State 更新による再レンダリング処理に伴って「都度カードがシャッフルされてしまう事態になった」ので純粋な関数として処理を進める形で調整
-    */
-    const tabCtrlJudgement = () => {
-        const cardLists = document.querySelectorAll('ul');
-        cardLists.forEach(cardList => {
-            if (cardList.classList.contains('inertState')) {
-                cardList.querySelectorAll('li').forEach(liItems => {
-                    liItems.setAttribute('inert', 'true');
-                });
-            }
-        });
-    }
-
     const { cardAction } = useCardAction();
 
     const handleCardAction: (e: SyntheticEvent<HTMLLIElement>) => void = (e: SyntheticEvent<HTMLLIElement>) => {
         cardAction(e.currentTarget);
-        tabCtrlJudgement();
     }
 
     return (

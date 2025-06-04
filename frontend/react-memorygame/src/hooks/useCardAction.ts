@@ -27,11 +27,6 @@ export const useCardAction = () => {
                 clickedCardNumbers.push(cardNumberStr);
             }
 
-            /**
-             * hooks で setAttribute('inert', 'true') が指定できないので CSS で対応
-             * 恐らく、指定したい要素に直接的に指定する必要がある（cardNumberEls.parentElement? のように間接的に指定できない）
-            */
-            // cardNumberEls.parentElement?.setAttribute('inert', 'true');
             cardNumberEls.parentElement?.classList.add('inertState');
 
             // [inert]：inert 属性を持っている要素
