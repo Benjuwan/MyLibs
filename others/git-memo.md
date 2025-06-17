@@ -4,6 +4,10 @@
 ### 既存プロジェクト
 1. `git branch -a`でブランチを確認
 2. `git pull origin main`で主ブランチの内容をローカルに反映
+  - `git pull`：リモートリポジトリの最新の内容を取得し、それをローカルリポジトリに統合または順応させる<br>
+  大抵は`git pull origin <branchname>`で問題ないものの**事前に変更差分を把握したり、各ブランチ内容をチェックしてから変更を取り込んだりする場合**は`git fetch origin <branchname>` -> `git merge origin/<branchname>`と**最新の内容取得及び統合・順応作業を分割して行うケース**もある。
+  - `git fetch origin <branchname>`：指定した（リモートリポジトリの）ブランチの最新の内容を取得
+  - `git merge origin/<branchname>`：指定した（リモートリポジトリの）ブランチの内容をローカルリポジトリに**統合（変更が競合しない場合スムーズに合併される）**または**順応（ローカルの状態がリモートの最新状態に合わせて調整される）**させる
 3. 作業開始（※この際に`git checkout -b topic`で別ブランチに切ることもある）
 4. 先の工程で別ブランチに切っていない場合は`git checkout -b topic` -> `git push -u origin topic`でブランチを切ってリモートの当該リポジトリに接続
 5. `git branch -vv`で今いるブランチを確認（※**主ブランチへの誤push防止**の観点から）
