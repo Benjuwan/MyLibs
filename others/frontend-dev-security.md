@@ -618,3 +618,55 @@ Site Isolation によってサイドチャネル攻撃の大部分を防ぐこ�
 ウィンドウ間の情報漏洩を防止：新しいタブやウィンドウを開いた際の相互アクセスを制限する
 
 ---
+
+## クロスサイトスクリプティング（XSS：Cross-Site Scripting）
+Webアプリケーションの脆弱性を悪用した攻撃手法の一つ。<br>XSSは、攻撃者が悪意のあるスクリプトコードを正規のWebサイトに注入し、そのサイトを閲覧する他のユーザーのブラウザで実行させる攻撃を指す。<br>クロスオリジンのページで実行されるJavaScriptからの攻撃は同一オリジンポリシーでブロックされるが、XSSは**攻撃対象のページ内でJavaScriptを実行するため同一オリジンポリシーでも防げない**。<br>
+この攻撃により、機密情報の漏洩、Webアプリケーションの改ざん、意図しない操作、なりすまし（ユーザーの機密情報の窃取）、セッションハイジャック、フィッシング攻撃などが可能となる。
+
+### 基本的な仕組み
+XSS攻撃は以下の流れで実行される：<br>
+1. 脆弱性の発見: 攻撃者がWebアプリケーションでユーザー入力を適切にサニタイズしていない箇所を見つける
+2. スクリプト注入: 攻撃者が悪意のあるJavaScriptコードを含む入力をWebサイトに送信する
+3. コード実行: 他のユーザーがそのページを閲覧した際に、注入されたスクリプトがユーザーのブラウザで実行される
+4. 被害発生: 実行されたスクリプトにより、Cookieの窃取、個人情報の取得、不正な操作などが行われる
+
+### 主な種類
+- 反射型XSS（Reflected XSS）<br>
+攻撃コードがリクエストの一部として送信され、レスポンスに即座に反映される形式です。例：罠サイトへアクセスして攻撃ページへ遷移させられたユーザが、攻撃ページを閲覧した際にそのブラウザ上で攻撃コードが実行される。
+- 蓄積型・格納型XSS（Stored XSS）<br>
+攻撃コードがサーバーのデータベースに保存され、そのデータが表示される度に実行される形式です。掲示板やコメント機能で発生しやすいです。例：悪意のあるコードが含まれた画像データが投稿され、それを閲覧した不特定多数のユーザーがXSSの被害を受けるという最も危険なXSS攻撃。
+- DOM型XSS（DOM-based XSS）<br>
+これまでのサーバー側ではなく、クライアント側のJavaScriptによるDOM（Document Object Model）操作が原因で発生する形式です。
+
+#### フロントエンドに密接な DOM型XSS の仕組み
+##### Source（ソース）: DOM-based XSSを引き起こす原因となる箇所（入口）
+- location.href, location.search, location.hash
+- document.referrer
+- document.cookie
+- document.URL
+- window.name
+- localStorage, sessionStorage, IndexDB
+- postMessage
+
+##### Sink（シンク）: ソースからJavaScriptを生成・実行してしまう箇所（出口）
+- innerHTML, outerHTML
+- document.write(), document.writeln()
+- insertAdjacentHTML()
+- $.html() （※ jQuery を使用している場合）
+- eval()
+- setTimeout()
+- setInterval()
+- element.src への代入
+- location.href への代入
+
+#### 対策
+1. サニタイズなどのエスケープ処理
+2. HTTPOnlyフラグ付きCookieを用いてJavaScriptからのアクセスを制御する（※セッションハイジャック対策）
+3. CSP（Content Security Policy）というブラウザの機能で、サーバーから許可されていないJavaScriptの実行やリソース読み込みなどをブロックする
+```html
+<meta http-equiv="Content-Security-Policy" content="script-src 'self';">
+```
+
+---
+
+最も賢明なのはXSS対策を自動で行ってくれるようなライブラリ（React, Vue）やフレームワーク（Next.js Nuxt）を使用すること。<br>※ただし、 dangerouslySetInnerHTML（React） や v-html（Vue） を使用する場合は注意が必要
