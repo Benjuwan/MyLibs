@@ -104,6 +104,21 @@ id=1&user=hoge
 - ボディ<br>
 リクエスト本文。取得したい情報のキーワードや登録したい情報が記載されている（※リクエスト内容によってはボディが空の場合もある）
 
+##### プリフライトリクエスト
+特定の条件を満たすHTTPヘッダが付与されていたり、PUTやDELETEといったサーバー内のリソースを変更・削除するメソッドが使われている場合は慎重に処理される必要がある。<br>
+そこで、このような**リクエスト時にはブラウザからサーバーへ事前リクエストして問題ないかを問い合わせる。そしてサーバーから許可されたリクエストは受理されるという仕組み**。<br>
+この安全なやり取り実現のために事前リクエストすることをプリフライトリクエストという。プリフライトリクエストにはOPTIONSメソッドが用いられる。
+
+- OPTIONSメソッド<br>
+HTTPメソッドの一つで、サーバーがサポートしているHTTPメソッドを確認する
+
+- Access-Control-Max-Ageヘッダ<br>
+常時プリフライトリクエストを行うと、ネットワーク環境が低速な場合や大量のリクエストを送る場合などにおいてパフォーマンス面で支障をきたす可能性がある。そこで、プリフライトリクエストの内容をキャッシュさせておく際にAccess-Control-Max-Ageヘッダを使用する。
+```bash
+# キャッシュ時間：1時間
+Access-Control-Max-Age: 3600
+```
+
 #### 代表的なリクエストヘッダ
 開発者ツールの`Network`パネルから確認可能
 
@@ -414,28 +429,28 @@ Web Storage（localStorage, sessionStorage）や IndexDB といったブラウ�
 > ごくまれにブラウザ実装の不具合や悪意ある拡張機能で読み出される例もある（安全設計では防ぎにくい）。
 
 #### 制限されないクロスオリジンアクセス事例（8例）
-1. **`<script>` 要素によるクロスオリジン JavaScript 読み込み**  
+1. `<script>` 要素によるクロスオリジン JavaScript 読み込み  
    - 例:  
      ```html
      <script src="https://cross-origin.com/app.js"></script>
      ```  
    - JavaScriptファイルはCORS不要でロード可能（ただし実行されるのは読み込んだコード）。  
 
-2. **`<img>` 要素によるクロスオリジン画像読み込み**  
+2. `<img>` 要素によるクロスオリジン画像読み込み  
    - 例:  
      ```html
      <img src="https://cross-origin.com/image.png">
      ```  
-   - 表示は可能だが、`canvas` に描画してピクセル情報を読む場合は `crossorigin` 属性やCORS対応が必要。
+   - 表示は可能だが、`canvas` に描画してピクセル情報を読む場合は `crossorigin`属性やCORS対応が必要。
 
-3. **`<link rel="stylesheet">` によるクロスオリジンCSS読み込み**  
+3. `<link rel="stylesheet">` によるクロスオリジンCSS読み込み  
    - 例:  
      ```html
      <link rel="stylesheet" href="https://cross-origin.com/style.css">
      ```  
    - CSSはCORS不要で適用可能（ただし、`@import`内で画像やフォントを読み込むときに挙動が異なる場合あり）。
 
-4. **`@font-face` によるクロスオリジンWebフォント読み込み**  
+4. `@font-face` によるクロスオリジンWebフォント読み込み  
    - 例:  
      ```css
      @font-face {
@@ -445,28 +460,28 @@ Web Storage（localStorage, sessionStorage）や IndexDB といったブラウ�
      ```  
    - 多くのブラウザはフォントにCORS制約を課すが、古いブラウザや特定設定では制限されずに使えることがある。
 
-5. **`<video>` / `<audio>` によるクロスオリジンメディア読み込み**  
+5. `<video>` / `<audio>` によるクロスオリジンメディア読み込み  
    - 例:  
      ```html
      <video src="https://cross-origin.com/video.mp4" controls></video>
      ```  
    - 再生は可能だが、フレーム取得や音声解析などのAPIアクセスはCORS必須。
 
-6. **`<iframe>` によるクロスオリジンページ埋め込み**  
+6. `<iframe>` によるクロスオリジンページ埋め込み  
    - 例:  
      ```html
      <iframe src="https://cross-origin.com"></iframe>
      ```  
    - 表示は可能だが、JavaScriptでDOMへアクセスは不可（同一オリジン制約は働く）。
 
-7. **`<object>` / `<embed>` / `<applet>` によるクロスオリジンリソース読み込み**  
+7. `<object>` / `<embed>` / `<applet>` によるクロスオリジンリソース読み込み  
    - 例:  
      ```html
      <object data="https://cross-origin.com/file.pdf" type="application/pdf"></object>
      ```  
    - 埋め込み表示はできるが、中身の直接操作は不可。
 
-8. **`<form>`要素によるフォーム送信**  
+8. `<form>`要素によるフォーム送信  
    - 例:  
      ```html
      <form action="https://cross-origin.com/mail.php" method="post">
@@ -474,5 +489,132 @@ Web Storage（localStorage, sessionStorage）や IndexDB といったブラウ�
 
 ---
 
-これらのHTML要素からのアクセスも、`crossorigin` 属性やCORS対応することでアクセス制御できる。<br><br>
+これらのHTML要素からのアクセスも、`crossorigin`属性やCORS対応することでアクセス制御できる。<br><br>
 CORSとは、ここまでの説明通りクロスオリジンから受信したレスポンスのリソースへのアクセスは禁止されているものの、レスポンスに付与されている一連のHTTPヘッダによって、**サーバーからアクセス許可が出ているリソースへはアクセスできる**ようになる仕組みを指す。
+
+##### `crossorigin`属性
+`<img>`や`<script>`要素などHTML要素から送信されるリクエストのモードは、同一オリジンに送信される場合は same-origin となり、クロスオリジンへ送信される場合は no-cors となる。これらHTML要素に`crossorigin`属性を付与することで、cors モードとしてリクエストできるようになる。
+
+- `same-origin`<br>
+クロスオリジンへのリクエストは送信されずエラーになる
+- `no-cors`<br>
+クロスオリジンへのリクエストは「単純リクエスト（※）」のみに制限される
+  - ※単純リクエスト（Simple Request）<br>
+  GETまたはPOSTによるブラウザがデフォルトで送信できるリクエストのことで、具体的には後述の`CORS-safelisted`とみなされたリクエストを指す
+- `cors`<br>
+CORSの設定がされていない、またはCORS違反となるリクエストが送信された時はエラーとなる。`fetch API`で`mode`引数を省略した際のデフォルト値（※仕様ではデフォルト値は no-cors なものの、多くのブラウザでは cors をデフォルト値にしている）。
+
+---
+
+`crossorigin`属性を付与することで cors モードとなるので、読み込むリソースのレスポンスには Access-Control-Allow-Header ヘッダなどのCORSヘッダが必要となる。<br>
+例えば、`crossorigin`属性を付与した`<img>`から画像ファイルをリクエストした時に、画像ファイルのレスポンスにCORSヘッダが付与されていない場合や、サーバーから許可されていない場合は画像が表示されない。
+
+###### `crossorigin`属性と`fetch API`の`credentials`との対応関係比較
+
+| crossorigin属性 | fetch credentials | 同一オリジン Cookie | クロスオリジン Cookie | 認証情報 | CORSリクエスト |
+|----------------|------------------|-------------------|-------------------|---------|---------------|
+| 属性なし または ""（空文字）指定 | `"same-origin"` | ✅ 送信 | ❌ 送信しない | 同一オリジンのみ | クロスオリジンのみ |
+| `"anonymous"` | `"omit"` | ❌ 送信しない | ❌ 送信しない | 含まない | 常に |
+| `"use-credentials"` | `"include"` | ✅ 送信 | ✅ 送信 | 常に含む | 常に |
+
+#### CORS-safelisted
+CORS-safelisted とみなされたHTTPメソッドやHTTPヘッダのみが送信されるリクエストは、ブラウザがデフォルトで送信できる。つまり、**CORS-safelisted 以外のHTTPヘッダを許可する場合は、`Access-Control-Allow-Headers`を送信しなければならない**。
+
+- example-Token-Header ヘッダを許可するコードをサーバー側の処理に追加
+```js
+.
+..
+if(req.method === "OPTIONS"){
+  res.header("Access-Control-Allow-Origin", "example-Token-Header")
+}
+..
+.
+```
+
+- リクエストを送信する処理
+```js
+const sendReq = async () => {
+  await fetch("https://site.example/api-endpoint", {
+    headers: {"example-Token-Header": "abc123def456"}
+  });
+}
+
+sendReq();
+```
+
+##### CORS-safelisted method の一覧
+- GET
+- POST
+- HEAD
+
+##### CORS-safelisted request-header の一覧
+- Accept
+- Accept-Language
+- Content-Language
+- Content-Type
+  - ※値が`application/x-www-form-urlencoded`, `multipart/form-data`, `text/plain`のいずれか
+
+---
+
+- `Access-Control-Allow-Origin`ヘッダ<br>
+アクセス許可されたオリジンをブラウザに伝えるためのヘッダ
+```js
+"Access-Control-Allow-Origin": "https://cross-origin.com"
+```
+
+※**複数のオリジンを指定することはできない**ものの、`*`を使うことで全てのオリジンからのアクセスを許可できる。
+```js
+# すべてのオリジンからのアクセスを許可（※あまりに危険なので実用性は低い）
+"Access-Control-Allow-Origin": "*"
+```
+
+以下のような記述にすることで**複数のオリジンを指定できる**ようになる
+```js
+.
+..
+
+const allowLists = [
+  "http://localhost",
+  "https://example.site",
+  "https://cross-origin.com"
+];
+
+..
+.
+
+{
+  // Origin ヘッダが存在している かつ リクエスト許可するリスト内に Origin ヘッダの値が含まれているかチェック
+  if(req.headers.origin && allowLists.includes(req.headers.origin)){
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+  }
+}
+
+..
+.
+```
+
+## サイドチャネル攻撃
+同一オリジンポリシーなどソフトウェア以外の、CPUやメモリなどハードウェアの特性を悪用した攻撃。
+
+### サイドチャネル攻撃を防ぐ Site Isolation
+境界（サイト）ごとにプロセスを分離する仕組みのこと。<br><br>
+プログラムの中には、他のプログラムのデータへアクセスできるものもあり、ケースによっては危険な場合がある。<br>
+一般的に、OSは「プロセス」という単位でプログラムの処理を管理していて、メモリ領域をプロセスごとに隔離している。これによって、プロセスをまたいだメモリへのアクセスはできないようになっている。<br><br>
+ブラウザは内部でWebアプリケーションごとにプロセスを分けることでサイドチャネル攻撃を防いでいる。<br>
+例えば、レンダリング（描画）プロセスを各サンドボックス内に入れて個別管理し、それらサンドボックスの各種処理を全体包括する形でブラウザプロセスが成り立っている。ここでいう個別管理がプロセスの隔離にあたり、これは「サイト」という単位で行われている。このサイトは、webサイトのそれとは異なり「オリジンと異なる定義を持ったセキュリティのための境界（サイト）」という意味となる。<br>
+サイトの定義は「eTLD+1」と決まっていて、eTLD（トップレベルドメイン）とは`.com`,`.jp`,`.co.jp`,`.github.io`といったドメインを含む。<br>
+
+#### Site Isolation によって制限されてしまった機能の有効化
+Site Isolation によってサイドチャネル攻撃の大部分を防ぐことができるようになった代わりに、いくつかのAPIや機能が無効化されてしまうことになった。これら制限された機能を有効にするには、オリジンごとにプロセスを分けてサイドチャネル攻撃が発生しないことを保障せねばならならない。オリジンごとにプロセスを分離する仕組みを`Cross-Origin Isolation`といって、これをWeb開発者が任意で有効化できる仕組みが用意されている。
+
+##### `COPR`, `COEP`, `COOP`
+以下の3つの仕組みを有効化（レスポンスヘッダに設定）することで、Site Isolation によって制限された機能を扱えるようになる
+
+- `Cross-Origin Resource Policy`（`COPR`）<br>
+リソースの読み込み制御：他のオリジンからのリソース読み込みを制限するポリシー
+- `Cross-Origin Embedder Policy`（`COEP`）<br>
+埋め込みリソースの制御：ページに埋め込まれるすべてのリソースに対してCORSまたはCORPの明示的な許可（設定強制）を要求
+- `Cross-Origin Opener Policy`（`COOP`）<br>
+ウィンドウ間の情報漏洩を防止：新しいタブやウィンドウを開いた際の相互アクセスを制限する
+
+---
