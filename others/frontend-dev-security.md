@@ -395,7 +395,7 @@ https://example.com:443/about
 ```
 
 > [!IMPORTANT]
-> スキーム、ホスト、ポート番号のいずれかが異なる場合は**クロスオリジン（Cross-Origin）**となる
+> スキーム、ホスト、ポート番号のいずれかが異なる場合は **クロスオリジン（Cross-Origin）** となる
 
 ブラウザはデフォルトで同一オリジンポリシーを有効にしていて、以下のようなアクセスは制限される。
 
@@ -617,8 +617,6 @@ Site Isolation によってサイドチャネル攻撃の大部分を防ぐこ�
 - `Cross-Origin Opener Policy`（`COOP`）<br>
 ウィンドウ間の情報漏洩を防止：新しいタブやウィンドウを開いた際の相互アクセスを制限する
 
----
-
 ## クロスサイトスクリプティング（XSS：Cross-Site Scripting）
 Webアプリケーションの脆弱性を悪用した攻撃手法の一つ。<br>XSSは、攻撃者が悪意のあるスクリプトコードを正規のWebサイトに注入し、そのサイトを閲覧する他のユーザーのブラウザで実行させる攻撃を指す。<br>クロスオリジンのページで実行されるJavaScriptからの攻撃は同一オリジンポリシーでブロックされるが、XSSは**攻撃対象のページ内でJavaScriptを実行するため同一オリジンポリシーでも防げない**。<br>
 この攻撃により、機密情報の漏洩、Webアプリケーションの改ざん、意図しない操作、なりすまし（ユーザーの機密情報の窃取）、セッションハイジャック、フィッシング攻撃などが可能となる。
@@ -692,6 +690,10 @@ document.cookie; // ''（空文字）が返ってくる
 
 ## CSP（Content Security Policy）
 CSPは、XSSなど不正なコードを埋め込むインジェクション攻撃を検知して被害の発生を防ぐためのブラウザの機能。サーバーから許可されていない JavaScript の実行やリソース読み込みなどをブロックする。ほとんどのブラウザがサポート済み。
+
+> [!IMPORTANT]
+> CSPは、不明瞭なJavaScript（コード及びファイル）やリソースの読込をブロックしてセキュアを担保してくれるブラウザの機能だが、その副作用（JavaScriptの各種制限など）によって意図しない挙動不具合を引き起こす可能性もある<br>
+> [Report-Only モード](#report-only-モード)を設定して段階ごとに設定していくのが現実的なアプローチとなりそう。
 
 ### CSPの設定方法（HTTPヘッダ または `meta`要素に設定）
 CSPは、`Content-Security-Policy`ヘッダをページのレスポンスに含めるか、HTMLの`meta`要素にCSP設定を埋め込むことで有効化できる<br>
@@ -773,7 +775,7 @@ Content-Security-Policy: default-src 'self'; script-src 'self' *.trusted.example
   - 混在コンテンツ（HTTPS内のHTTPリソース）をブロック
 
 - report-uri
-  - CSP違反時のレポート送信先URL
+  - CSP違反時のレポート送信先URL<br>※Report-Onlyモードのみならず、実際にCSP適用後でもレポート送信は可能
 
 - sandbox
   - コンテンツをサンドボックス化して隔離させることで外部からのアクセスを制御する
@@ -943,3 +945,21 @@ if (window.trustedTypes && trustedTypes.createPolicy) {
 - TrustedScriptURL：スクリプトURL用
 
 ### Report-Only モード
+CSPはXSSを防ぐ強力な手段だが、間違った実装をすると（JavaScript）プログラムの動作不具合を引き起こす可能性もある。そこで、**CSP適用時にWebアプリケーションの動作チェックを担うテストのために用意されているのが「Report-Only モード」**である。<br>
+CSPの実施においては、Report-Only モードで数週間～数か月運用してみてCSP違反がないことを確認した上で実施し、 **CSP適用後もレポートを送信して監視を続けることが推奨**されている。
+
+#### Report-Only モードの概要
+Report-Only モードとは、CSP適用時に発生する影響をまとめたレポートをJSON形式（かつPOSTメソッド）で送信する機能である。Webアプリケーションには実際に適用しないので影響はないものの、もし適用していた場合の不具合検証をチェックできる。
+
+- Report-Only モードの設定（Content-Security-Policy-Report-Onlyヘッダを使用）
+  - HTTPヘッダ
+```bash
+Content-Security-Policy-Report-Only: default-src https:;
+  report-uri /csp-report-url/;
+  report-to csp-endpoint;
+```
+
+実際に活用する際は、サーバーへ送信されたJSONデータをデータベースなどに保存しておき、適当なツール（例：`Redash`など）を使って開発者がレポート内容を検索しやすくしておくのが推奨されている。その際、User-Agent などヘッダの情報も保存しておくとユーザーが使用したブラウザ情報なども確認できるのでエラー調査に役立つ。
+
+> [!NOTE]
+> **`meta`要素では、Report-Only モードの設定は不可能**なので注意
