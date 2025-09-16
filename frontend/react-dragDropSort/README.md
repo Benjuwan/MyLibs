@@ -33,18 +33,18 @@ export default defineConfig({
 ```
 
 ### 技術構成
-- @eslint/js@9.28.0
+- @eslint/js@9.35.0
 - @types/react-dom@18.3.7
-- @types/react@18.3.23
+- @types/react@18.3.24
 - @types/uuid@10.0.0
-- @vitejs/plugin-react@4.5.1
+- @vitejs/plugin-react@4.7.0
 - eslint-plugin-react-hooks@5.2.0
 - eslint-plugin-react-refresh@0.4.20
-- eslint@9.28.0
+- eslint@9.35.0
 - globals@15.15.0
 - react-dom@18.3.1
 - react@18.3.1
-- typescript-eslint@8.33.1
-- typescript@5.8.3
+- typescript-eslint@8.44.0
+- typescript@5.9.2
 - uuid@10.0.0
-- vite@6.3.5
+- vite@6.3.6
