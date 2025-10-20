@@ -1,3 +1,5 @@
+TypeScriptの基礎はある程度理解しているのを前提として、少しニッチな情報または自身が知らなかった内容などを備忘録としてまとめています。
+
 ## keyof typeof <対象要素>
 `typeof`：対象要素の値から型を抽出（値を適切な型に変換）し、`keyof`：そのプロパティ（キー）名の文字列リテラルかつユニオン型を取得する。
 
@@ -34,7 +36,7 @@ type targetObjectKeysType = "en" | "fr" | "it" | "es";
 
 > [!NOTE]
 > ### `keyof typeof`の対象要素が、プリミティブな文字列や数値、文字列配列などオブジェクト型ではない場合
-> 結論：各種型が持つプロパティが返ってくる。しかし、リテラル型の場合は（プロパティがないので）型エラーとなる（※typeofを通さない場合限定）
+> **結論**：各種型が持つプロパティが返ってくる。しかし、リテラル型の場合は（プロパティがないので）型エラーとなる（※typeofを通さない場合限定）
 ```ts
 /* 文字列型 */
 const str = "hello";
@@ -62,6 +64,13 @@ type ArrKeys = keyof typeof arr;
 ※補足：[`Record<Keys, Type>`](https://typescriptbook.jp/reference/type-reuse/utility-types/record)といったユーティリティ型はこの仕組みを応用して定義されている。
 
 ```ts
+const targetObject ={
+  en: "Butterfly",
+  fr: "Papillon",
+  it: "Farfalla",
+  es: "Mariposa"
+};
+
 type Readonly<T> = {
   readonly [P in keyof T]: T[P];
 };
@@ -77,7 +86,7 @@ type Readonly<T> = {
 
 ## TypeScriptにおける`extends`の意味と使われ方
 TypeScriptの`extends`には、文脈によって3つの意味がある。<br>
-**左辺が右辺の部分型である（T ⊆ U）**という考え方は、型制約や条件型の場面で特に重要となる。
+**左辺が右辺の部分型である（T ⊆ U）** という考え方は、型制約や条件型の場面で特に重要となる。
 
 | 用途                       | 例                             | 意味                                                                 |
 | ------------------------ | ----------------------------- | ------------------------------------------------------------------ |
@@ -86,6 +95,6 @@ TypeScriptの`extends`には、文脈によって3つの意味がある。<br>
 | ③ 条件型（`conditional types`） | `T extends U ? X : Y`         | **条件分岐型**。`T`が`U`の部分型なら`X`、そうでなければ`Y`を返す。                          |
 
 ### 補足
-- TypeScriptは**`構造的部分型`（structural subtyping）**を採用<br>
+- TypeScriptは **`構造的部分型`（structural subtyping）** を採用<br>
 つまり、TがUのメンバー構造を満たしていれば「部分型」として扱われる。
 - 「`extends`＝継承」というよりも、「互換性」や「代入可能性（assignability）」のチェックを意味する場合が多い。

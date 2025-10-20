@@ -1,4 +1,4 @@
-# Localへの本番環境サイトの移行手順
+# 本番環境サイトをLocalへ移行する手順
 
 1. `All in one migration`プラグインを使用する（※容量制限があるので注意）
    - [All-in-One WP Migrationの容量を上げる方法とバックアップ](https://www.caliberelectronics.com/all-in-one-wp-migration/)

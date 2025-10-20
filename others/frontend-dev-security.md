@@ -501,7 +501,7 @@ CORSとは**クロスオリジンへのリクエストを可能にしたり、�
 自社WebサービスやCDNなど**信頼できる接続先においてはクロスオリジンの制限を解除したい**のは当然で、**そのための回避策としてオリジンをまたいだネットワークアクセスを可能とするCORS**がある。
 
 ##### `CORS`の仕組み
-XMLや`fetch`関数を使ってクロスオリジンへリクエストすることは同一オリジンポリシーによって禁止されている（※具体的には、クロスオリジンから受信したレスポンスのリソースへのアクセスが禁止）。<br>
+`XMLHttpRequest`や`fetch`関数を使ってクロスオリジンへリクエストすることは同一オリジンポリシーによって禁止されている（※具体的には、クロスオリジンから受信したレスポンスのリソースへのアクセスが禁止）。<br>
 ただし、レスポンスに付与されている一連のHTTPヘッダによって、**サーバからアクセス許可が出ているリソースへはアクセス可能**となる。<br>
 この**一連のHTTPヘッダに、アクセス許可するためのリクエスト条件が記載されていて、その条件を満たしたリクエストであればブラウザは受信したリソースへJavaScriptを使ってアクセスすることを認める**。<br>
 他方、満たさない場合はリクエスト及びリソースの取り扱いを禁止してレスポンスを破棄する。
@@ -509,18 +509,48 @@ XMLや`fetch`関数を使ってクロスオリジンへリクエストするこ�
 ##### `crossorigin`属性
 `<img>`や`<script>`要素などHTML要素から送信されるリクエストのモードは、同一オリジンに送信される場合は same-origin となり、クロスオリジンへ送信される場合は no-cors となる。これらHTML要素に`crossorigin`属性を付与することで、cors モードとしてリクエストできるようになる。
 
-- `same-origin`<br>
-クロスオリジンへのリクエストは送信されずエラーになる
-- `no-cors`<br>
-クロスオリジンへのリクエストは **「単純リクエスト（※）」** のみに制限される
-  - ※単純リクエスト（Simple Request）<br>
-  GETまたはPOSTによるブラウザがデフォルトで送信できるリクエストのことで、具体的には後述の`CORS-safelisted`とみなされたリクエストを指す
-- `cors`<br>
-CORSの設定がされていない、またはCORS違反となるリクエストが送信された時はエラーとなる。`fetch API`で`mode`引数を省略した際のデフォルト値（※仕様ではデフォルト値は no-cors なものの、多くのブラウザでは cors をデフォルト値にしている）。
+> [!IMPORTANT]
+> `type="module"`を指定したスクリプトは、`crossorigin`属性がなくとも自動的にCORSモードで読み込まれる<br>
+> 例えば、Viteのビルド成果物は`ES Modules`として出力されるのでクロスドメインにホスティングしたSPAを読み込みたい場合などは上記のようなことに特に注意する（[対応策は後述](#jsファイルに対してcorsヘッダーを追加)）
+
+- 以下は**CORSにおけるリクエストモードの種類（Fetch APIやブラウザが使用するリクエストモード）**<br>
+※`crossorigin`属性の属性値に指定するものではないので注意
+  - `same-origin`<br>
+  クロスオリジンへのリクエストは送信されずエラーになる
+  - `no-cors`<br>
+  クロスオリジンへのリクエストは **「単純リクエスト（※）」** のみに制限される。**レスポンスの内容にJavaScriptからアクセスできない**。
+    - ※単純リクエスト（Simple Request）<br>
+    GETまたはPOSTによるブラウザがデフォルトで送信できるリクエストのことで、具体的には後述の`CORS-safelisted`とみなされたリクエストを指す
+  - `cors`<br>
+  CORSの設定がされていない、またはCORS違反となるリクエストが送信された時はエラーとなる。`fetch API`で`mode`引数を省略した際のデフォルト値（※仕様ではデフォルト値は no-cors なものの、多くのブラウザでは cors をデフォルト値にしている）。
+
+###### JSファイルに対してCORSヘッダーを追加
+- `Apache（.htaccessまたはhttpd.conf）`
+```bash
+<FilesMatch "\.(js|mjs)$">
+    Header set Access-Control-Allow-Origin "*"
+</FilesMatch>
+```
+
+- `Nginx`
+```bash
+location ~* \.(js|mjs)$ {
+    add_header Access-Control-Allow-Origin *;
+}
+```
+
+- `特定のディレクトリのみ許可する場合`
+```bash
+<Directory "/path/to/quiz-raj/dist">
+    <FilesMatch "\.(js|mjs)$">
+        Header set Access-Control-Allow-Origin "https://your-frontend-domain.com"
+    </FilesMatch>
+</Directory>
+```
 
 ---
 
-`crossorigin`属性を付与することで cors モードとなるので、読み込むリソースのレスポンスには Access-Control-Allow-Header ヘッダなどのCORSヘッダが必要となる。<br>
+`crossorigin`属性を付与することで cors モードとなるので、読み込むリソースのレスポンスには `Access-Control-Allow-Origin`レスポンスヘッダなどのCORSヘッダが必要となる。<br>
 例えば、`crossorigin`属性を付与した`<img>`から画像ファイルをリクエストした時に、画像ファイルのレスポンスにCORSヘッダが付与されていない場合や、サーバから許可されていない場合は画像が表示されない。
 
 ###### `crossorigin`属性と`fetch API`の`credentials`との対応関係比較
@@ -570,8 +600,8 @@ sendReq();
 
 ---
 
-- `Access-Control-Allow-Origin`ヘッダ<br>
-アクセス許可されたオリジンをブラウザに伝えるためのヘッダ
+- `Access-Control-Allow-Origin`<br>
+アクセス許可されたオリジンをブラウザに伝えるためのレスポンスヘッダ
 ```js
 "Access-Control-Allow-Origin": "https://cross-origin.com"
 ```
