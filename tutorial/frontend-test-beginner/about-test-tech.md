@@ -384,86 +384,160 @@ describe("オブジェクトの検証", () => {
 オブジェクトに含まれるオブジェクトを検証する。具体的には、対象プロパティが期待値のオブジェクトと部分一致するかどうかをチェックする。
 
 #### 非同期処理
+非同期処理テストの書き方はいくつかタイプがある。
+
+1. [`Promise`を返して`then`に渡す関数内にアサーションを書く方法](#1-promiseを返してthenまたはcatchに渡す関数内にアサーションを書く方法)
+2. [`resolves`を使用したアサーションを返す方法](#2-resolvesを使用したアサーションを返す方法)
+3. [テスト関数を`async`関数とし、関数内で`Promise`の解決を待つ方法](#3-テスト関数をasync関数とし関数内でpromiseの解決を待つ方法)
+4. [検証値の`Promise`が解決するのを待ってからアサーションに展開する方法](#4-検証値のpromiseが解決するのを待ってからアサーションに展開する方法)
+
+---
+
+- テスト対象となる非同期処理コード
 ```ts
-import { timeout, wait } from ".";
-
-describe("非同期処理", () => {
-  describe("wait", () => {
-    test("指定時間待つと、経過時間をもって resolve される", () => {
-      return wait(50).then((duration) => {
-        expect(duration).toBe(50);
-      });
-    });
-    test("指定時間待つと、経過時間をもって resolve される", () => {
-      return expect(wait(50)).resolves.toBe(50);
-    });
-    test("指定時間待つと、経過時間をもって resolve される", async () => {
-      await expect(wait(50)).resolves.toBe(50);
-    });
-    test("指定時間待つと、経過時間をもって resolve される", async () => {
-      expect(await wait(50)).toBe(50);
-    });
+export function wait(duration: number) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(duration);
+    }, duration);
   });
+}
 
-  describe("timeout", () => {
-    test("指定時間待つと、経過時間をもって reject される", () => {
-      return timeout(50).catch((duration) => {
-        expect(duration).toBe(50);
-      });
-    });
-    test("指定時間待つと、経過時間をもって reject される", () => {
-      return expect(timeout(50)).rejects.toBe(50);
-    });
-    test("指定時間待つと、経過時間をもって reject される", async () => {
-      await expect(timeout(50)).rejects.toBe(50);
-    });
+export function timeout(duration: number) {
+  // 余談：`Promise`には二つの引数が渡せるが必ず一つ目の引数が必要となる。
+  // 今回期待する挙動は失敗処理（`reject`）で、成功処理（`resolve`）に関する引数は不要となる。
+  // 第一引数`には`_`を指定して使用しないことを明示している。
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(duration);
+    }, duration);
   });
+}
+```
+
+##### 1. `Promise`を返して`then`（または`catch`）に渡す関数内にアサーションを書く方法
+`wait`関数を実行するとPromiseインスタンスが生成される。これをテスト関数の戻り値とすることでPromiseが解決するまでテストの判定を待つ。
+
+```ts
+test("指定時間待つと、経過時間をもって resolve される", () => {
+  return wait(50).then((duration) => {
+    expect(duration).toBe(50);
+  });
+});
+```
+
+- 失敗処理（`reject`）の場合<br>
+`catch`メソッドに渡す関数内にアサーションを書く。
+```ts
+test("指定時間待つと、経過時間をもって reject される", () => {
+  return timeout(50).catch((duration) => {
+    expect(duration).toBe(50);
+  });
+});
+```
+
+##### 2. `resolves`を使用したアサーションを返す方法
+`wait`関数が`resolve`した時の値を検証したい場合、先の[方法1](#1-promiseを返してthenまたはcatchに渡す関数内にアサーションを書く方法)よりもシンプルに書ける。
+
+```ts
+test("指定時間待つと、経過時間をもって resolve される", () => {
+  return expect(wait(50)).resolves.toBe(50);
+});
+```
+
+- 失敗処理（`reject`）の場合<br>
+`rejects`マッチャーを使用して検証する方法。アサーションを返すか、`async`内でPromiseの解決を待つ。
+```ts
+test("指定時間待つと、経過時間をもって reject される", () => {
+  return expect(timeout(50)).rejects.toBe(50);
 });
 
 test("指定時間待つと、経過時間をもって reject される", async () => {
+  await expect(timeout(50)).rejects.toBe(50);
+});
+```
+
+##### 3. テスト関数を`async`関数とし、関数内で`Promise`の解決を待つ方法
+`resolves`マッチャーを使用したアサーションも`await`で待つことができる
+
+```ts
+test("指定時間待つと、経過時間をもって resolve される", async () => {
+  await expect(wait(50)).resolves.toBe(50);
+});
+```
+
+- 失敗処理（`reject`）の場合<br>
+`try{} catch{}`文を使用する方法。`Unhandled Rejection`を`try`ブロック内で発生させて、そのエラーを`catch`ブロック内で捕捉し、アサーションで検証するという方法。
+```ts
+test("指定時間待つと、経過時間をもって reject される", async () => {
+  // アサーションが一度実行されることを期待する
+  // これがないと、Promiseが解決する前にテストが終了してしまう可能性がある
   expect.assertions(1);
+
   try {
-    await timeout(50); // timeout関数のつもりが、wait関数にしてしまった
-    // ここで終了してしまい、テストは成功する
+    await timeout(50);
   } catch (err) {
-    // アサーションは実行されない
     expect(err).toBe(50);
   }
 });
+```
 
+> [!NOTE]
+> - `expect.assertions(実行される回数の期待値)`：<br>
+> アサーションが実行されることそのものを検証し、引数には実行される回数の期待値を設定する<br>
+> これがないと、**Promiseが解決する前にテストが終了してしまう可能性があるので、非同期処理テストでは冒頭に`expect.assertions`を書いておく**ことを推奨する。
+
+##### 4. 検証値の`Promise`が解決するのを待ってからアサーションに展開する方法
+この方法4が最もシンプルな書き方。`async`, `await`関数を使った書き方の場合、ほかの非同期処理のアサーションも**1つのテスト関数内に収める**ことができる。
+
+```ts
+test("指定時間待つと、経過時間をもって resolve される", async () => {
+  expect(await wait(50)).toBe(50);
+});
+```
+
+##### 非同期処理をテストする際の注意事項
+以下のテストコードでは`return`文がないため、`wait`関数の`Promise`が解決する前にテストが終了してしまう。<br>
+つまり、**アサーションが実行されないままテストが完了してしまうため、意図した検証が行われない**ことになる。<br>
+正しい方法はコメントアウト部分に記載通り`return`する。
+
+```ts
 test("return していないため、Promise が解決する前にテストが終了してしまう", () => {
   // 失敗を期待して書かれたアサーション
   expect(wait(2000)).resolves.toBe(3000);
+
   // 正しくはアサーションを return する
   // return expect(wait(2000)).resolves.toBe(3000);
 });
 ```
 
-##### ``
+> [!IMPORTANT]
+> 上記のような事態にならないよう非同期処理テストを書く際は以下に注意する
+> - `expect.assertions`を冒頭に書いてアサーションが実行されることを保証する
+> - `resolves`や`rejects`マッチャーを含むアサーションは`await`する
+> - 非同期処理を含むテストは、テスト関数を`async`関数にする
+> - `Promise`を返す場合は`return`文を忘れない
 
 ---
 
-## テストの実行
-※以下の説明は、Jestをインストール済みで、`package.json`の`scripts`セクションにテストコマンドの追記も完了している状態を前提としている。[詳細情報が必要な場合はこちら](./use-typescript-config-jest.md)。
+## モック（テストダブル）
+外部システムやAPIなどこちらでコントロール不能なものをテスト対象に含む場合、テストの安定性を確保するためにモックを活用する。<br>
+モックは**取得したデータまたはコンポーネントなどの代用品**で、関連するシステムやAPIが提供する本来の機能をエミュレート（模倣・再現）する。これにより、外部システムの状態に依存せずに一貫したテスト環境を構築できる。
 
-### `npm test`
-- 全体テスト：<br>
-プロジェクトに存在する`.test`ファイルを全て検証するので時間がかかる
+### モックの種類
+#### スタブ
+スタブの主な目的は**代用を行う**こと。例えば「Web APIからこんな値が返ってきた場合にはこのように動作する」というテストをスタブで使用する。テスト対象がスタブにアクセスすると、スタブは定められた値を返す。
 
-### `npm test ファイルパス名`
-- 単体テスト：
-    - ファイルパス指定は`/`でないと機能しない<br>
-    ※WindowsOSでのファイルパスコピー時は`\`（バックスラッシュ）となるので要注意
-    - ファイル名にコロンは不要<br>
-    ※書籍では`npm test 'ファイル名'`で紹介されているので注意
+- データや依存コンポーネントの代用品
+- 定められた値を返却するもの
+- テスト対象に**入力**を与えるためのもの
 
-```bash
-# ※ファイル名にクオーテーションは不要
-npm test src/example.test.ts
-```
+#### スパイ
+スパイの主な目的は**挙動・振る舞いの記録を行う**こと。コールバック関数を一例とすると、スパイは実行されたコールバック関数の**実行回数**や**実行時引数を記録**するので、意図通りの呼び出し（振る舞い）かどうかをチェックできる。
 
-### VSCode拡張機能`Jest Runner`を利用
-テストファイルのコード上で`Run|Debug`を実行できる
+- 関数・メソッドの呼び出しを記録するオブジェクト
+- 関数・メソッドの実行回数や実行時引数を記録するもの
+- テスト対象からの**出力**を確認するためのもの
 
 ---
 
