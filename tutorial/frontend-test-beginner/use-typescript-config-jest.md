@@ -1,4 +1,5 @@
 ## JestでTypeScriptを使うための設定手順
+React × vite を例にしています。
 
 ### 前提
 以下の公式ドキュメントを参照しましたが情報が不足しているようで上手くいきませんでした。
@@ -94,6 +95,24 @@ ts-jest[config] (WARN) message TS151001: If you have issues related to imports, 
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ]
+}
+```
+
+##### テスト関数の型定義エラーをエディタに指摘された場合
+`tsconfig.app.json`内の`"types"`プロパティに`"jest"`を追記する
+```diff
+{
+  "compilerOptions": {
+    .
+    ..
+    ...
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+-   "types": ["vite/client"],
++   "types": ["vite/client", "jest"],
+    ...
+    ..
+    .
 }
 ```
 

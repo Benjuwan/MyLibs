@@ -1,13 +1,157 @@
 # frontend-dev-security
-[フロントエンド開発のためのセキュリティ入門 知らなかったでは済まされない脆弱性対策の必須知識](https://www.shoeisha.co.jp/book/detail/9784798169477)に関する備忘録
+[フロントエンド開発のためのセキュリティ入門 知らなかったでは済まされない脆弱性対策の必須知識](https://www.shoeisha.co.jp/book/detail/9784798169477)に関する備忘録。<br>生成AIを用いた学習ドキュメントで、書籍記載以外の情報も書き残しています。
+
+## 目次
+### 1. [前提として](#前提として)
+- [機能要件・非機能要件](#機能要件非機能要件)
+  - [機能要件](#機能要件)
+  - [非機能要件](#非機能要件)
+  - [非機能要求の6つのカテゴリ](#非機能要求の6つのカテゴリ)
+
+### 2. [TCP/IP](#tcpip)
+- [TCP/IPの4つのレイヤーとその役割・代表的なプロトコル](#tcpipの4つのレイヤーとその役割代表的なプロトコル)
+  - [アプリケーション層：レイヤー4](#アプリケーション層レイヤー4最上位)
+  - [トランスポート層：レイヤー3](#トランスポート層レイヤー3)
+  - [インターネット層：レイヤー2](#インターネット層レイヤー2)
+  - [ネットワークインターフェース（データリンク）層：レイヤー1](#ネットワークインターフェースデータリンク層レイヤー1最下位)
+- [実際の通信フロー例](#実際の通信フロー例)
+
+### 3. [HTTPメッセージ](#httpメッセージ)
+- [HTTPメッセージの形式](#httpメッセージの形式)
+- [HTTPリクエスト](#httpリクエスト)
+  - [プリフライトリクエスト](#プリフライトリクエスト)
+  - [代表的なリクエストヘッダ](#代表的なリクエストヘッダ)
+- [HTTPレスポンス](#httpレスポンス)
+  - [代表的なレスポンスヘッダ](#代表的なレスポンスヘッダ)
+  - [セッション](#セッション)
+  - [クッキー](#クッキー)
+  - [キャッシュ](#キャッシュ)
+  - [HTTPメソッド](#httpメソッド)
+- [代表的なエンティティヘッダ](#代表的なエンティティヘッダ)
+
+### 4. [HTTPSの仕組み](#httpsの仕組み)
+- [TLS（Transport Layer Security）](#tlstransport-layer-security)
+  - [TLSによる通信データの暗号化](#tlsによる-通信データの暗号化)
+  - [TLSによる通信相手の検証](#tlsによる-通信相手の検証)
+  - [TLSによる通信データの改ざんチェック](#tlsによる-通信データの改ざんチェック)
+- [HTTPS通信でないと処理できない内容（Secure Context）](#https通信でないと処理できない内容secure-context)
+- [Mixed Contentの危険性](#mixed-contentの危険性)
+
+### 5. [オリジンに関する事項](#オリジンに関する事項)
+- [同一オリジンポリシー（Same-Origin Policy）](#同一オリジンポリシーsama-origin-policy)
+  - [JavaScriptを使ったクロスオリジンへのリクエスト送信](#javascriptを使ったクロスオリジンへのリクエスト送信)
+  - [JavaScriptを使ったiframe内のクロスオリジンのページへのアクセス](#javascriptを使ったiframe内のクロスオリジンのページへのアクセス)
+  - [クロスオリジンの画像を読み込んだcanvas要素のデータへのアクセス](#クロスオリジンの画像を読み込んだ-canvas-要素のデータへのアクセス)
+  - [Web StorageやIndexDBに保存されたクロスオリジンのデータへのアクセス](#web-storageやindexdbに保存されたクロスオリジンのデータへのアクセス)
+  - [制限されないクロスオリジンアクセス事例（8例）](#制限されないクロスオリジンアクセス事例8例)
+- [CORS（Cross-Origin Resource Sharing）](#corscross-origin-resource-sharing)
+  - [CORSの仕組み](#corsの仕組み)
+  - [crossorigin属性](#crossorigin属性)
+  - [JSファイルに対してCORSヘッダーを追加](#jsファイルに対してcorsヘッダーを追加)
+  - [crossorigin属性とfetch APIのcredentialsとの対応関係比較](#crossorigin属性とfetch-apiのcredentialsとの対応関係比較)
+- [CORS-safelisted](#cors-safelisted)
+  - [CORS-safelisted methodの一覧](#cors-safelisted-methodの一覧)
+  - [CORS-safelisted request-headerの一覧](#cors-safelisted-request-headerの一覧)
+
+### 6. [サイドチャネル攻撃](#サイドチャネル攻撃)
+- [サイドチャネル攻撃を防ぐSite Isolation](#サイドチャネル攻撃を防ぐ-site-isolation)
+  - [Site Isolationによって制限されてしまった機能の有効化](#site-isolationによって制限されてしまった機能の有効化)
+  - [CORP, COEP, COOP](#corp-coep-coop)
+
+### 7. [クロスサイトスクリプティング（XSS）](#クロスサイトスクリプティングxsscross-site-scripting)
+- [基本的な仕組み](#基本的な仕組み)
+- [主な種類](#主な種類)
+  - [反射型XSS（Reflected XSS）](#主な種類)
+  - [蓄積型・格納型XSS（Stored XSS）](#主な種類)
+  - [DOM型XSS（DOM-based XSS）](#主な種類)
+- [フロントエンドに密接なDOM型XSSの仕組み](#フロントエンドに密接な-dom型xss-の仕組み)
+  - [Source（ソース）](#sourceソースdom-based-xssを引き起こす原因となる箇所入口)
+  - [Sink（シンク）](#sinkシンクソースからjavascriptを生成実行してしまう箇所出口)
+- [対策](#対策)
+
+### 8. [CSP（Content Security Policy）](#cspcontent-security-policy)
+- [CSPの設定方法](#cspの設定方法httpヘッダ-またはmeta要素に設定)
+- [ディレクティブ（ポリシーディレクティブ）](#ディレクティブポリシーディレクティブ)
+  - [CSPの代表的なディレクティブ一覧](#cspの代表的なディレクティブ一覧)
+  - [CSPに指定できるソースのキーワード](#cspに指定できるソースのキーワード)
+- [Strict CSP](#strict-csp)
+  - [nonce-source](#nonce-source)
+  - [hash-source](#hash-source)
+- [Trusted Type](#trusted-type)
+  - [制限対象となるDOM API](#制限対象となるdom-api)
+  - [型の種類](#型の種類)
+- [Report-Onlyモード](#report-only-モード)
+  - [段階的なCSP導入ロードマップ](#段階的なcsp導入ロードマップ)
+  - [Report-Onlyモードの概要](#report-only-モードの概要)
+
+### 9. [CSRF（クロスサイトリクエストフォージェリ）](#csrfクロスサイトリクエストフォージェリ)
+- [基本的な仕組み](#基本的な仕組み-1)
+- [詐取から被害発生までの事例フロー](#詐取から被害発生までの事例フロー)
+- [CSRFへの対策方法](#csrfへの対策方法)
+  - [トークン発行](#トークン発行)
+  - [トークン発行による防御の仕組み](#トークン発行による防御の仕組み)
+  - [Double Submit Cookie（二重送信クッキー）](#double-submit-cookie二重送信クッキー)
+  - [二重送信クッキーによる防御の仕組み](#二重送信クッキーによる防御の仕組み)
+  - [二重送信クッキーのユースケース](#二重送信クッキーのユースケース)
+  - [SameSite Cookie](#samesite-cookie)
+  - [SameSite Cookieによる防御の仕組み](#samesite-cookieによる防御の仕組み)
+  - [SameSite属性に指定できる値](#samesite属性に指定できる値)
+  - [CORSを活用](#corsを活用)
+
+### 10. [クリックジャッキング（ClickJacking）](#クリックジャッキングclickjacking)
+- [クリックジャッキングの仕組み](#クリックジャッキングの仕組み)
+- [クリックジャッキングの対策方法](#クリックジャッキングの対策方法)
+  - [X-Frame-Optionsヘッダ](#x-frame-options-ヘッダ)
+  - [CSPのframe-ancestorsディレクティブ](#cspのframe-ancestorsディレクティブ)
+
+### 11. [クリックフィックス（ClickFix）](#クリックフィックスclickfix)
+- [クリックフィックスの事例紹介](#クリックフィックスの事例紹介)
+- [クリックフィックスの対策方法](#クリックフィックスの対策方法)
+
+### 12. [オープンリダイレクト](#オープンリダイレクト)
+- [オープンリダイレクトの仕組み](#オープンリダイレクトの仕組み)
+- [オープンリダイレクトの対策方法](#オープンリダイレクトの対策方法)
+  - [URL検査（ホワイトリスト方式）](#url検査ホワイトリスト方式)
+
+### 13. [認証・認可](#認証認可)
+- [Authentication：認証（あなたは誰？）](#authentication-認証あなたは誰)
+  - [認証の種類](#認証の種類)
+  - [古くからあるパスワード認証に対する攻撃](#古くからあるパスワード認証に対する攻撃)
+- [Authorization：認可（どのような権限を持っている？）](#authorization-認可どのような権限を持っている)
+- [ログイン情報の漏洩に注意する](#ログイン情報の漏洩に注意する)
+  - [ユーザー情報を入力するページにおいて、Web解析ツールの導入は慎重に](#ユーザー情報を入力するページにおいてweb解析ツールの導入は慎重に)
+  - [ブラウザへのセンシティブ情報の保持は慎重に](#ブラウザへのセンシティブ情報の保持は慎重に)
+  - [Cookieの取り扱い](#cookieの取り扱い)
+  - [Webストレージ使用時の注意点](#webストレージlocalstoragesessionstorageのみ使用時の注意点)
+  - [Webストレージ保存を実装する開発者に必要な意識](#webストレージ保存を実装する開発者に必要な意識)
+- [補足：パスワード入力時のUXを向上させるフォームづくりのTips](#補足パスワード入力時のuxを向上させるフォームづくりのtips)
+
+### 14. [用語集](#用語集)
+
+---
+
+## 📊 クイックリファレンス
+
+### 攻撃手法一覧
+| 攻撃手法 | 主な標的 | 主な対策 |
+|---------|---------|---------|
+| [XSS](#クロスサイトスクリプティングxsscross-site-scripting) | クライアント側スクリプト実行 | サニタイズ、CSP、HttpOnly Cookie |
+| [CSRF](#csrfクロスサイトリクエストフォージェリ) | ユーザーの意図しないリクエスト送信 | CSRFトークン、SameSite Cookie |
+| [クリックジャッキング](#クリックジャッキングclickjacking) | ユーザーの意図しないクリック | X-Frame-Options、frame-ancestors |
+| [オープンリダイレクト](#オープンリダイレクト) | 不正サイトへの誘導 | URLホワイトリスト検証 |
+
+### セキュリティヘッダー一覧
+| ヘッダー名 | 目的 | 関連セクション |
+|-----------|------|---------------|
+| Content-Security-Policy | スクリプト実行制御 | [CSP](#cspcontent-security-policy) |
+| X-Frame-Options | iframe埋め込み制御 | [クリックジャッキング対策](#クリックジャッキングの対策方法) |
+| Strict-Transport-Security | HTTPS強制 | [HTTPS](#httpsの仕組み) |
+| Set-Cookie (SameSite) | CSRF対策 | [SameSite Cookie](#samesite-cookie) |
+
+---
 
 ## 前提として
 - セキュリティの動向は時代背景や技術進歩、攻撃手法の変化から年々変わるものという意識を持つ
-
-## 細目
-- `CDN`（`Content Delivery Network`）<br>
-Webページのリソースを高速かつ効率よく配信するためのサーバを提供する仕組み。<br>世界中にサーバを用意することで、遠い国で開発されているWebアプリケーションでも、近くのCDNサーバからコンテンツ（※主にJavaScriptやCSSなど各種ライブラリまたは画像ファイルなど）を取得することができ、Webページの表示を高速化できる。<br><br>
-オリジンサーバに都度問い合わせるのではなく、近場にデータをキャッシュしておいて、それを参照する「エッジコンピューティング」の仕組みに似ている。
 
 ### 機能要件・非機能要件
 #### 機能要件
@@ -41,7 +185,7 @@ Webページのリソースを高速かつ効率よく配信するためのサ�
 
 ## TCP/IP
 ### TCP/IPの4つのレイヤーとその役割・代表的なプロトコル
-### アプリケーション層：レイヤー4
+### アプリケーション層：レイヤー4（最上位）
 - **主な役割**: アプリケーションに応じた通信をする
 - **代表的なプロトコル**: HTTP, FTP, DNS, SMTP, POP3, IMAP
 
@@ -55,7 +199,7 @@ Webページのリソースを高速かつ効率よく配信するためのサ�
 - **主な役割**: どのコンピュータにデータを届ける（伝達経路の選択：ルーティングする）か決定する
 - **代表的なプロトコル**: IP, ICMP, ARP, IGMP
 
-### ネットワークインターフェース（データリンク）層：レイヤー1
+### ネットワークインターフェース（データリンク）層：レイヤー1（最下位）
 - **主な役割**: 通信機器は文字や数字のデータをそのまま送ることができず、物理的に送信可能な電気信号に変換してデータをやりとりする。データリンク層は電気信号を相手に届けたり、電気信号の伝送制御や誤りの検知を行う
 - **代表的なプロトコル**: 
   - **Ethernet**: 有線LAN
@@ -179,7 +323,7 @@ content-type: text/html;
 ...
 ..
 .
-content-lenght: 648
+content-length: 648
 # 空白行（ここまでヘッダ）
 # ボディ：以降の行
 <!doctype html>
@@ -630,7 +774,7 @@ const allowLists = [
   // Origin ヘッダが存在している かつ リクエスト許可するリスト内に Origin ヘッダの値が含まれているかチェック
   if(req.headers.origin && allowLists.includes(req.headers.origin)){
     res.header("Access-Control-Allow-Headers", "example-Token-Header");
-    res.header("Access-Control-Allow-Origin", "https://site.example");
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
   }
 }
 
@@ -652,10 +796,10 @@ const allowLists = [
 #### Site Isolation によって制限されてしまった機能の有効化
 Site Isolation によってサイドチャネル攻撃の大部分を防ぐことができるようになった代わりに、いくつかのAPIや機能が無効化されてしまうことになった。これら制限された機能を有効にするには、オリジンごとにプロセスを分けてサイドチャネル攻撃が発生しないことを保障せねばならならない。オリジンごとにプロセスを分離する仕組みを`Cross-Origin Isolation`といって、これをWeb開発者が任意で有効化できる仕組みが用意されている。
 
-##### `COPR`, `COEP`, `COOP`
+##### `CORP`, `COEP`, `COOP`
 以下の3つの仕組みを有効化（レスポンスヘッダに設定）することで、Site Isolation によって制限された機能を扱えるようになる
 
-- `Cross-Origin Resource Policy`（`COPR`）<br>
+- `Cross-Origin Resource Policy`（`CORP`）<br>
 リソースの読み込み制御：他のオリジンからのリソース読み込みを制限するポリシー
 - `Cross-Origin Embedder Policy`（`COEP`）<br>
 埋め込みリソースの制御：ページに埋め込まれるすべてのリソースに対してCORSまたはCORPの明示的な許可（設定強制）を要求
@@ -859,8 +1003,7 @@ CSPを適用したページでは、明示的に`'unsafe-inline'`キーワード
 ```bash
 Content-Security-Policy: 
   script-src 'nonce-r4nd0m123abc' 'strict-dynamic';
-  style-src 'nonce-r4nd0m123abc';
-  https: 'unsafe-inline';
+  style-src 'nonce-r4nd0m123abc' 'unsafe-inline' https:;
   object-src 'none';
   base-uri 'none';
   require-trusted-types-for 'script'
@@ -993,6 +1136,19 @@ if (window.trustedTypes && trustedTypes.createPolicy) {
 CSPはXSSを防ぐ強力な手段だが、間違った実装をすると（JavaScript）プログラムの動作不具合を引き起こす可能性もある。そこで、**CSP適用時にWebアプリケーションの動作チェックを担うテストのために用意されているのが「Report-Only モード」**である。<br>
 CSPの実施においては、Report-Only モードで数週間～数か月運用してみてCSP違反がないことを確認した上で実施し、 **CSP適用後もレポートを送信して監視を続けることが推奨**されている。
 
+#### 段階的なCSP導入ロードマップ
+##### Phase 1: Report-Onlyモードで検証
+Content-Security-Policy-Report-Only: default-src 'self'; report-uri /csp-report
+
+##### Phase 2: 基本的な制約を適用
+Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.trusted.com
+
+##### Phase 3: Strict CSPへ移行
+Content-Security-Policy: 
+  script-src 'nonce-{random}' 'strict-dynamic';
+  object-src 'none';
+  base-uri 'none'
+
 #### Report-Only モードの概要
 Report-Only モードとは、CSP適用時に発生する影響をまとめたレポートをJSON形式（かつPOSTメソッド）で送信する機能である。Webアプリケーションには実際に適用しないので影響はないものの、もし適用していた場合の不具合検証をチェックできる。
 
@@ -1032,7 +1188,13 @@ XSSと違って、攻撃者が自由にスクリプトを動作（例：不正�
 罠サイトからの不正なリクエストなのか、Webアプリケーションからの正規のリクエストなのかを**サーバ内で検証するのが最も重要な対策**となる。この要点を抑えるのが「トークン（乱数・一意な固有の文字列）発行」という対策方法になる。
 
 ##### トークン発行による防御の仕組み
-1. ページアクセスのリクエストを受け取ったサーバは、**ランダムな文字列（トークン）を生成してセッションごとにサーバ内に保管**し、そのトークンをHTMLに埋め込む（※セッションごとに異なる値のトークンを発行しなければ、攻撃者にトークンが知られてしまった際に、CSRF対策として成り立たないので注意）
+1. ページアクセスのリクエストを受け取ったサーバは、**ランダムな文字列（トークン）を生成してセッションごとにサーバ内に保管**し、そのトークンをHTMLに埋め込む
+
+なお、トークンは以下のいずれかの方法で実装する：<br>
+※いずれも攻撃者がトークンを推測できないよう、暗号学的に安全な乱数生成が必須<br>
+- セッションごとに異なるランダム値を生成し、サーバー側で検証
+- リクエストごとに異なるトークン（ワンタイムトークン）を発行
+
 ```html
 <form action="/transfer" method="POST">
   <!-- トークンはユーザーにとって見える必要のない情報なので hidden で非表示にしておくこと -->
@@ -1074,6 +1236,15 @@ csrfToken=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6&to=john%40example.com&amount=1000
   - ブラウザのJavaScriptを使ってCookie内のトークンを取り出し、フォームデータと共にCookieもサーバに送信する
     - ※ドメインが異なるページのCookieにはアクセスできないようブラウザが制御しているので、正規ユーザーが罠サイトを踏んでも罠サイト側でCookieを詐取するのは不可能
 4. サーバはCookieのトークンとリクエスト内のトークンが一致するかチェック（※一致しない場合は不正なリクエストとしてエラー処理）
+
+> [!NOTE]
+> - `Double Submit Cookie`の重大な制限
+>   1. サブドメイン攻撃に脆弱
+>      - 攻撃者が`evil.example.com`を制御できる場合、`.example.com`ドメインにCookieを設定可能
+>   2. XSS脆弱性がある場合、完全に無効化される
+>      - HttpOnly属性がないため、攻撃者がトークンを読み取り可能
+>
+> 対応方法: サーバーサイドでのトークン検証を優先し、`Double Submit Cookie`は補助的な対策として使用する
 
 ```js
 // CSRFトークンをCookieとヘッダ両方で送信
@@ -1122,7 +1293,7 @@ Set-Cookie: sessionid=abc123; SameSite=Strict; Secure; HttpOnly
 サイトに関係なく、すべてのリクエストでCookieを送信する
 
 > [!NOTE]
-> - `SameSite`属性を指定しない場合、一定時間後に`Lax`が付与される<br>
+> - `SameSite`属性を指定しない場合、一定時間後に`Lax`が付与される（※ただしこれはChromeの一時的な緩和措置であり、すべてのブラウザで適用されるわけではない）<br>
 > `SameSite=Lax`（デフォルト）の場合「クロスサイトからのリクエストにはCookieを付与しない」ので、Webアプリケーションに意図しない影響を及ぼすリスクがある<br>
 > そのため Chromeなど一部ブラウザでは、緩和策として **`SameSite`属性が指定されていないCookieは発行後 2分ほど経過した後に`Lax`となる** ようにしている。<br>
 > つまり、**Cookie発行から2分ほどはCSRFのリスクがある**ので、`Lax`がデフォルトであるのを過信して`SameSite`属性を指定しないことを是とせずに、この緩和策を保険的対策としてとらえておく方が良い
@@ -1288,7 +1459,12 @@ app.get("/redirect", (req, res) => {
       return res.redirect(url.pathname);
     }
 
-    // 条件2: 許可された外部ドメインの場合 → OK
+    // 条件2: プロトコルの検証
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+      return res.redirect("/home");
+    }
+
+    // 条件3: 許可された外部ドメインの場合 → OK
     if (allowedHosts.includes(url.hostname)) {
       return res.redirect(url.href);
     }
@@ -1400,3 +1576,8 @@ toggleButton.addEventListener('click', () => {
   passwordInput.focus();
 });
 ```
+
+## 用語集
+### `CDN`（`Content Delivery Network`）
+Webページのリソースを高速かつ効率よく配信するためのサーバを提供する仕組み。<br>世界中にサーバを用意することで、遠い国で開発されているWebアプリケーションでも、近くのCDNサーバからコンテンツ（※主にJavaScriptやCSSなど各種ライブラリまたは画像ファイルなど）を取得することができ、Webページの表示を高速化できる。<br><br>
+オリジンサーバに都度問い合わせるのではなく、近場にデータをキャッシュしておいて、それを参照する「エッジコンピューティング」の仕組みに似ている。
