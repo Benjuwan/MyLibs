@@ -356,7 +356,7 @@ const mockFn = jest.fn();
 ```
 
 #### `toHaveBeenCalled`
-実行されたかどうか検証する
+モック関数が実行されたかどうか検証する
 ```ts
 test("モック関数は実行された", () => {
   const mockFn = jest.fn();
@@ -371,7 +371,7 @@ test("モック関数は実行されていない", () => {
 ```
 
 #### `toHaveBeenCalledTimes`
-何回実行されたか検証する
+モック関数が何回実行されたか検証する
 ```ts
 test("モック関数は実行された回数を記録している", () => {
   const mockFn = jest.fn();
