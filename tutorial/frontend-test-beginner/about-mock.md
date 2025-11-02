@@ -443,4 +443,282 @@ test("モック関数は関数の中でも実行できる", () => {
 より詳細な事例・コード説明は[用途別マッチャー | モック関数](./about-matcher.md#モック関数)にまとめている。
 
 ### モック関数の実用例
-#### 例：入力値に応じたレスポンスデータの切替
+#### 例1：入力値に応じたレスポンスデータの切替
+記事コンテンツの内容（タイトルや本文）が存在するかどうかを検証するサーバサイドでのテストを想定したケース
+```ts
+export class ValidationError extends Error { }
+
+export function checkLength(value: string) {
+  // 記事コンテンツに内容（タイトルや本文）が存在しなければ例外スロー
+  if (value.length === 0) {
+    throw new ValidationError("1文字以上入力してください");
+  }
+}
+```
+
+##### モック生成関数：`mockPostMyArticle`
+```ts
+import { checkLength } from ".";
+import * as Fetchers from "../fetchers";
+import { postMyArticle } from "../fetchers";
+import { httpError, postMyArticleData } from "../fetchers/fixtures";
+
+type ArticleInput = {
+  tags: string[];
+  title: string;
+  body: string;
+};
+
+jest.mock("../fetchers");
+
+function mockPostMyArticle(input: ArticleInput, status = 200) {
+  if (status > 299) {
+    return jest
+      .spyOn(Fetchers, "postMyArticle")
+      .mockRejectedValueOnce(httpError);
+  }
+  try {
+    checkLength(input.title);
+    checkLength(input.body);
+    return jest
+      .spyOn(Fetchers, "postMyArticle")
+      .mockResolvedValue({ ...postMyArticleData, ...input });
+  } catch (err) {
+    return jest
+      .spyOn(Fetchers, "postMyArticle")
+      .mockRejectedValueOnce(httpError);
+  }
+}
+```
+
+##### テスト検証用のヘルパー関数
+「送信する値を動的に作成する」テスト検証に使用するヘルパー関数を別途用意
+```ts
+// すでにテストを通過できるような記述になっており、
+// 引数`input`はオプショナルで、
+// ArticleInput`の内容（プロパティ）を部分的に持つかどうか判断する型注釈
+function inputFactory(input?: Partial<ArticleInput>) {
+  return {
+    tags: ["testing"],
+    title: "TypeScript を使ったテストの書き方",
+    body: "テストを書く時、TypeScript を使うことで、テストの保守性が向上します。",
+    // 引数をスプレッド演算子で展開することで上記プロパティの値を上書きする仕様
+    ...input,
+  };
+}
+```
+
+##### テストコード
+- 一部
+```ts
+test("バリデーションに成功した場合、成功レスポンスが返る", async () => {
+  // バリデーションに通過する入力値を用意
+  const input = inputFactory();
+
+test("バリデーションに失敗した場合、reject される", async () => {
+  expect.assertions(2);
+  // バリデーションに通過しない入力値を用意
+  const input = inputFactory({ title: "", body: "" });
+```
+
+<details>
+<summary>コード全文</summary>
+
+```ts
+test("バリデーションに成功した場合、成功レスポンスが返る", async () => {
+  // バリデーションに通過する入力値を用意
+  const input = inputFactory();
+  // 入力値を含んだ成功レスポンスが返るよう、モックを施す
+  const mock = mockPostMyArticle(input);
+  // テスト対象の関数に、input を与えて実行
+  const data = await postMyArticle(input);
+
+  // 取得したデータに、入力内容が含まれているかを検証
+  expect(data).toMatchObject(expect.objectContaining(input));
+  // モック関数が呼び出されたかを検証
+  expect(mock).toHaveBeenCalled();
+});
+
+test("バリデーションに失敗した場合、reject される", async () => {
+  expect.assertions(2);
+
+  // バリデーションに通過しない入力値を用意
+  const input = inputFactory({ title: "", body: "" });
+  // 入力値を含んだ成功レスポンスが返るよう、モックを施す
+  const mock = mockPostMyArticle(input);
+
+  // バリデーションに通過せず reject されるかを検証
+  await postMyArticle(input).catch((err) => {
+    // エラーオブジェクトをもって reject されたことを検証
+    expect(err).toMatchObject({ err: { message: expect.anything() } });
+    // モック関数が呼び出されたことを検証
+    expect(mock).toHaveBeenCalled();
+  });
+});
+
+test("データ取得に失敗した場合、reject される", async () => {
+  expect.assertions(2);
+
+  // バリデーションに通過する入力値を用意
+  const input = inputFactory();
+  // 失敗レスポンスが返るようモックを施す
+  const mock = mockPostMyArticle(input, 500);
+  // reject されるかを検証
+
+  await postMyArticle(input).catch((err) => {
+    // エラーオブジェクトをもって reject されたことを検証
+    expect(err).toMatchObject({ err: { message: expect.anything() } });
+    // モック関数が呼び出されたことを検証
+    expect(mock).toHaveBeenCalled();
+  });
+});
+```
+
+</details>
+
+#### 例2：現在時刻に依存したテスト
+日付に関連する処理をテストする際は**日付データを動的に取得**するようにしないと正確な検証にならない。<br>
+例えば、テストが通ることを確認する挙動・振る舞いチェックの段階では日付データを固定値で用意していても良いかもだが、そのままだと**時刻が変わるとテストが落ちてしまうかも**しれない。
+
+- テスト対象コード：朝昼夜の時間帯に応じて挨拶を返す関数
+```ts
+export function greetByTime() {
+  const hour = new Date().getHours();
+
+  if (hour < 12) {
+    return "おはよう";
+  } else if (hour < 18) {
+    return "こんにちは";
+  }
+  return "こんばんは";
+}
+```
+
+##### テストコード
+```ts
+import { greetByTime } from ".";
+
+describe("greetByTime(", () => {
+  // `beforeEach`, `afterEach`で偽のタイマー切替を実施
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    // `setSystemTime`で設定した時刻を正しい時刻に戻すためのクリーンアップ
+    jest.useRealTimers();
+  });
+
+  // テストコード
+  test("朝は「おはよう」を返す", () => {
+    jest.setSystemTime(new Date(2023, 4, 23, 8, 0, 0));
+    expect(greetByTime()).toBe("おはよう");
+  });
+
+  test("昼は「こんにちは」を返す", () => {
+    jest.setSystemTime(new Date(2023, 4, 23, 14, 0, 0));
+    expect(greetByTime()).toBe("こんにちは");
+  });
+
+  test("夜は「こんばんは」を返す", () => {
+    jest.setSystemTime(new Date(2023, 4, 23, 21, 0, 0));
+    expect(greetByTime()).toBe("こんばんは");
+  });
+});
+```
+
+- `jest.useFakeTimers();`<br>
+Jestに偽のタイマーを使用するように指示
+
+- `jest.useRealTimers();`<br>
+Jest真のタイマーを使用するように指示
+
+- `jest.setSystemTime();`<br>
+偽のタイマーで使用される現在システム時刻を設定
+
+- セットアップ用のフック：<br>
+`beforeEach`, `afterEach`で偽のタイマー切替を実施
+
+  - `beforeAll`：スイート初期化（1回）
+  - `beforeEach`：各テスト前の準備（毎回）
+  - `afterEach`：各テスト後のクリーンアップ（毎回）
+  - `afterAll`：スイート全体のクリーンアップ処理（1回）
+
+> [!NOTE]
+> - **スイート**：<br>
+> スコープ（有効範囲）と近いニュアンスを持つが対テストに特化した意味合いを持つ。<br>
+> テストのグループ（`describe`ブロック）をはじめ、セットアップ／ティアダウン（`beforeAll`, `afterAll` / `beforeEach`, `afterEach`）やレポートの単位になる。<br>
+> 入れ子可能でフックはそのスイート内に限定して作用する。
+
+```ts
+import * as Fetchers from "../fetchers";
+import { getGreet } from "./getGreet";
+import { greetByTime } from "./time";
+
+// 対象モジュールを自動モック化（各エクスポートが`jest.fn()`になる）
+jest.mock("../fetchers");
+
+describe("getGreet: スイートのセットアップ組み合わせ", () => {
+  // スイート全体で1度だけ行う初期化（例：モックサーバ起動の代替やグローバルフラグ）
+  beforeAll(() => {
+    // テスト環境フラグ
+    // `globalThis`を用いることで「フロントエンドとバックエンドどちらの環境でもグローバルに操作可能なテスト環境設定用の変数（定数）」となる
+    globalThis.__TEST_ENV__ = { ready: true };
+
+    // 全テスト共通のデフォルト戻り値（必要に応じて上書きされる）
+    (Fetchers.getMyProfile as jest.Mock).mockResolvedValue({ name: "Default" });
+  });
+
+  // 各テストの直前に実行
+  // テストごとに個別のモック挙動を設定する用途に使う
+  beforeEach(() => {
+    // 呼び出し履歴や以前の`mock`状態をクリア
+    // `mock`の実装も消したければ`jest.resetAllMocks`を、
+    // `spy`を元に戻すなら`jest.restoreAllMocks`を使う
+    jest.clearAllMocks();
+  });
+
+  // 各テスト直後のクリーンアップ（副作用解除等）
+  afterEach(() => {
+    // 例: 一時ファイル削除やタイマークリアなど（ここでは特になし）
+  });
+
+  // スイート終了時の後片付け（スイート全体のクリーンアップ）
+  afterAll(() => {
+    // フロントエンドとバックエンドどちらの環境でもグローバルに操作可能なテスト環境設定用の変数を削除
+    // 今回グローバル変数への明確な型注釈がないので以下のような`any`指定の型回避の記述になっている
+    delete (globalThis as any).__TEST_ENV__;
+    // spy を元に戻す等
+    jest.restoreAllMocks();
+  });
+
+  test("データ取得成功時：名前が存在する場合は挨拶を返す", async () => {
+    // このテストでは `name`プロパティの値に`Taro`が返るように設定（単発）
+    (Fetchers.getMyProfile as jest.Mock).mockResolvedValueOnce({ name: "Taro" });
+    const message  = await getGreet();
+    expect(message ).toBe("Hello, Taro!");
+    // 1度だけ実行されるのをチェック
+    expect(Fetchers.getMyProfile).toHaveBeenCalledTimes(1);
+  });
+
+  test("データ取得失敗時：例外を投げる（エラーハンドリング確認）", async () => {
+    // このテストでは失敗をシミュレート
+    (Fetchers.getMyProfile as jest.Mock).mockRejectedValueOnce(new Error("network"));
+    await expect(getGreet()).rejects.toThrow("network");
+  });
+
+  test("spyOn で時刻依存挙動を検証する（同期テストの例）", () => {
+    // `Date.now`を一時的にモックして`greetByTime`の挙動を固定化
+    // ※あくまで「処理の挙動・振る舞いをチェックすることが目的」なので、確認後は固定値指定を排除したほうがテスト検証精度が高くなる
+    const spy = jest.spyOn(Date, "now").mockImplementation(() =>
+      new Date("2020-01-01T09:00:00Z").getTime()
+    );
+
+    const out = greetByTime(); // 例: "Good morning" を含むことを期待
+    expect(out).toMatch(/Good morning|Morning/);
+
+    // spy を元に戻す（afterAll でも restoreAllMocks をしているが、明示的に復元）
+    spy.mockRestore();
+  });
+});
+```
