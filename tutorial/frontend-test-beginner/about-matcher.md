@@ -383,6 +383,8 @@ test("モック関数は実行された回数を記録している", () => {
 ```
 
 #### `toHaveBeenCalledWith`
+指定した引数を持って、テスト対象の関数・メソッドが呼び出されたかを検証する
+
 - テスト対象メソッド`greet`の中身
 ```ts
 export function greet(
@@ -409,5 +411,48 @@ test("モック関数はテスト対象の引数として使用できる", () =>
   const mockFn = jest.fn();
   greet("Jiro", mockFn); // 第二引数にコールバック関数としてモック関数を指定
   expect(mockFn).toHaveBeenCalledWith("Hello! Jiro");
+});
+```
+
+##### `toHaveBeenCalledWith`は配列やオブジェクトも検証可能
+先のコードでは文字列`hello`や`Jiro`を引数に持った事例だったが、`toHaveBeenCalledWith`は配列やオブジェクトも検証できる。
+
+- テスト対象メソッド
+```ts
+const config = {
+  mock: true,
+  feature: { spy: true },
+};
+
+export function checkConfig(callback?: (payload: object) => void) {
+  // 引数`callback`はオプショナルなので引数指定されなければ`undefined`で処理が流される
+  // 以下は「引数に指定された値が定義した型準拠の関数（`(payload: object) => void`）である場合のみ、
+  // その関数を`config`オブジェクトを引数として実行する」という記述
+  callback?.(config);
+}
+```
+
+```ts
+import { checkConfig } from "./checkConfig";
+
+test("モック関数は実行時引数のオブジェクト検証ができる", () => {
+  const mockFn = jest.fn();
+  checkConfig(mockFn);
+  expect(mockFn).toHaveBeenCalledWith({
+    mock: true,
+    feature: { spy: true },
+  });
+});
+
+test("expect.objectContaining による部分検証", () => {
+  const mockFn = jest.fn();
+  checkConfig(mockFn);
+  expect(mockFn).toHaveBeenCalledWith(
+    // objectContaining： オブジェクトに含まれるオブジェクトを検証する。
+    // 具体的には、対象プロパティが期待値のオブジェクトと部分一致するかどうかをチェックする。
+    expect.objectContaining({
+      feature: { spy: true },
+    })
+  );
 });
 ```
