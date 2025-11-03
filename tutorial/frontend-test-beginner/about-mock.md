@@ -693,7 +693,7 @@ describe("getGreet: スイートのセットアップ組み合わせ", () => {
   });
 
   test("データ取得成功時：名前が存在する場合は挨拶を返す", async () => {
-    // このテストでは `name`プロパティの値に`Taro`が返るように設定（単発）
+    // このテストでは`name`プロパティの値に`Taro`が返るように設定（単発）
     (Fetchers.getMyProfile as jest.Mock).mockResolvedValueOnce({ name: "Taro" });
     const message  = await getGreet();
     expect(message ).toBe("Hello, Taro!");
