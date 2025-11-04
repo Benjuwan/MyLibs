@@ -5,23 +5,6 @@
 DragDropSort（`src/components/dragdropsort`）は、リストをドラッグ&ドロップで任意の順番に並び替えられる（ソート）機能です。<br>※スマホ／タブレットでの挙動がチラついています。
 
 ### デフォルトからの変更箇所
-- `tsconfig.app.json`<br>
-`target`や`lib`の`ESM`のバージョンを変更。`src/hooks/useHandleInputValueSanitize.ts`カスタムフック内の`replaceAll`メソッドを使用できるようにするため。
-
-```diff
-{
-  "compilerOptions": {
--   "target": "ES2020",
-+   "target": "ES2021",
-    "useDefineForClassFields": true,
--   "lib": ["ES2020", "DOM", "DOM.Iterable"],
-+   "lib": ["ES2021", "DOM", "DOM.Iterable"],
-    ...
-    ..
-    .
-}
-```
-
 - `vite.config.ts`<br>
 `base`の追加（ホスティング先の指定）
 
@@ -33,18 +16,19 @@ export default defineConfig({
 ```
 
 ### 技術構成
-- @eslint/js@9.38.0
-- @types/react-dom@18.3.7
-- @types/react@18.3.26
+- @eslint/js@9.39.1
+- @types/react-dom@19.2.2
+- @types/react@19.2.2
 - @types/uuid@10.0.0
-- @vitejs/plugin-react@4.7.0
-- eslint-plugin-react-hooks@5.2.0
+- @vitejs/plugin-react@5.1.0
+- eslint-plugin-react-hooks@7.0.1
 - eslint-plugin-react-refresh@0.4.24
-- eslint@9.38.0
-- globals@15.15.0
-- react-dom@18.3.1
-- react@18.3.1
-- typescript-eslint@8.46.2
+- eslint-plugin-react@7.37.5
+- eslint@9.39.1
+- globals@16.5.0
+- react-dom@19.2.0
+- react@19.2.0
+- typescript-eslint@8.46.3
 - typescript@5.9.3
-- uuid@10.0.0
-- vite@6.4.1
+- uuid@13.0.0
+- vite@7.1.12

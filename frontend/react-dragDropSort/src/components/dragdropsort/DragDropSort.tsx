@@ -14,7 +14,7 @@ export const DragDropSort = () => {
     ];
     const [lists, setLists] = useState<listsType[]>(initLists);
 
-    const dropzoneRef = useRef<HTMLUListElement>(null);
+    const dropzoneRef = useRef<HTMLUListElement | null>(null);
     const { dragstart, dragend, dragover, drop } = useDragDrop(dropzoneRef);
 
     return (
