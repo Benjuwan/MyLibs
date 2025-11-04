@@ -24,11 +24,21 @@ MPAと異なり、SPAでは再利用性を考慮してコンポーネント指�
 例えば、見た目を意識しすぎてチェックボックス（`input`要素）をCSSで消去（非表示化）してしまうなどが代表的な失敗例。
 
 ### UIコンポーネントテストで利用するテスティングフレームワーク・ライブラリ
-#### jsdom
+#### [jsdom](https://www.npmjs.com/package/jsdom)
 バックエンド（サーバーサイド）での JavaScript 実行環境である`Node.js`上で、HTMLやDOM操作を実現するライブラリ。<br>これにより、ブラウザがなくてもWebブラウザの一部機能をエミュレートできるため、ウェブアプリケーションのテストやスクレイピングなどに利用できる。
 
-- 使用するには別途インストールして設定する必要がある
-```ts
+##### 使用するには別途インストールして設定する必要がある
+- インストール<br>
+**Jestで使う場合、Jest 28以降では`jest-environment-jsdom`も別途必要**
+```bash
+npm install --save-dev jsdom
+
+# ※Jestで使う場合は、Jest 28以降では jest-environment-jsdom も別途必要
+npm install --save-dev jest-environment-jsdom
+```
+
+- 各種設定
+```js
 // jest.config.js
 module.exports = {
   testEnvironment: 'jsdom',
@@ -50,29 +60,12 @@ module.exports = {
 /**
  * @jest-environment jsdom
  */
+
+import { render } from '@testing-library/react'
+// テストコード...
 ```
 
----
-
-- 補足：<br>
-Jest設定の`setupFilesAfterEnv`でこのファイルを指定しておくと、すべてのテストで自動的に`jest-dom`マッチャーが使用可能となる。
-
-- `setupTests.ts`
-```ts
-import '@testing-library/jest-dom';
-```
-
-- `jest.config.js`
-```ts
-module.exports = {
-  testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
-};
-```
-
-この設定はNext.js公式テンプレートにも共通。
-
-#### Testing Library
+#### [Testing Library](https://testing-library.com/)
 UIコンポーネントのテスト用ライブラリ。<br>基本原則として**テストがソフトウェアの使用方法に似ている**ことを推奨していて、具体的にはクリックやマウスホバー、キーボード入力など**Web操作と同じようなテストを書く**ことを推奨している。
 
 ---
@@ -86,6 +79,39 @@ UIコンポーネントのテスト用ライブラリ。<br>基本原則とし�
 ##### Reactで実装している場合
 React向けの[`@testing-library/react`](https://www.npmjs.com/package/@testing-library/react)を利用する。
 
+- インストール
+```bash
+# React Testing Library本体
+npm install --save-dev @testing-library/react
+
+# カスタムマッチャー（`toBeInTheDocument`など）
+npm install --save-dev @testing-library/jest-dom
+
+# ユーザー操作シミュレーション
+npm install --save-dev @testing-library/user-event
+
+# ※上記 jsdom セクションでインストール及び各種設定済みの場合は以下コマンドは不要
+# Jest環境（Jest 28以降は必須）
+npm install --save-dev jest-environment-jsdom
+```
+
+- 各種設定<br>
+すべてのテストで自動的に`jest-dom`マッチャーが使用可能になるよう設定する。
+
+- `setupTests.ts`
+```ts
+import '@testing-library/jest-dom';
+```
+
+- `jest.config.js`
+```ts
+module.exports = {
+  testEnvironment: 'jsdom',
+  // 先ほど設定した`setupTests.ts`を指定
+  setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
+};
+```
+
 > [!NOTE]
 > Testing Library は他にも様々なUIコンポーネントライブラリに向けて提供されているが、中核となるAPIは同じもの（[`@testing-library/dom`](https://www.npmjs.com/package/@testing-library/dom)）を使用する<br>
 > そのため、**UIコンポーネントライブラリが違っても、同じようなテストコードになる**<br>
@@ -95,6 +121,34 @@ React向けの[`@testing-library/react`](https://www.npmjs.com/package/@testing-
 UIコンポーネントのテストでもJestのアサーションやマッチャーを利用できるものの、DOMの状態を検証するにはJest標準だけでは不十分な場合がある。そのため[`@testing-library/jest-dom`](https://www.npmjs.com/package/@testing-library/jest-dom)をインストールして、Jestの拡張機能であるカスタムマッチャーを扱えるようにする。これにより、UIコンポーネントテストに便利なマッチャーが多数追加される。
 
 ##### インタラクションを検知する
-Testing Library には、入力要素に文字入力などを行うために`fireEvent`というAPIが用意されている。しかし、このAPIはDOMイベントを発火させるだけのものなので**実際のユーザー操作では不可能な操作もできてしまう**ことがある。<br>
-そこで、**実際のユーザー操作に近いシミュレーションを行える[`@testing-library/user-event`](https://www.npmjs.com/package/@testing-library/user-event)を追加する**ことでインタラクションテストの精度を高める。<br>
+Testing Library には、各種イベントハンドラー検知を目的とした`fireEvent`というAPIが用意されている。<br>
+`fireEvent`では指定した単一のイベントのみが実行されるが、実際にユーザがボタンをクリックすると clickイベントだけではなく pointerDownイベント、mouseOverイベントなど様々なイベントが連続して発生する。<br>
+`userEvent`を利用するとそれらの一連のイベントシーケンスも実行されて、ユーザがブラウザ上で行う操作と同じ処理を再現することができる。<br>
+つまり、[`@testing-library/user-event`](https://www.npmjs.com/package/@testing-library/user-event)を追加することで**実際のユーザー操作に近いシミュレーションを行える**ようになる。<br>
 こうした理由から`fireEvent`ではなく、よりユーザー行動に即した形でイベントをトリガーできる`@testing-library/user-event`の使用が推奨されている。
+
+
+
+
+userEventを利用する場合は@testing-library/user-eventからimportする必要があります
+
+
+
+ボタンが2つあるのでオプションのnameを利用することでOFFボタンを取得
+
+
+getByRole, getByTextなどどの方法でも要素を見つける方法がない場合はgetByTestIdを利用することができます。
+
+テストで利用したい要素にdata-testid属性を設定して任意の値を設定します。設定した値はgetByTestIdで利用します。
+
+```html
+<p data-testid="test">Test</p>
+```
+
+```js
+const element = screen.getByTestId('test');
+expect(element).toBeInTheDocument();
+```
+
+
+[Types of Queries | Testing Library](https://testing-library.com/docs/queries/about/#types-of-queries)
