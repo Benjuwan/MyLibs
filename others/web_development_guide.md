@@ -97,19 +97,46 @@ git push production main
 ### 基本構成
 ```
 ローカル開発環境
-    ↓ (git push origin)
+    ↓ (git push origin main)
 GitHub/GitLab (開発・レビュー・バージョン管理)
-    ↓ (git push production)
+    ↓ (git push production main)
 本番サーバー (デプロイ専用)
+```
+
+> [!IMPORTANT]
+> - **`origin`, `production`はブランチ名ではなく、リモートリポジトリの名前**<br>
+> `git push <リモートリポジトリ> <ブランチ名>`
+
+- リモート接続先は別々であるものの中身（main）は同じ<br>
+`origin`, `production`どちらもローカルの`main`ブランチを`push`しており、それぞれのリモートに同じ履歴が複製されている状態。
+```
+ローカルリポジトリ
+├── main（ブランチ）
+│
+├── origin（GitHub での主流リポジトリ）
+│    └── main（origin/main： 同名ブランチ`main`だがリモート接続先`origin`が別）
+│
+└── production（エックスサーバー等ホスティング先の公開用途）
+     └── main（production/main： 同名ブランチ`main`だがリモート接続先`production`が別）
 ```
 
 ### 実際の作業フロー
 1. **開発フェーズ**
    ```bash
    git checkout -b feature/new-function
+   
+   # -u または --set-upstream： リモートとブランチのペア付け。「今後このブランチはどのリモート・ブランチと紐づくか」を記録
+   git push -u origin feature/new-function
+   
    git add .
    git commit -m "新機能追加"
-   git push origin feature/new-function
+   git push
+
+   # マージ後はリモートブランチを削除（GitHub上のGUI操作でも可）
+   git push origin --delete feature/new-function
+
+   # 開発用ローカルブランチも削除しておく
+   git branch -d feature/new-function
    ```
 
 2. **GitHubでのレビュー・マージ**
@@ -128,8 +155,8 @@ GitHub/GitLab (開発・レビュー・バージョン管理)
 - **mainブランチの保存先は2箇所**
   - GitHub/GitLab: 開発・バージョン管理・バックアップ
   - 本番サーバー: デプロイ専用
-- **productionはブランチ名ではなく、リモートリポジトリの名前**
-- **プルリクエストではなく、直接push**
+- エックスサーバー等ホスティング先の公開用途ブランチには**プルリクエストではなく、直接push**<br>
+GitHub上では Pull Request を使ってレビュー＆マージするが、エックスサーバー上では「レビュー機能がない」ためデプロイは`git push production main`による直接反映となる
 
 ### 本番サーバーでの管理
 ```bash
@@ -145,11 +172,9 @@ git --git-dir=/path/to/repo.git --work-tree=/var/www/html checkout -f
 ## 6. 学習の推奨順序
 
 ### 理想的な学習フロー
-```
-TDD/テスト → GitHub Actions（テスト自動実行） → 自動デプロイ
-```
+- TDD/テスト → GitHub Actions（テスト自動実行） → 自動デプロイ
 
-### 理由
+#### 理由
 1. **テストが土台**: CI/CDの「CI」は自動テスト実行が核心
 2. **安全性**: テストなしの自動デプロイは危険
 3. **自然な発展**: テスト習慣 → 自動実行 → 自動デプロイ
