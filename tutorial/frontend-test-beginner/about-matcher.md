@@ -456,3 +456,25 @@ test("expect.objectContaining による部分検証", () => {
   );
 });
 ```
+
+### カスタムマッチャー（`jest-dom`）
+UIコンポーネントのテストでもJestのアサーションやマッチャーを利用できるものの、DOMの状態を検証するにはJest標準だけでは不十分な場合がある。そのため[`@testing-library/jest-dom`](https://www.npmjs.com/package/@testing-library/jest-dom)をインストールして、Jestの拡張機能であるカスタムマッチャーを扱えるようにする。`jest-dom`によって、UIコンポーネントテストに便利なマッチャーが多数追加される。
+
+#### `toBeInTheDocument`
+要素がドキュメントに存在するかどうかを検証する
+```ts
+test("名前の表示", () => {
+  render(<Form name="taro" />); // 検証対象DOMを描画
+  expect(screen.getByText("taro")).toBeInTheDocument(); // 検証対象が取得できているか（その有無を）検証
+});
+```
+
+#### `toHaveTextContent`
+期待するテキストが含まれているかどうかを検証する
+```ts
+test("見出しの表示", () => {
+  render(<Form name="taro" />);
+  // h系統要素が「アカウント情報」というテキスト情報を持っているかどうか（<h2>アカウント情報</h2>）
+  expect(screen.getByRole("heading")).toHaveTextContent("アカウント情報");
+});
+```
