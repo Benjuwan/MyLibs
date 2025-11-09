@@ -70,7 +70,7 @@ export function sayGoodBye(name: string) {
 
 ##### 対象モジュールの置き換え処理
 `jest.mock`関数を冒頭で呼び出し、対象モジュールを引数に指定することで**当該モジュールの置き換え（挙動・振る舞いの上書き）が完了**する。<br>
-※`jest.mock`関数を使用した際（は`jest.fn`に置き換わり） **戻り値のデフォルトは`undefined`** となるので`undefined`を返すようになる。
+※`jest.mock()`により、そのモジュールがエクスポートする各関数は`jest.fn()`に置き換えられる。この際、 **戻り値のデフォルトは`undefined`** となるので`undefined`を返すようになる。
 
 ```ts
 import { greet } from "./greet";
@@ -84,19 +84,20 @@ test("挨拶を返さない（本来の実装ではない）", () => {
 ```
 
 - モジュール本来の実装を`jest.requireActual`関数でインポートする（呼び出す）<br>
-`jest.mock`関数を使用した際（は`jest.fn`に置き換わり） **戻り値のデフォルトは`undefined`** となるため、以下のテストコードは失敗する。
+`jest.mock()`により、そのモジュールがエクスポートする各関数は`jest.fn()`に置き換えられる。この際、 **戻り値のデフォルトは`undefined`** となるため、以下のテストコードは失敗する。
 ```ts
 import { greet } from "./greet";
 
 jest.mock("./greet");
 
-// 挙動は正しいのにテストで落ちる
+// 挙動は正しいのに（このテストコード内では）`greet`関数が`undefined`なのでテストで落ちる
 test("挨拶を返す（本来の実装どおり）", () => {
   expect(greet("Taro")).toBe("Hello! Taro.");
 });
 ```
 
-`jest.requireActual`関数を使って本来の実装を呼び出す。これでテストが通る。
+`jest.requireActual`関数を使って「本来の実装」を呼び出す。これでテストが通る。
+- 補足：`jest.requireActual`は**モック定義の中で呼び出す**ことで、そのモジュールの本来の実装を部分的に再利用できる。
 ```ts
 import { greet } from "./greet";
 
@@ -115,7 +116,7 @@ test("挨拶を返す（本来の実装どおり）", () => {
 ```ts
 import { sayGoodBye } from "./greet";
 
-// 第二引数に「代用品に実装を施す関数」を指定
+// 第二引数に「代用品（`sayGoodBye`関数）に実装を施す処理」を指定
 jest.mock("./greet", () => ({
   sayGoodBye: (name: string) => `Good bye, ${name}.`,
 }));
