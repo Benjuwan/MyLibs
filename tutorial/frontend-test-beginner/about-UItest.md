@@ -162,7 +162,7 @@ screen.getByText("アカウント情報");
 // 5. getByDisplayValue （入力済みの値）
 screen.getByDisplayValue("taro");
 
-// 6. ⚠️ getByAltText （画像など）
+// 6. ⚠️ getByAltText （画像など：※支援技術やブラウザごとによって体験が大きく変わる可能性がある）
 screen.getByAltText("プロフィール画像");
 
 // 7. ⚠️ getByTitle
@@ -271,8 +271,64 @@ test("ボタンを押下すると、イベントハンドラーが呼ばれる",
 
 </details>
 
+##### フォームUIにおけるサンプル例
+**任意の文字列が入力**された入力フォーム（`input[type="text"], [type="password"]`）が**あるかどうかを検証**<br>
+`userEvent`は非同期処理なので`async/await`が必須。
+
+```ts
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { InputAccount } from "./InputAccount";
+
+const user = userEvent.setup(); // インスタンス初期化
+
+test("メールアドレス入力欄", async () => {
+  render(<InputAccount />);
+  const textbox = screen.getByRole("textbox", { name: "メールアドレス" });
+  const value = "taro.tanaka@example.com";
+
+  // user.type： 入力操作を再現
+  await user.type(textbox, value);
+
+  // 入力済みの値（"taro.tanaka@example.com"）を持った要素があるかどうかを検証
+  expect(screen.getByDisplayValue(value)).toBeInTheDocument();
+});
+
+test("パスワード入力欄", async () => {
+  render(<InputAccount />);
+  /* input[type="password"]は「ロールを持たない」のでラベル名（テキスト）とプレースホルダーの内容で検証 */
+  
+  // 非推奨: getBy...とtoThrow()の組み合わせは適切に動作しない
+  // expect(() => screen.getByRole("textbox", { name: "パスワード" })).toThrow();
+
+  // パスワード入力欄は`textbox`ロールを持たない
+  expect(screen.queryByRole("textbox", { name: "パスワード" })).not.toBeInTheDocument();
+
+  // 非推奨: not.toThrow()は意味のない検証になる
+  // expect(() => screen.getByPlaceholderText("8文字以上で入力")).not.toThrow();
+
+  // "8文字以上で入力"というプレースホルダーを持った要素の存在を検証
+  expect(screen.queryByPlaceholderText("8文字以上で入力")).not.toBeNull();
+});
+
+test("パスワード入力欄", async () => {
+  render(<InputAccount />);
+  const password = screen.getByPlaceholderText("8文字以上で入力");
+  const value = "abcd1234";
+
+  // user.type： 入力操作を再現
+  await user.type(password, value);
+
+  // 入力済みの値（"abcd1234"）を持った要素があるかどうかを検証
+  expect(screen.getByDisplayValue(value)).toBeInTheDocument();
+});
+```
+
 #### 複数要素がある場合（...AllBy...）
 Testing Library では、 **アクセシビリティを重視した優先順位（＝`...ByRole`系）で書いていくのが理想的なテストコード**なのでクラス属性やDOM要素で指定せず、 **あくまでロールをメインにテストコードを構築していく**。
+
+> [!NOTE]
+> 単数形のAPI（`getBy...`, `queryBy...`, `findBy...`）では、複数の要素が見つかった場合はエラーが発生します。また、[要素が存在しない場合`queryBy...`のみ`null`を返し](#存在しないことを検知するapiqueryby-queryallby)、他の2つはエラーを発生させます。
 
 ##### 方法1： オプションで絞り込む
 ```ts
@@ -316,3 +372,137 @@ test("すべての見出し", () => {
   expect(headings[1]).toHaveTextContent("詳細"); // 二つ目のテキスト情報は「詳細」
 });
 ```
+
+#### スコープを設けてテスト対象DOM要素を絞り込む
+大きなコンポーネントの場合、`getAllByRole`ではコンポーネント全体の該当ロールDOM要素（**テスト対象でない検証要素まで**）が検知されてしまう可能性がある。`within`関数を使うことで対象を絞り込めるようになる。
+
+##### `within`関数
+対象を絞り込んで要素取得したい場合に使用する関数。返り値には要素取得APIが含まれる。
+```js
+test("items の数だけ一覧表示される", () => {
+  render(<ArticleList items={items} />);
+  const list = screen.getByRole("list");
+  expect(list).toBeInTheDocument();
+
+  // `within`関数で取得対象ノードを絞り込む（`ul: list`の中に3つの`li: listitem`があるかどうか）
+  expect(within(list).getAllByRole("listitem")).toHaveLength(3);
+});
+```
+
+#### 存在しないことを検知するAPI（`queryBy...`, `queryAllBy...`）
+他のAPI（`getBy...`, `getAllBy...`, `findBy...`, `findAllBy...`）では対象要素が存在しない場合はエラーが発生して処理が中断されるが、`query`系ではエラー処理にならないので**存在しないことを検知できる**。
+
+- 検証用コード
+```ts
+import { ArticleListItem, ItemProps } from "./ArticleListItem";
+
+type Props = {
+  items: ItemProps[];
+};
+
+export const ArticleList = ({ items }: Props) => {
+  return (
+    <div>
+      <h2>記事一覧</h2>
+      {items.length ? (
+        <ul>
+          {items.map((item) => (
+            <ArticleListItem {...item} key={item.id} />
+          ))}
+        </ul>
+      ) : (
+        <p>投稿記事がありません</p>
+      )}
+    </div>
+  );
+};
+
+```
+
+##### `queryBy...`：単数
+対象要素が存在しない場合は`null`を返す
+
+```ts
+test("一覧アイテムが空のとき「投稿記事がありません」が表示される", () => {
+  // 空配列を渡す
+  render(<ArticleList items={[]} />);
+  // 中身が空の`ul: list`を取得
+  const list = screen.queryByRole("list");
+  // 中身が空なので`ul: list`は存在しないことを検証
+  expect(list).not.toBeInTheDocument();
+  // 中身が空なので`ul: list`は（`queryByRole`の返り値が）nullなことを検証
+  expect(list).toBeNull();
+  // 「投稿記事がありません」というテキストを持つ要素の有無を確認
+  expect(screen.getByText("投稿記事がありません")).toBeInTheDocument();
+});
+```
+
+- 事例2：所定のリンク先パスを持っているかどうかの検証
+- 検証用コード
+```tsx
+export type ItemProps = {
+  id: string;
+  title: string;
+  body: string;
+};
+
+export const ArticleListItem = ({ id, title, body }: ItemProps) => {
+  return (
+    <li>
+      <h3>{title}</h3>
+      <p>{body}</p>
+      <a href={`/articles/${id}`}>もっと見る</a>
+    </li>
+  );
+};
+```
+
+- テストコード
+```ts
+const item: ItemProps = {
+  id: "howto-testing-with-typescript",
+  title: "TypeScript を使ったテストの書き方",
+  body: "テストを書く時、TypeScript を使うことで、テストの保守性が向上します…",
+};
+
+test("ID に紐づいたリンクが表示される", () => {
+  // スプレッド構文で各種`props`（`id`, `title`, `body`）を展開した形で渡す
+  render(<ArticleListItem {...item} />);
+
+  // 「もっと見る」というテキストを持った`a: link`要素の`href`属性の中身を検証
+  expect(screen.getByRole("link", { name: "もっと見る" })).toHaveAttribute(
+    "href",
+    "/articles/howto-testing-with-typescript"
+  );
+});
+```
+
+- 事例3：アクセシビリティに沿ったDOMツリー構成になっているか検証<br>
+`legend`要素は`fieldset: group`の子要素として利用するHTML要素。
+```tsx
+export const Agreement = ({ onChange }: Props) => {
+  return (
+    <fieldset>
+      <legend>利用規約の同意</legend>
+      <label>
+        <input type="checkbox" onChange={onChange} />
+        当サービスの<a href="/terms">利用規約</a>を確認し、これに同意します
+      </label>
+    </fieldset>
+  );
+};
+```
+
+- テストコード<br>
+`getByRole`で`fieldset: group`を指定し、`legend`要素の有無（正しく使用しているかどうか）を検証している
+```ts
+test("fieldset のアクセシブルネームは、legend を引用している", () => {
+  render(<Agreement />);
+  expect(
+    screen.getByRole("group", { name: "利用規約の同意" })
+  ).toBeInTheDocument();
+});
+```
+
+##### `queryAllBy...`：複数
+対象要素が存在しない場合は空配列（`[]`）を返す
