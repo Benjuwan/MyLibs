@@ -7,6 +7,48 @@
 > expect(false).not.toBeTruthy();
 > ```
 
+### `toMatchSnapshot`
+`Jest`に組み込まれているスナップショットテスト用のマッチャー。初回実行時にスナップショットファイル（`__snapshots__`ディレクトリ内）を自動生成し、以降のテスト実行時にはそのスナップショットと比較する。
+
+```ts
+const item: ItemProps = {
+  id: "howto-testing-with-typescript",
+  title: "TypeScript を使ったテストの書き方",
+  body: "テストを書く時、TypeScript を使うことで、テストの保守性が向上します…",
+};
+
+test("Snapshot: 一覧要素が表示される", () => {
+  // スプレッド構文で各種`props`（`id`, `title`, `body`）を展開した形で渡す
+  const { container } = render(<ArticleListItem {...item} />);
+  // スナップショットを作成・比較
+  expect(container).toMatchSnapshot();
+});
+```
+
+### `toThrow`
+関数が例外をスローするかどうかを検証
+
+> [!NOTE]
+> 例外をスローする関数は**アロー関数でラップ**する必要がある。
+> ラップしない場合、関数がその場で実行されて例外がスローされ、Jestがキャッチできずにテストが失敗するため。
+
+```ts
+// 基本的な使用例
+expect(() => {
+  throw new Error("エラー");
+}).toThrow();
+
+// エラーメッセージを検証
+expect(() => {
+  throw new Error("無効な入力");
+}).toThrow("無効な入力");
+
+// 特定のエラー型を検証
+expect(() => {
+  throw new TypeError("型エラー");
+}).toThrow(TypeError);
+```
+
 ### 真偽値の検証
 ```ts
 describe("真偽値の検証", () => {
@@ -476,5 +518,23 @@ test("見出しの表示", () => {
   render(<Form name="taro" />);
   // h系統要素が「アカウント情報」というテキスト情報を持っているかどうか（<h2>アカウント情報</h2>）
   expect(screen.getByRole("heading")).toHaveTextContent("アカウント情報");
+});
+```
+
+#### `toHaveAttribute`
+第一引数に属性名を記述し、第二引数に検証値を記述する
+```ts
+// 「もっと見る」というテキストを持った`a: link`要素の`href`属性の中身を検証
+expect(screen.getByRole("link", { name: "もっと見る" })).toHaveAttribute(
+  "href",
+  "/articles/howto-testing-with-typescript"
+);
+```
+
+#### `toBeChecked`
+```ts
+test("チェックボックスはチェックが入っていない", () => {
+  render(<Agreement />);
+  expect(screen.getByRole("checkbox")).not.toBeChecked();
 });
 ```
