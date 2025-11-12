@@ -41,7 +41,7 @@ Jestではスタブ・スパイを機能別に分けておらず、**モック�
 > 実行（ランタイム）時には存在しなくなるTypeScript上の型（interface）。`jest.fn()`が返す関数の型
 
 ##### `jest.spyOn`関数
-- 第一引数には「オブジェクト」を、第二引数には「メソッド名」を指定する
+- 第一引数には「オブジェクト」を、第二引数には「メソッド名（文字列）」を指定する
 - TypeScriptと親和性が高い
 - デフォルトでは元の実装を「呼び出す（call through）」ため、戻り値は元の実装の結果になる
   - 元の実装を変えたい場合に `mockImplementation`/`mockReturnValue` を設定する。必要に応じて`mockRestore` で元に戻せる
@@ -228,6 +228,21 @@ describe("getGreet", () => {
     }
   });
 });
+```
+
+> [!NOTE]
+> - `jest.spyOn(Fetchers, "getMyProfile")`における`Fetchers`というオブジェクトについて<br>
+> `jest.spyOn`は第一引数に監視対象のオブジェクト、第二引数に監視対象のメソッド名（文字列）を指定する。<br>
+> `Fetchers`オブジェクトの中身は以下折りたたみコード内あるように、`getMyProfile`のようなエクスポートされた各関数となっている。<br>
+> これがオブジェクトとして扱えるのは`import * as Fetchers from "../fetchers";`と`fetchers/index.ts`全体を`Fetchers`として一括インポートしているため。<br>
+> 具体的には以下のような構造となる。
+```js
+// import * as Fetchers は以下と同じ構造
+const Fetchers = {
+  getMyProfile: function() { /* ... */ },
+  getMyArticles: function() { /* ... */ },
+  postMyArticle: function(input: ArticleInput) { /* ... */ }
+};
 ```
 
 <details>
@@ -641,7 +656,7 @@ Jest真のタイマーを使用するように指示
 `beforeEach`, `afterEach`で偽のタイマー切替を実施
 
   - `beforeAll`：スイート初期化（1回）
-  - `beforeEach`：各テスト前の準備（毎回）
+  - `beforeEach`：各テスト前の準備（毎回 | 各テストが実行される前に毎回実行）
   - `afterEach`：各テスト後のクリーンアップ（毎回）
   - `afterAll`：スイート全体のクリーンアップ処理（1回）
 

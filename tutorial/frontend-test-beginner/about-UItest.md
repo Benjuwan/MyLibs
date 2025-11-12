@@ -237,8 +237,8 @@ export const Form = ({ name, onSubmit }: Props) => {
 */
 ```
 
-#### イベントハンドラー
-イベントハンドラー（ある出来事が発生した際に呼び出される関数）もまた関数の単体テスト同様に`モック関数`を使ってテストする。
+#### イベントハンドラー（のシミュレーション）
+イベントハンドラー（ある出来事が発生した際に呼び出される関数）もまた関数の単体テスト同様に`モック関数`を使ってテスト（動作・ユーザー操作のシミュレーションを）する。
 
 ```ts
 test("ボタンを押下すると、イベントハンドラーが呼ばれる", () => {
@@ -506,3 +506,589 @@ test("fieldset のアクセシブルネームは、legend を引用している"
 
 ##### `queryAllBy...`：複数
 対象要素が存在しない場合は空配列（`[]`）を返す
+
+### アクセシブルネームの付与
+`aria-labelledby`属性で指定したIDを持つ要素のテキストコンテンツ（※必ずIDが必要）が、その属性を付与した要素のアクセシブルネームとして利用される。
+
+- アクセシブルネーム：支援技術が認識するノードの名称
+
+#### `form`
+例えば、`form`要素は常に`form`ロールを持つが、アクセシブルネームを持つ場合のみアクセシビリティツリーに明示的なランドマークとして公開される。
+
+- 検証用コンポーネントの一部
+```tsx
+import { useId } from "react";
+// `useId`フックで一意のIDを生成
+const headingId = useId();
+return (
+    <form aria-labelledby={headingId}>
+      <h2 id={headingId}>新規アカウント登録</h2>
+      ...
+      ..
+      .
+```
+
+- テストコード
+```ts
+test("form のアクセシブルネームは、見出し（h2）を引用している", () => {
+  render(<Form />);
+  expect(
+    screen.getByRole("form", { name: "新規アカウント登録" })
+  ).toBeInTheDocument();
+});
+```
+
+### 共通した処理を一つのテスト関数（コード）として管理
+※過度に共通化するとテストの精度が悪化する可能性があるので注意
+
+#### 事例1： フォームへの入力情報のデフォルト設定を持ったフォームテスト関数（コード）
+```ts
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { deliveryAddresses } from "./fixtures";
+import { Form } from "./Form";
+
+const user = userEvent.setup(); // 初期化
+
+type inputValuesType = {
+  name: string;
+  phoneNumber: string;
+  municipalities?: string;
+  streetNumber?: string;
+  postalCode?: string;
+  prefectures?: string;
+};
+
+const defaultInputValues = {
+  name: "田中 太郎",
+  phoneNumber: "000-0000-0000"
+}
+
+// デフォルト値として渡された内容をフォームに入力
+async function inputContactNumber(inputValues: inputValuesType = defaultInputValues) {
+  // 電話番号入力フィールドを取得し、取得した要素に対して、ユーザーがキーボードで文字を入力する動作をシミュレート
+  await user.type(
+    screen.getByRole("textbox", { name: "電話番号" }),
+    inputValues.phoneNumber
+  );
+  await user.type(
+    screen.getByRole("textbox", { name: "お名前" }),
+    inputValues.name
+  );
+  return inputValues;
+}
+
+const defaultInputDeliveryAddressValues = {
+  name: "田中 太郎",
+  phoneNumber: "000-0000-0000",
+  postalCode: "167-0051",
+  prefectures: "東京都",
+  municipalities: "杉並区荻窪1",
+  streetNumber: "00-00",
+}
+
+// デフォルト値として渡された内容をフォームに入力
+async function inputDeliveryAddress(inputDeliveryAddressValues: inputValuesType = defaultInputDeliveryAddressValues) {
+  await user.type(
+    screen.getByRole("textbox", { name: "郵便番号" }),
+    typeof inputDeliveryAddressValues.postalCode !== 'undefined' ? inputDeliveryAddressValues.postalCode
+      : "");
+  await user.type(
+    screen.getByRole("textbox", { name: "都道府県" }),
+    typeof inputDeliveryAddressValues.prefectures !== 'undefined' ? inputDeliveryAddressValues.prefectures : ""
+  );
+  await user.type(
+    screen.getByRole("textbox", { name: "市区町村" }),
+    typeof inputDeliveryAddressValues.municipalities !== 'undefined' ? inputDeliveryAddressValues.municipalities : ""
+  );
+  await user.type(
+    screen.getByRole("textbox", { name: "番地番号" }),
+    typeof inputDeliveryAddressValues.streetNumber !== 'undefined' ? inputDeliveryAddressValues.streetNumber : ""
+  );
+  return inputDeliveryAddressValues;
+}
+```
+
+- 共通化したテスト関数（コード）の使用例
+```ts
+describe("過去のお届け先がない場合", () => {
+  test("入力・送信すると、入力内容が送信される", async () => {
+    const contactNumber = await inputContactNumber();
+    const deliveryAddress = await inputDeliveryAddress();
+  });
+});
+
+test("「はい」を選択・入力・送信すると、入力内容が送信される", async () => {
+  const contactNumber = await inputContactNumber();
+  const deliveryAddress = await inputDeliveryAddress();
+});
+```
+
+#### 事例2： フォームの送信データをもとにオブジェクトを動的生成
+```ts
+function mockHandleSubmit() {
+  // モック（スタブ）生成
+  const mockFn = jest.fn();
+
+  // 送信イベントハンドラー
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); // ページリロードを防止
+
+    // 送信データ（入力された情報）をもとにFormDataオブジェクト（のインスタンス）を生成
+    const formData = new FormData(event.currentTarget);
+
+    // 文字列型のプロパティと`unknown`型の値を持つ空オブジェクトを用意
+    const data: { [k: string]: unknown } = {};
+
+    // FormDataオブジェクトをループ処理して、
+    // 先ほど作成した空オブジェクトにプロパティ（各項目）と値（項目にリンクした入力内容）を格納していく
+    formData.forEach((value, key) => (data[key] = value));
+
+    // 送信データをモック関数に渡して記録
+    mockFn(data);
+  };
+
+  // モック関数と送信イベントハンドラーを読み込み専用タプルとして返す
+  return [mockFn, onSubmit] as const;
+}
+```
+
+- 使用例
+```ts
+test("入力・送信すると、入力内容が送信される", async () => {
+  const [mockFn, onSubmit] = mockHandleSubmit();
+  render(<Form onSubmit={onSubmit} />);
+  const contactNumber = await inputContactNumber();
+  const deliveryAddress = await inputDeliveryAddress();
+  await clickSubmit();
+  expect(mockFn).toHaveBeenCalledWith(
+    expect.objectContaining({ ...contactNumber, ...deliveryAddress })
+  );
+});
+```
+
+#### 事例3： WebAPI 利用時のハンドリングケース
+##### `validations.ts`
+電話番号の入力値検証用コードで、正しくない場合は例外スローする
+```ts
+export class ValidationError extends Error {}
+
+export function checkPhoneNumber(value: any) {
+  if (!value.match(/^[0-9\-]+$/)) {
+    throw new ValidationError();
+  }
+}
+```
+
+##### `origin.ts`
+モック対象のメソッドが記述されたコードで、当該メソッドがWebAPI（データフェッチ処理）を実施する`postMyAddress`となる。
+```ts
+import { Result } from "./type";
+
+async function handleResponse(res: Response) {
+  const data = await res.json();
+  if (!res.ok) {
+    throw data;
+  }
+  return data;
+}
+
+const host = (path: string) => `https://myapi.testing.com${path}`;
+
+const headers = {
+  Accept: "application/json",
+  "Content-Type": "application/json",
+};
+
+export function postMyAddress(values: unknown): Promise<Result> {
+  return fetch(host("/my/address"), {
+    method: "POST",
+    body: JSON.stringify(values),
+    headers,
+  }).then(handleResponse);
+}
+```
+
+##### `mock.ts`
+`origin.ts`のWebAPI（データフェッチ処理）を担う`postMyAddress`のモック関数を用意するコード
+```ts
+// `origin.ts`内の各関数や変数など全てインポートし、
+// それらを`Fetchers`という一つのオブジェクトとして扱う
+import * as Fetchers from ".";
+import { httpError, postMyAddressMock } from "./fixtures";
+
+export function mockPostMyAddress(status = 201) {
+  // HTTPステータス失敗時
+  if (status > 299) {
+    return jest
+      // 監視対象オブジェクト：Fetchers、監視対象メソッド：postMyAddress
+      .spyOn(Fetchers, "postMyAddress")
+      .mockRejectedValueOnce(httpError);
+  }
+
+  // HTTPステータス成功時
+  return jest
+    .spyOn(Fetchers, "postMyAddress")
+    .mockResolvedValueOnce(postMyAddressMock);
+}
+```
+
+##### `RegisterAddress.tsx`
+今回の検証対象コンポーネント
+```tsx
+import { useState } from "react";
+import { Form } from "../06/Form";
+import { postMyAddress } from "./fetchers";
+import { handleSubmit } from "./handleSubmit";
+import { checkPhoneNumber, ValidationError } from "./validations";
+
+export const RegisterAddress = () => {
+  const [postResult, setPostResult] = useState("");
+  return (
+    <div>
+      <Form
+        onSubmit={handleSubmit((values) => {
+          try {
+            // このバリデーション実行時に条件に応じて例外スローすることで
+            // 以下のデータフェッチ処理を中断して`catch`のエラーハンドリングに移行できる
+            checkPhoneNumber(values.phoneNumber);
+            
+            // バリデーション通過時のみデータフェッチ処理を実行
+            postMyAddress(values)
+              .then(() => {
+                setPostResult("登録しました");
+              })
+              .catch(() => {
+                setPostResult("登録に失敗しました");
+              });
+          } catch (err) {
+            if (err instanceof ValidationError) {
+              setPostResult("不正な入力値が含まれています");
+              return;
+            }
+            setPostResult("不明なエラーが発生しました");
+          }
+        })}
+      />
+      {postResult && <p>{postResult}</p>}
+    </div>
+  );
+};
+```
+
+##### `RegisterAddress.test.tsx`
+テストコード
+```ts
+import { render, screen } from "@testing-library/react";
+import { mockPostMyAddress } from "./fetchers/mock";
+import { RegisterAddress } from "./RegisterAddress";
+
+import {
+  clickSubmit,
+  inputContactNumber,
+  inputDeliveryAddress,
+} from "./testingUtils";
+
+jest.mock("./fetchers");
+
+// すべての処理結果を返すユーティリティテスト関数
+async function fillValuesAndSubmit() {
+  const contactNumber = await inputContactNumber();
+  const deliveryAddress = await inputDeliveryAddress();
+  const submitValues = { ...contactNumber, ...deliveryAddress };
+  await clickSubmit();
+  return submitValues;
+}
+
+// （電話番号の入力値検証に引っ掛かる）例外スロー発生用のテスト関数
+async function fillInvalidValuesAndSubmit() {
+  const contactNumber = await inputContactNumber({
+    name: "田中 太郎",
+    phoneNumber: "abc-defg-hijkl",
+  });
+  const deliveryAddress = await inputDeliveryAddress();
+  const submitValues = { ...contactNumber, ...deliveryAddress };
+  await clickSubmit();
+  return submitValues;
+}
+
+// beforeEach： 各テストが実行される前に毎回実行
+beforeEach(() => {
+  // すべてのモックの呼び出し履歴やインスタンス情報、戻り値設定をリセット
+  jest.resetAllMocks();
+});
+
+test("成功時「登録しました」が表示される", async () => {
+  const mockFn = mockPostMyAddress();
+  render(<RegisterAddress />);
+
+  // `fillValuesAndSubmit`内の処理でフォームへの入力シミュレーションが実施されており、
+  // その結果（すべての入力項目が満たされた状態のフォームデータオブジェクト）を`submitValues`に格納
+  const submitValues = await fillValuesAndSubmit();
+
+  // `mockPostMyAddress`（モック化された`postMyAddress`）が、
+  // 送信フォームの入力値を含むオブジェクトを引数として呼び出されたことを検証
+  expect(mockFn).toHaveBeenCalledWith(expect.objectContaining(submitValues));
+
+  expect(screen.getByText("登録しました")).toBeInTheDocument();
+});
+
+test("失敗時「登録に失敗しました」が表示される", async () => {
+  const mockFn = mockPostMyAddress(500); // HTTPステータス500（サーバーエラー）を返すモック
+  render(<RegisterAddress />);
+  const submitValues = await fillValuesAndSubmit();
+  expect(mockFn).toHaveBeenCalledWith(expect.objectContaining(submitValues));
+  expect(screen.getByText("登録に失敗しました")).toBeInTheDocument();
+});
+
+test("バリデーションエラー時「不正な入力値が含まれています」が表示される", async () => {
+  render(<RegisterAddress />);
+  // （電話番号の入力値検証に引っ掛かる）例外スロー発生用のテスト関数を実行
+  // この時点で例外スローされてデータフェッチ処理は実行されないので
+  // このテストスコープにモック関数は不要
+  await fillInvalidValuesAndSubmit();
+  expect(screen.getByText("不正な入力値が含まれています")).toBeInTheDocument();
+});
+
+test("不明なエラー時「不明なエラーが発生しました」が表示される", async () => {
+  render(<RegisterAddress />);
+  await fillValuesAndSubmit();
+  // モック関数を設定していないためデータフェッチ処理が失敗（というか実行されない）し、
+  // catch ブロックで「不明なエラー」として処理される
+  expect(screen.getByText("不明なエラーが発生しました")).toBeInTheDocument();
+});
+```
+
+### スナップショット： リグレッション（デザイン崩れ）の検証
+UIコンポーネントの予期せぬリグレッション（デザイン崩れ）の検証にはスナップショットテストが活用できる。
+
+#### `toMatchSnapshot`マッチャー
+`Jest`に組み込まれているスナップショットテスト用のマッチャー。初回実行時にスナップショットファイル（`__snapshots__`ディレクトリ内）を自動生成し、以降のテスト実行時にはそのスナップショットと比較する。
+
+```ts
+const item: ItemProps = {
+  id: "howto-testing-with-typescript",
+  title: "TypeScript を使ったテストの書き方",
+  body: "テストを書く時、TypeScript を使うことで、テストの保守性が向上します…",
+};
+
+test("Snapshot: 一覧要素が表示される", () => {
+  // スプレッド構文で各種`props`（`id`, `title`, `body`）を展開した形で渡す
+  const { container } = render(<ArticleListItem {...item} />);
+  // スナップショットを作成・比較
+  expect(container).toMatchSnapshot();
+});
+```
+
+- `__snapshots__`<br>
+各スナップショットデータを格納するためのフォルダで、テストを実施すると`対象テストファイル名.snap`というファイルが生成される。中身はHTML構造が文字列化されたもので、各`snap`ファイルはリグレッションの差分検証のために`git`管理対象とするのが一般的。
+
+#### スナップショットの更新
+UIコンポーネントの構造・テキスト・スタイル・属性などに意図的な変更を加えた場合は、その変更を「正」としてスナップショットを更新する必要がある
+
+> [!NOTE]
+> スナップショット更新はUIの修正・変更が**意図したものであることを確認した上で行う**こと
+
+```bash
+npx jest --updateSnapshot
+
+# または以下の短縮形を使用
+# npx jest -u
+```
+
+- 特定のテストファイルだけスナップショット更新したい場合
+```bash
+npx jest path/YourComponent.test.js -u
+```
+
+- インタラクション（ユーザー操作）が実施された状態のスナップショットも記録可能<br>
+下記はインタラクション（ユーザー操作）実施前のスナップショットだが、コメントアウトしているコードを有効化することで「インタラクション（ユーザー操作）実施後のスナップショット」を記録できる。
+```ts
+test("Snapshot: 登録フォームが表示される", async () => {
+  mockPostMyAddress();
+  // const mockFn = mockPostMyAddress();
+  const { container } = render(<RegisterAddress />);
+  // const submitValues = await fillValuesAndSubmit();
+  // expect(mockFn).toHaveBeenCalledWith(expect.objectContaining(submitValues));
+  expect(container).toMatchSnapshot();
+});
+```
+
+### ロールについて
+UIテストにおいて要素を特定する際は、`getByRole()`のように **ロール（role）** を利用するのが推奨されている。<br>
+ロールとはWeb技術標準化を定めているW3Cの`WAI-ARIA`仕様に含まれるHTML要素が持つ属性の1つである。<br>
+`WAI-ARIA`由来のテストコードを書くことで、支援技術を使用しているユーザーにも意図した形でコンテンツが届いているかどうかを検証できる。
+
+#### 暗黙のロール
+多くのHTML要素には、**明示的に`role`属性を付けなくても自動的に付与されているロール** があり、この初期設定・デフォルメのロールを **暗黙のロール** と呼ぶ。
+
+- 例：
+| HTML要素 | 暗黙のロール | 備考 |
+|-----------|----------------|------|
+| `<button>` | `button` | 明示的な `role="button"` は不要 |
+| `<a href="#">` | `link` | `href` 属性がない場合はロールなし |
+| `<form>` | `form` | アクセシブルネーム（を持った子要素）がある場合のみ暗黙のロールが付与される |
+| `<ul>` | `list` | |
+| `<li>` | `listitem` | |
+| `<img alt="..." />` | `img` | `alt` がない場合は無視される場合あり |
+| `<input type="checkbox" />` | `checkbox` | |
+| `<input type="text" />` | `textbox` | |
+
+##### 任意のロールを付与することも可能
+※以下は例示コードで、本来であれば`button`でマークアップすべき記述内容
+```html
+<!-- div要素にbuttonロールを付与 -->
+<div role="button">送信</div>
+```
+
+#### ロールとHTML要素は必ずしも1対1ではない
+例えば、同じ`<input>`要素でも**`type`属性の値によって異なるロールが自動的に割り当てられる**。
+
+- 例：
+
+| HTML要素 | 暗黙のロール | 備考 |
+|------|---------------|------|
+| `<input type="text" />` | `textbox` | 通常の入力フィールド |
+| `<input type="email" />` | `textbox` | メール入力フィールドも同じく `textbox` |
+| `<input type="checkbox" />` | `checkbox` | チェックボックスとして扱われる |
+| `<input type="radio" />` | `radio` | ラジオボタンとして扱われる |
+| `<input type="range" />` | `slider` | スライダー操作が可能な入力 |
+| `<input type="submit" />` | `button` | 送信ボタンとして扱われる |
+
+---
+
+同じタグ（`<input>`）でも属性によってロールが異なるためロールをベースとしたテスト時は注意が必要。
+
+```jsx
+render(
+  <>
+    <input type="text" aria-label="ユーザー名" />
+    <input type="email" aria-label="メールアドレス" />
+    <input type="checkbox" aria-label="利用規約に同意する" />
+  </>
+);
+
+// 「テキスト入力欄」を取得
+screen.getByRole("textbox", { name: "ユーザー名" });
+
+// 「メールアドレス入力欄」を取得
+screen.getByRole("textbox", { name: "メールアドレス" });
+
+// 「チェックボックス」を取得
+screen.getByRole("checkbox", { name: "利用規約に同意する" });
+```
+
+#### aria属性値を使った検証要素の絞り込み
+例えば、`<h1>`〜`<h6>` 要素などの「見出し（heading）」がページ内に複数混在することはよくある。<br>
+見出し系のタグはどれも暗黙的に`heading`ロールを持っており、`aria-level`属性またはタグ階層で定められた`level`が指定されている。
+
+```jsx
+function PageHeader() {
+  return (
+    <header>
+      {/* <h1>： role="heading", aria-level=1, name=ユーザー登録 */}
+      <h1>ユーザー登録</h1>
+      {/* <h2>： role="heading", aria-level=2, name=入力内容の確認 */}
+      <h2>入力内容の確認</h2>
+    </header>
+  );
+}
+```
+
+- テストでの取得例
+```js
+import { render, screen } from "@testing-library/react";
+import { PageHeader } from "./PageHeader";
+
+test("見出しのアクセシブルネームで要素を特定できる", () => {
+  render(<PageHeader />);
+
+  // name（テキスト）で取得
+  const heading1 = screen.getByRole("heading", { name: "ユーザー登録" });
+  const heading2 = screen.getByRole("heading", { name: "入力内容の確認" });
+
+  // level で階層を絞り込む
+  const level1 = screen.getByRole("heading", { level: 1 });
+  const level2 = screen.getByRole("heading", { level: 2 });
+
+  expect(heading1).toBe(level1);
+  expect(heading2).toBe(level2);
+});
+```
+
+- `name`<br>
+当該HTML要素のテキスト内容
+
+- `level`<br>
+`<h1>`〜`<h6>`または`aria-level`で指定される値
+
+---
+
+この方法だとページ内の特定の見出しを**構造的かつ意味的に特定**できるようになる。つまり、 **見た目に依存せず、実際のアクセシビリティ構造**に基づいたテストが可能となる。
+
+#### アクセシブルネームを使った検証要素の絞り込み
+アクセシブルネームとは「支援技術が認識するノードの名称」を指す。噛み砕くと、要素がスクリーンリーダーなどで読み上げられる際の「ラベル」のようなもの。多くの場合、以下の順序で決定される。
+
+1. `aria-label`属性
+2. `aria-labelledby`属性
+3. `<label>`要素のテキスト
+4. 要素内のテキストノード（ボタンやリンクなど）。画像の場合は`alt`属性値の文字列
+
+```jsx
+<button aria-label="閉じる">×</button>
+<button>閉じる</button>
+<button><img src="path/to/closeBtn.png" alt="閉じる"></button>
+```
+
+上記のボタンは`"閉じる"`というアクセシブルネームを持つため、テストでは以下のように記述する。
+
+```js
+screen.getByRole('button', { name: '閉じる' });
+```
+
+不慣れなうちはデバッグツールを活用しながら、どのようなアクセシブルネームが算出されているかを確認するのが良い。<br>
+※アクセシブルネームの決定には様々な要因が絡み、[`accessible name and description computation 1.2`](https://www.w3.org/TR/accname-1.2/)という仕様に基づいて算出される。
+
+#### ロールとアクセシブルネームの確認
+- ブラウザの開発者ツール
+  - `Chrome DevTools` - `Elements` - `Accessibility`パネルから、各要素の **ロール** と **アクセシブルネーム** を確認できる
+- Testing Library の [Testing Playground](https://testing-playground.com/) を使用する
+- `@testing-library/react`の`logRoles`関数を使用する
+```ts
+import { logRoles, render } from "@testing-library/react";
+import { Form } from "./Form";
+
+test("logRoles: レンダリング結果からロール・アクセシブルネームを確認", () => {
+  const { container } = render(<Form name="taro" />);
+  logRoles(container);
+});
+```
+
+#### 暗黙のロール対応表
+Testing Library は内部的に`aria-query`というライブラリを使用していて、暗黙のロール算出結果は`aria-query`に依存する。
+
+| HTML要素                                 | WAI-ARIA 暗黙のロール              | 備考                                 |
+| -------------------------------------- | ---------------------------- | ---------------------------------- |
+| `<a href="...">`                       | `link`                       | `href` 属性がある場合のみ                   |
+| `<area href="...">`                    | `link`                       |                                    |
+| `<article>`                            | `article`                    |                                    |
+| `<aside>`                              | `complementary`              |                                    |
+| `<button>`                             | `button`                     |                                    |
+| `<form>`                               | `form`                       | `aria-label` や `title` がないときはロールなし |
+| `<h1>` ～ `<h6>`                        | `heading`                    | `aria-level` に対応                   |
+| `<img alt>`                            | `img`                        | `alt=""` は無視される                    |
+| `<input type="checkbox">`              | `checkbox`                   |                                    |
+| `<input type="radio">`                 | `radio`                      |                                    |
+| `<input type="range">`                 | `slider`                     |                                    |
+| `<input type="email/text/search/...">` | `textbox`                    |                                    |
+| `<li>`                                 | `listitem`                   |                                    |
+| `<nav>`                                | `navigation`                 |                                    |
+| `<ol>` / `<ul>`                        | `list`                       |                                    |
+| `<select>`                             | `combobox` / `listbox`       |                                    |
+| `<table>`                              | `table`                      |                                    |
+| `<td>`                                 | `cell`                       |                                    |
+| `<th>`                                 | `columnheader` / `rowheader` |                                    |
+| `<textarea>`                           | `textbox`                    |                                    |
+| `<header>`                             | `banner`                     | ページ内で最初の `<header>` のみ暗黙ロール付与      |
+| `<footer>`                             | `contentinfo`                | 同上                                 |
+| `<main>`                               | `main`                       |                                    |

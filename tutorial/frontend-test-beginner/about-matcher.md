@@ -538,3 +538,7 @@ test("チェックボックスはチェックが入っていない", () => {
   expect(screen.getByRole("checkbox")).not.toBeChecked();
 });
 ```
+
+#### `toBeDisabled`, `toBeEnabled`
+- `toBeDisabled`：非活性かどうかを検証する
+- `toBeEnabled`：活性かどうかを検証する
