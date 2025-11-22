@@ -1089,3 +1089,157 @@ Testing Library は内部的に`aria-query`というライブラリを使用し�
 | `<header>`                             | `banner`                     | ページ内で最初の `<header>` のみ暗黙ロール付与      |
 | `<footer>`                             | `contentinfo`                | 同上                                 |
 | `<main>`                               | `main`                       |                                    |
+
+### グローバルステートを用いたテスト
+※Reactの`Context API`を使ったグローバルステート事例として説明を進める
+
+#### 事例コード（トーストUI）
+- `ToastContext.tsx`
+```tsx
+import { createContext } from "react";
+
+export type ToastStyle = "succeed" | "failed" | "busy";
+
+export type ToastState = {
+  isShown: boolean;  // トーストUIの表示・非表示判定
+  message: string;   // トーストUIで表示する内容
+  style: ToastStyle; // 先ほど定義した文字列リテラル（成功、失敗、処理混雑）
+};
+
+// ステートの初期値
+export const initialState: ToastState = {
+  isShown: false,
+  message: "",
+  style: "succeed",
+};
+
+// グローバルステートの生成
+export const ToastStateContext = createContext(initialState);
+
+export type ToastAction = {
+  // 引数`state`はオプショナル（あってもなくても良い状態）で、
+  // その内訳は、`ToastState`から`isShown`プロパティを除外（Omit）し、
+  // 残りのプロパティ（message, style）もオプショナル（Partial）にしたもの
+  showToast: (state?: Partial<Omit<ToastState, "isShown">>) => void;
+  hideToast: () => void;
+};
+
+// アクション（更新処理）の初期値
+export const initialAction: ToastAction = {
+  showToast: () => {},
+  hideToast: () => {},
+};
+
+// アクション（更新処理）用のグローバルステートを用意
+export const ToastActionContext = createContext(initialAction);
+```
+
+- `useToastProvider.tsx`
+[カスタムフックを通じてコンポーネントを提供する`render hooks`](https://engineering.linecorp.com/ja/blog/line-securities-frontend-3)のようなことをしているコンポーネント
+
+```tsx
+import { useCallback, useState } from "react";
+import { initialState, ToastState } from "./ToastContext";
+
+// 引数`defaultState`は`ToastState`型を持つが`Partial`によってオプショナルにされている
+export function useToastProvider(defaultState?: Partial<ToastState>) {
+  const [{ isShown, message, style }, setState] = useState({
+    // { isShown, message, style }ステートの初期値は`initialState`,`defaultState`を展開した内容
+    /*
+    {
+      isShown: false,
+      message: "",
+      style: "succeed",
+      `defaultState`があれば上記の各プロパティを、その内容で適宜上書きしていく
+    }
+    */
+    ...initialState,
+    ...defaultState,
+  });
+
+  const showToast = useCallback(
+    (props?: Partial<Omit<ToastState, "isShown">>) => {
+      // `...prev`： 既存内容を維持しつつ、
+      // `...props`： 各プロパティ（`isShown`, `message`, `style`）を引数の内容で更新
+      // `isShown: true`： 最後に`isShown`プロパティのみ明示的に表示状態に変更する
+      setState((prev) => ({ ...prev, ...props, isShown: true }));
+    },
+    []
+  );
+
+  const hideToast = useCallback(() => {
+    // `...prev`： 既存内容を維持しつつ、
+    // `isShown: false`： `isShown`プロパティのみ明示的に非表示状態に変更する
+    setState((prev) => ({ ...prev, isShown: false }));
+  }, []);
+
+  // 各種ステート（`isShown`, `message`, `style`）と
+  // アクション（`showToast`, `hideToast`）を呼び出し側に提供
+  return { isShown, message, style, showToast, hideToast };
+}
+```
+
+- `index.tsx`
+```tsx
+import { ReactNode } from "react";
+import { Toast } from "./Toast";
+import {
+  ToastActionContext,
+  ToastState,
+  ToastStateContext,
+  ToastStyle,
+} from "./ToastContext";
+import { useToastProvider } from "./useToastProvider";
+export { useToastAction, useToastState } from "./hooks";
+export type { ToastState, ToastStyle };
+
+export const ToastProvider = ({
+  children,
+  defaultState,
+}: {
+  children: ReactNode;
+  defaultState?: Partial<ToastState>;
+}) => {
+  const { isShown, message, style, showToast, hideToast } =
+    useToastProvider(defaultState);
+  return (
+    {/* Context.Providerでラップすることで、子コンポーネントツリー全体から
+        グローバルステート（isShown, message, style）と
+        アクション（showToast, hideToast）を参照可能にする */}
+    <ToastStateContext.Provider value={{ isShown, message, style }}>
+      <ToastActionContext.Provider value={{ showToast, hideToast }}>
+        {children}
+        {/* isShown が true になった時、表示される */}
+        {isShown && <Toast message={message} style={style} />}
+      </ToastActionContext.Provider>
+    </ToastStateContext.Provider>
+  );
+};
+```
+
+> [!NOTE]
+> - React19 からは`.Provider`は不要<br>
+> [`<Context>`がプロバイダに ](https://ja.react.dev/blog/2024/12/05/react-19#context-as-a-provider)
+
+- `useToastProvider.tsx`で定義したアクション（`showToast`）の使用例
+```tsx
+return (
+    <form
+      className={styles.module}
+      onSubmit={handleSubmit(async (values) => {
+        try {
+          const data = await postLogin(values);
+          window.location.href = data.redirectUrl;
+        } catch (err) {
+          showToast({ message: "ログインに失敗しました", style: "failed" });
+        }
+      })}
+    >
+    ...
+    ..
+    .
+```
+
+#### （今回のトーストUIにおける）グローバルステートのテスト観点
+1. Provider が保持する状態に応じて表示が切り替わること
+2. Provider が保持する更新関数（アクション）を経由して状態を更新できること
