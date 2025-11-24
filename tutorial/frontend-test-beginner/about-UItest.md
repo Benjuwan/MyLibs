@@ -1090,11 +1090,11 @@ Testing Library は内部的に`aria-query`というライブラリを使用し�
 | `<footer>`                             | `contentinfo`                | 同上                                 |
 | `<main>`                               | `main`                       |                                    |
 
-### グローバルステートを用いたテスト
+### グローバルステートを用いた結合テスト
 ※Reactの`Context API`を使ったグローバルステート事例として説明を進める
 
 #### 事例コード（トーストUI）
-- `ToastContext.tsx`
+##### `ToastContext.tsx`
 ```tsx
 import { createContext } from "react";
 
@@ -1134,7 +1134,7 @@ export const initialAction: ToastAction = {
 export const ToastActionContext = createContext(initialAction);
 ```
 
-- `useToastProvider.tsx`
+##### `useToastProvider.tsx`
 [カスタムフックを通じてコンポーネントを提供する`render hooks`](https://engineering.linecorp.com/ja/blog/line-securities-frontend-3)のようなことをしているコンポーネント
 
 ```tsx
@@ -1179,7 +1179,7 @@ export function useToastProvider(defaultState?: Partial<ToastState>) {
 }
 ```
 
-- `index.tsx`
+##### `index.tsx`
 ```tsx
 import { ReactNode } from "react";
 import { Toast } from "./Toast";
@@ -1243,3 +1243,89 @@ return (
 #### （今回のトーストUIにおける）グローバルステートのテスト観点
 1. Provider が保持する状態に応じて表示が切り替わること
 2. Provider が保持する更新関数（アクション）を経由して状態を更新できること
+
+##### 方法1. テスト用のコンポーネントを用意してインタラクションを実施
+```tsx
+const user = userEvent.setup();
+
+const TestComponent = ({ message }: { message: string }) => {
+  const { showToast } = useToastAction(); // <Toast> を表示するためのフック
+  return <button onClick={() => showToast({ message })}>show</button>;
+};
+
+// `userEvent`のメソッドは非同期なので必ず`async`, `await`
+test("showToast を呼び出すと Toast コンポーネントが表示される", async () => {
+  render(
+    <ToastProvider>
+      <TestComponent message={message} />
+    </ToastProvider>
+  );
+  const message = "test";
+  // 初めは表示されていない
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  // クリックして表示されることを確認
+  await user.click(screen.getByRole("button"));
+  expect(screen.getByRole("alert")).toHaveTextContent(message);
+});
+```
+
+##### 方法2. 初期値を注入して表示確認
+```tsx
+test("Succeed", () => {
+  render(<ToastProvider defaultState={state}>{null}</ToastProvider>);
+  const state: ToastState = {
+    isShown: true,
+    message: "成功しました",
+    style: "succeed",
+  };
+  expect(screen.getByRole("alert")).toHaveTextContent(state.message);
+});
+
+test("Failed", () => {
+  render(<ToastProvider defaultState={state}>{null}</ToastProvider>);
+  const state: ToastState = {
+    isShown: true,
+    message: "失敗しました",
+    style: "failed",
+  };
+  expect(screen.getByRole("alert")).toHaveTextContent(state.message);
+});
+
+// オブジェクト配列のイテレーション
+// `satisfies`によって安全な型確認（検証オブジェクトが期待する`ToastState`の型定義を満たしているかチェックし、満たしていない場合は型エラーを出してくれる）を実現
+test.each([
+  { isShown: true, message: "成功しました", style: "succeed" },
+  { isShown: true, message: "失敗しました", style: "failed" },
+  { isShown: true, message: "通信中…", style: "busy" },
+  // `...ToastState[])("$message",...`はメソッドチェーンではなく、
+  // test.each([...]) の戻り値（関数）を即座に呼び出している
+  // 関数A(引数1)(引数2) というカリー化されたような呼び出し
+] satisfies ToastState[])("$message", (state) => {
+  // $ はテンプレート変数のプレースホルダー
+  // $message = 各オブジェクトの message プロパティの値を参照
+  render(<ToastProvider defaultState={state}>{null}</ToastProvider>);
+  expect(screen.getByRole("alert")).toHaveTextContent(state.message);
+});
+```
+
+> [!NOTE]
+> `test.each([])`<br>
+> 同じテストをパラメータだけ変更してイテレーション（反復）したいときに有用
+```tsx
+test.each([
+  {
+    url: "/my/posts",
+    name: "My Posts"
+  },
+  {
+    url: "/my/posts/123",
+    name: "My Posts"
+  },
+  {
+    url: "/my/posts/create",
+    name: "Create Post"
+  }
+])("$url では $name がカレントになっている", ({url, name}) => {
+  // テスト処理内容
+})
+```

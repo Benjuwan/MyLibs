@@ -136,9 +136,11 @@ test("さよならを返す（本来の実装ではない）", () => {
 jest.mock('next/router', () => require('next-router-mock'));
 ```
 
+> [!IMPORTANT]
+> `next-router-mock`は、Nextの古いverであるPages Router（Next.js 13より前）用のライブラリで、App Routerでは機能しないので注意
+
 > [!NOTE]
-> モジュール読み込み方法には、`import`が使えるESM（ES Modules）と`require`で読み込むCJS（Commom JS Modules）がある。
-> 上記「ライブラリの置き換え」では`require`を使っているのでCJS（Commom JS Modules）の書き方となる。
+> モジュール読み込み方法には、`import`が使えるESM（ES Modules）と`require`で読み込むCJS（Commom JS Modules）がある。上記「ライブラリの置き換え」では`require`を使っているのでCJS（Commom JS Modules）の書き方となる。<br>
 > 他方、ESMの場合は`import`を使用してテスト冒頭で`jest.mock`を呼び出す。
 
 ---
