@@ -23,7 +23,7 @@ function Pagers({ maxPage }: { maxPage: number }) {
 
         //（コンテンツデータに応じた）ページャー（項目）数の要素を持つ配列を用意して（初期値として）0をセット
         // map 処理で各初期値をインデックスインクリメント（順次繰り上げ）した数に置換（加工）する
-        return Array(Accumuration).fill(0).map((_, i) => i + 1);
+        return new Array(Accumuration).fill(0).map((_, i) => i + 1);
     }
     const thePagers: number[] = createPagers();
 
