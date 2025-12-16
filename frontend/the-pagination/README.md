@@ -9,3 +9,17 @@
 - `src\app\layout.tsx`<br>
 上記グローバルステートを読み込んでいる箇所
   - 下層ページにて実装する場合は当該ディレクトリの`layout.tsx`で読み込ませて、かつルートパス（`src\constant\routingpass.ts`）を調整する
+
+## 技術構成
+- @eslint/eslintrc@3.3.3
+- @tailwindcss/postcss@4.1.18
+- @types/node@25.0.2
+- @types/react-dom@19.2.3
+- @types/react@19.2.7
+- eslint-config-next@16.0.10
+- eslint@9.39.2
+- next@16.0.10
+- react-dom@19.2.3
+- react@19.2.3
+- tailwindcss@4.1.18
+- typescript@5.9.3
