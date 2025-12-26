@@ -87,6 +87,9 @@ describe("真偽値の検証", () => {
 - `toBeNull`
 - `toBeDefined`
 
+> [!NOTE]
+> - `img`の`src`属性など、空文字を指定できる各種属性値の検証でも利用可能
+
 ### 数値の検証
 ```ts
 describe("数値の検証", () => {
@@ -500,7 +503,8 @@ test("expect.objectContaining による部分検証", () => {
 ```
 
 ### カスタムマッチャー（`jest-dom`）
-UIコンポーネントのテストでもJestのアサーションやマッチャーを利用できるものの、DOMの状態を検証するにはJest標準だけでは不十分な場合がある。そのため[`@testing-library/jest-dom`](https://www.npmjs.com/package/@testing-library/jest-dom)をインストールして、Jestの拡張機能であるカスタムマッチャーを扱えるようにする。`jest-dom`によって、UIコンポーネントテストに便利なマッチャーが多数追加される。
+UIコンポーネントのテストでも Jest のアサーションやマッチャーを利用できるものの、DOMの状態を検証するには Jest 標準だけでは不十分な場合がある。<br>
+そのため[`@testing-library/jest-dom`](https://www.npmjs.com/package/@testing-library/jest-dom)をインストールして、Jest の拡張機能であるカスタムマッチャーを扱えるようにする。`jest-dom`によって、UIコンポーネントテストに便利なマッチャーが多数追加される。
 
 #### `toBeInTheDocument`
 要素がドキュメントに存在するかどうかを検証する

@@ -66,7 +66,8 @@ import { render } from '@testing-library/react'
 ```
 
 #### [Testing Library](https://testing-library.com/)
-UIコンポーネントのテスト用ライブラリ。<br>基本原則として**テストがソフトウェアの使用方法に似ている**ことを推奨していて、具体的にはクリックやマウスホバー、キーボード入力など**Web操作と同じようなテストを書く**ことを推奨している。
+UIコンポーネントのテスト用ライブラリ。<br>
+基本原則として**テストがソフトウェアの使用方法に似ている**ことを推奨していて、具体的にはクリックやマウスホバー、キーボード入力など**Web操作と同じようなテストを書く**ことを推奨している。
 
 ---
 
@@ -142,6 +143,134 @@ import userEvent from "@testing-library/user-event";
 - **`fireEvent`との違い**<br>
 `fireEvent`は同期的、`userEvent`は非同期的かつよりユーザー操作に近い動作をシミュレート
 
+###### インタラクション（機能・操作）テスト
+※**セットアップ関数**という特定テスト（関連挙動）をまとめたカスタムフック / ヘルパー関数的なものを用意するのが一般的。
+
+- セットアップ関数例：
+```js
+function setup() {
+  // アサーション用のモック関数
+  const onClickSave = jest.fn();  // 保存ボタンのクリック時に実行される
+  const onValid = jest.fn();      // 成功：適正内容で送信を試みた場合に実行される
+  const onInvalid = jest.fn();    // 失敗：不適正内容で送信を試みた場合に実行される
+
+  // テスト対象（コンポーネント）をレンダリング
+  render(
+    <PostForm
+      title="新規記事"
+      onClickSave={onClickSave}
+      onValid={onValid}
+      onInvalid={onInvalid}
+    />
+  );
+
+  // 記事タイトルを入力するインタラクション関数
+  async function typeTitle(title: string) {
+    const textbox = screen.getByRole("textbox", { name: "記事タイトル" });
+    await user.type(textbox, title);
+  }
+
+  // 記事公開するインタラクション関数
+  async function saveAsPublished() {
+    await user.click(screen.getByRole("switch", { name: "公開ステータス" }));
+    await user.click(screen.getByRole("button", { name: "記事を公開する" }));
+  }
+
+  // 下書き保存するインタラクション関数
+  async function saveAsDraft() {
+    await user.click(screen.getByRole("button", { name: "下書き保存する" }));
+  }
+
+  return {
+    typeTitle,
+    saveAsDraft,
+    saveAsPublished,
+    onClickSave,
+    onValid,
+    onInvalid,
+  };
+}
+```
+
+> インタラクションテストの実施には初期化（`userEvent.setup()`）しておくこと
+```js
+import userEvent from "@testing-library/user-event";
+
+// 初期化処理（必ず各テストの最初に記載）
+const user = userEvent.setup();
+```
+
+- **user.click**<br>
+クリック操作を再現（エミュレート）
+```js
+await user.click(screen.getByRole("button"));
+```
+
+- **user.type**<br>
+入力操作を再現
+```js
+await user.type(textbox, value);
+```
+
+- **user.selectOptions**<br>
+セレクトボックス（`combobox`）から任意の項目を選択するインタラクション関数
+```js
+const combobox = screen.getByRole("combobox", { name: "公開ステータス" });
+// セレクトボックスから要素を選択するインタラクション
+async function selectOption(label: string) {
+  await user.selectOptions(combobox, label);
+}
+```
+
+- **user.upload**<br>
+ファイルアップロード操作を再現
+```js
+const file = new File([content], fileName, { type: "image/png" });
+const fileInput = screen.getByTestId(inputTestId);
+const selectImage = () => user.upload(fileInput, file);
+```
+
+###### `waitFor`関数：特定の状況・条件下になるまで処理実施を待機する
+**非同期のテスト**において「**特定の条件が満たされるまで待機する**」ための関数。**特定の条件が満たされるまで**という性質を持つため、**非同期処理をトリガーした後に配置する**のが一般的。
+
+```js
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+
+test('データが表示されるまで待つ', async () => {
+  render(<MyComponent />);
+  
+  await waitFor(() => {
+    expect(screen.getByText('データ読み込み完了')).toBeInTheDocument();
+  });
+});
+
+// 非同期処理をトリガーした後に waitFor を使う例
+test('ボタンクリック後にデータが表示される', async () => {
+  // userEventの初期化
+  const user = userEvent.setup();
+  
+  render(<MyComponent />);
+  
+  // 1. 非同期処理のトリガー
+  const button = screen.getByRole('button');
+  await user.click(button);
+  
+  // 2. その結果を待つ
+  await waitFor(() => {
+    expect(screen.getByText('データ読み込み完了')).toBeInTheDocument();
+  });
+});
+```
+
+`waitFor`関数は指定したコールバック関数が成功する（エラーをスローしない）まで繰り返し実行し、タイムアウトするまで待機する。
+
+- `waitFor`関数の特徴
+  - 条件が満たされるまで繰り返しチェック
+  - タイムアウト（デフォルト1秒:`1000ms`）まで待機
+  - 条件が満たされたらテストを続行
+
 ### Testing Library 実装例
 Testing Library を使う際の**レンダリングした内容から特定DOM要素を取得する各種API**の紹介をしていく。<br>
 **結論として、アクセシビリティを重視した優先順位から基本的には`...ByRole`を用いる**。<br>
@@ -187,8 +316,9 @@ expect(element).toBeInTheDocument();
 ```
 
 > [!NOTE]
-> #### [Types of Queries | Testing Library](https://testing-library.com/docs/queries/about/#types-of-queries)
-> 上記の公式ドキュメントページ（の Summary Table という箇所）で各APIの比較表が確認できる。<br>
+> #### `getBy...`, ``queryBy...`, `findBy...`の違い
+> - [Types of Queries | Testing Library](https://testing-library.com/docs/queries/about/#types-of-queries)<br>
+> 上記の公式ドキュメントページ（の Summary Table という箇所）で各APIの比較表が確認できる。
 
 ---
 

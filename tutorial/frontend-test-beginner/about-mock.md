@@ -436,6 +436,82 @@ test("データ取得に失敗した場合、reject される", async () => {
 
 </details>
 
+#### [`MSW（Mock Service Worker）`](https://mswjs.io/)
+Web API 用のモックサーバーライブラリで、ネットワークレベルのモックを実現できる。例えば、特定の Web API リクエストをインターセプト（奪取）し、レスポンスを任意の値に書き換えることができる。<br>
+Web API サーバーが起動していなくてもレスポンスを再現できるのでインテグレーションテストのモックサーバーとして利用できる。
+
+- `リクエストハンドラー`を用いて Web API リクエストをインターセプトする<br>
+`リクエストハンドラー`は`rest.post`関数で作成される。
+```js
+import { setupWorker, rest } from "msw";
+
+const worker = setupWorker(
+  rest.post("https://myapi.dev/csr", (req, res, ctx) => {
+    return res(
+      ctx.json({
+        title: "CSR Source",
+        text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
+      })
+    );
+  })
+);
+
+worker.start();
+```
+
+`MSW`には以下のような利点があります。
+
+- テスト単位でレスポンスを切り替えられる
+- 発生したリクエストの headers, query の内訳が詳細に検証できる
+- ブラウザ起因のリクエストとサーバー起因のリクエストの、どちらもインターセプトが可能。これによりBFF（Backend For Frontend）を含むフロントエンドテストの様々なところで活用できる
+
+##### Jest で MSW を使うには
+Jest向けのセットアップ関数`setupServer`を使う。<br>
+`setupServer`関数には、リクエストハンドラーを可変長引数（※引数指定数が単体でも、複数でもokという自由な形式）で渡すことでインターセプトが有効になる。テストごとにサーバーを初期化するので、異なるテスト間でインターセプトが干渉することはない。<br>
+共通のセットアップ関数として`setupMockServer`のような関数を用意しておくと便利になる。
+
+```js
+/* プロパティ handlers に渡ってくる中身 */
+// export function handleGetMyProfile(args?: {
+//   mock?: jest.Mock<any, any>;
+//   status?: number;
+// }) {
+//   return rest.get(path(), async (_, res, ctx) => {
+//     args?.mock?.();
+//     if (args?.status) {
+//       return res(ctx.status(args.status));
+//     }
+//     return res(ctx.status(200), ctx.json(getMyProfileData));
+//   });
+// }
+// export const handlers = [handleGetMyProfile()];
+
+import type { RequestHandler } from "msw";
+
+export function setupMockServer(...handlers: RequestHandler[]) {
+  const server = setupServer(...handlers);
+  beforeAll(() => server.listen());
+  afterEach(() => server.resetHandlers());
+  afterAll(() => server.close());
+  return server;
+}
+```
+
+> [!NOTE]
+> 各テストファイルで`MSW`サーバーをセットアップするためには、テストに必要なハンドラー関数を以下のようにして渡して設定する。
+
+```js
+import { handleGetMyProfile } from "@/services/client/MyProfile/__mock__/msw";
+import { getMyPostsData } from "@/services/server/MyPosts/__mock__/fixture";
+```
+
+---
+
+> [!NOTE]
+> 以前まで`MSW`では Fetch API を使用できず、polyfil が必要だった。が、今は不要となった。
+
+- 参考記事：[Mock Service Worke（MSW） v2 では Web 標準の Fetch API をサポートしました。](https://azukiazusa.dev/blog/shorts/73zH9ULSIWeA55tA6corT8/)
+
 ### モック関数を使ったスパイ
 主に記録を担う[スパイ](#スパイ)を用いて、記録された値を検証することで意図した挙動・振る舞いかをチェックできる。
 
