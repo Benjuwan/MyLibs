@@ -10,6 +10,55 @@
 - `__test__`ディレクトリを用意して、その中に配置する
 - コロケーションを意識して対象モジュールの近くに配置する
 
+### AAA： Arrange, Act, Assert
+（ユニット・単体）テストでは`AAA`を意識した書き方を徹底する。
+
+```js
+test("クーポン抜きの税込価格の合計値を算出する", () => {
+  // Arrange
+  const items = [
+    generateItem({ price: 2000, quantity: 2 }),
+    generateItem({ price: 5000 }),
+  ];
+
+  const subtotal = 2000 * 2 + 5000;
+  const expectedTotal = subtotal * (1 + TAX_RATE);
+
+  // Act
+  const total = calculateCartTotal(items);
+
+  // Assert
+  expect(total).toBe(expectedTotal);
+});
+```
+
+#### Arrange（準備フェーズ）
+テストを実行するための前提条件（入力データ、初期状態、必要に応じて[`モック`](./about-mock.md#モックテストダブル)や[`スタブ`](./about-mock.md#スタブ)）を用意する
+
+```js
+// Arrange
+const items = [
+  generateItem({ price: 2000, quantity: 2 }),
+  generateItem({ price: 5000 }),
+];
+```
+
+#### Act（実行フェーズ）
+実際にテスト対象の処理（挙動・振る舞い）を実施
+
+```js
+// Act
+const total = calculateCartTotal(items);
+```
+
+#### Assert（検証フェーズ）
+処理結果が期待通りか検証する
+
+```js
+// Assert
+expect(total).toBe(expectedTotal);
+```
+
 ### テストの構成要素
 #### 一つのテスト
 Jestが提供するAPIの`test関数`でテストを定義する。`test関数`は2つの引数を持つ。

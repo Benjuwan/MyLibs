@@ -17,6 +17,19 @@
 - Storybook：UIコンポーネントカタログ。個々のUIコンポーネントを単体で開発、テスト、文書化できるツール
   - テスト戦略においてはユニットテスト（ロジックやコンポーネント単位）とE2Eテスト（結合含むブラウザでの実地テスト）の中間点に位置する存在
 
+#### Storybook における対象範囲（スコープ）分類について
+Storybookでは以下のようにスコープを分類している。
+
+- global レベル： 全Storyに影響する設定（`.storybook/preview.js`）
+- component レベル： Storyファイルごとの設定（`export default`）
+- story レベル： Storyごとの設定（`export const`）
+- ※**`story > component > global` の順で優先**される
+
+> [!NOTE]
+> - Storybookは、基本的に`@storybook/addon-essentials`というアドオンを使って利用するのが一般的
+> - `Decorator`： Storyやコンポーネントに対して共通のラッパーを提供する仕組み。これを用いて再利用可能な使い方をするのも一般的
+> - 別ドキュメントに記載している[`MSW`](./about-mock.md#mswmock-service-worker)と連携させることでHTTPリクエストのモック化も可能
+
 ## 大前提として
 ### `Behavior-Driven Development`：ビヘイビア駆動開発を意識
 テストはあくまで**振る舞い・挙動**にスポットをあてる。実装ロジックや技術的観点などユーザー目線（UX基準）から外れたところをテスト軸としない。<br>
@@ -308,6 +321,9 @@ open coverage/lcov-report/index.html
 ### アサート
 検証値が期待値通りであるという検証を行うこと
 
+### Happy Path（ハッピーパス）
+正常系の検証ルート・結果。<br>例えば、最初に Happy Path を示すと、続くケースが何を守るためのガードなのか読み手が掴みやすくなるため「正常系 → 準異常系 → 異常系」の順にテストケースを並べるアプローチもある。
+
 ### ステージング環境
 より本番環境に近い構成をテスト用に用意した環境のこと
 
@@ -319,3 +335,8 @@ open coverage/lcov-report/index.html
 
 ### 偽陽性(false positive)
 実際には、機能に問題がないのにテストが失敗すること
+
+
+## 参考
+
+- [単体テストコードのお作法](https://zenn.dev/silverbirder/articles/e62ad1be9cdb40)

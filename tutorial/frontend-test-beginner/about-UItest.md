@@ -203,12 +203,14 @@ const user = userEvent.setup();
 - **user.click**<br>
 クリック操作を再現（エミュレート）
 ```js
-await user.click(screen.getByRole("button"));
+const button = screen.getByRole("button", { name: "送信" });
+await user.click(button);
 ```
 
 - **user.type**<br>
 入力操作を再現
 ```js
+const textbox = screen.getByRole("textbox", { name: "メールアドレス" });
 await user.type(textbox, value);
 ```
 
