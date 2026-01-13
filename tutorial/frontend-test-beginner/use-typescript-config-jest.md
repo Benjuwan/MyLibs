@@ -1,18 +1,56 @@
-## JestでTypeScriptを使うための設定手順
-React × vite を例にしています。
+---
+title: Vite × React × TypeScript プロジェクトでの Jest 設定手順
+tags: React TypeScript Jest テスト
+author: benjuwan
+slide: false
+---
+## はじめに
+Vite × React × TypeScript を前提にしています。
 
-### 前提
-以下の公式ドキュメントを参照しましたが情報が不足しているようで上手くいきませんでした。
+また、本記事ではロジックテストを軸にした TypeScript関数（`.ts`ファイル）の基本的な Jestセットアップを解説します。
+※Reactコンポーネント（`.tsx`）のUIテストについては、別途`jsdom`環境の設定が必要となります。
+
+<details><summary>Reactコンポーネントで jsdom が必要となる理由</summary>
+
+React 開発では、Vite を含むバンドルやテストなどの各種ツールを実行するために、JavaScript を実行するためのバックエンド側の実行環境が必要となります。
+
+バックエンド側での JavaScript 実行環境の代表例が Node.js であり、他にも Bun や Deno などが存在します。
+
+Node.js は、Vite を含むバンドル処理やテスト実行などをサポートしますが、DOM API を直接扱う機能は持っていません。
+
+フロントエンド向け UI ライブラリである React のコンポーネントテスト（UIテスト）では DOM API の操作が前提となるため、バックエンド環境上でテストを実行する際には、DOM API をエミュレート（模倣）する`jsdom`が必要となります。
+
+</details>
+
+---
+
+Vite といえば Vitest がテストツールとして相性が良いものの、Jest もまた依然としてシェア率が高いことを踏まえて「Jest × TypeScript の設定手順」を書いていきます。
+
+というのも 筆者が Jest について学習中に以下の公式ドキュメントを参照しましたが情報がいくつか不足しているようで上手くいきませんでした。
 
 - [Getting Started](https://jestjs.io/docs/getting-started)
     - [Using TypeScript](https://jestjs.io/docs/getting-started#using-typescript)
 - [Jest config file | Installation](https://kulshekhar.github.io/ts-jest/docs/getting-started/installation#jest-config-file)
 - [ESM Support](https://kulshekhar.github.io/ts-jest/docs/guides/esm-support)
 
-### 解決策
-前述のとおり、公式ドキュメント情報で対応できなかったのでClaude経由で調べた解決策になります。
+::: note warn
+そもそも、Jest では ESM：ECMAScript Modules（※Vite成果物はESM）が実験的サポートの段階だそうで設定が複雑になりがち。
 
-#### 1. 必要なパッケージをインストール 
+Viteプロジェクトの`package.json`には通常`"type": "module"`と書かれています。これがあると、Node.js はすべてのファイルを ESM として扱おうとしますが、Jest（および一部の関連ツール）は CommonJS での動作を期待している部分があり、そこで「衝突」が起きるのです。
+:::
+
+> Jest ships with experimental support for ECMAScript Modules (ESM).
+
+https://jestjs.io/docs/ecmascript-modules?utm_source=chatgpt.com
+
+そこで、Claude 経由で調べた解決策を備忘録＆情報共有として記事にしていきます。
+
+::: note info
+そもそも現代では、この設定含めてAIに任せれば済むのですが知識として持っておきたかった部分もあって手動検証した次第です。
+:::
+
+## 解決策
+### 1. 必要なパッケージをインストール 
 ```bash
 # Jest 本体
 npm install --save-dev jest
@@ -21,7 +59,7 @@ npm install --save-dev jest
 npm install --save-dev @types/jest ts-jest
 ```
 
-#### 2. `package.json`にテストコマンドを追加
+### 2. `package.json`にテストコマンドを追加
 - `package.json`の`scripts`セクションに以下を追加
 ```js
 {
@@ -43,7 +81,7 @@ npm install --save-dev @types/jest ts-jest
 },
 ```
 
-#### 3. `jest.config.ts`を用意
+### 3. `jest.config.ts`を用意
 - プロジェクトルートに`jest.config.ts`を作成
 ```ts
 import type { Config } from '@jest/types';
@@ -64,17 +102,16 @@ export default config;
     - `roots`：テストファイルを探すルートディレクトリ
     - `testMatch`：テストファイルのパターン
 
-#### 推奨：4. `tsconfig.json`に設定を追加
+### 推奨：4. `tsconfig.json`に設定を追加
 テスト実行時に以下の警告が表示された場合はこのセクションで紹介する設定を行う。
 
 ```bash
 ts-jest[config] (WARN) message TS151001: If you have issues related to imports, you should consider setting `esModuleInterop` to `true` in your TypeScript configuration file (usually `tsconfig.json`). See https://blogs.msdn.microsoft.com/typescript/2018/01/31/announcing-typescript-2-7/#easier-ecmascript-module-interoperability for more information.
 ```
 
-> [!NOTE]
-> `esModuleInterop`は、CommonJS形式のモジュール（require）とESモジュール形式（import）の相互運用性を改善する働きを持つ。将来的にモジュールのインポートで問題が起きる可能性があるため設定推奨。
-
----
+::: note info
+`esModuleInterop`は、CommonJS形式のモジュール（require）とESモジュール形式（import）の相互運用性を改善する働きを持つ。将来的にモジュールのインポートで問題が起きる可能性があるため設定推奨。
+:::
 
 ```ts
 {
@@ -98,7 +135,9 @@ ts-jest[config] (WARN) message TS151001: If you have issues related to imports, 
 }
 ```
 
-##### テスト関数の型定義エラーをエディタに指摘された場合
+---
+
+#### テスト関数の型定義エラーをエディタに指摘された場合
 `tsconfig.app.json`内の`"types"`プロパティに`"jest"`を追記する
 ```diff
 {
@@ -116,27 +155,32 @@ ts-jest[config] (WARN) message TS151001: If you have issues related to imports, 
 }
 ```
 
-#### 5. `.gitignore`にカバレッジ出力を追加
+### 5. `.gitignore`にカバレッジ出力を追加
 - テスト実行後に生成される`coverage/`ディレクトリを追跡対象外とする
 ```bash
 coverage/
 ```
 
-### テストの実行
-#### `npm test`
-- 全体テスト：<br>
+## テストの実行
+### `npm test`
+- 全体テスト：
 プロジェクトに存在する`.test`ファイルを全て検証するので時間がかかる
 
-#### `npm test ファイルパス名`
+### `npm test ファイルパス名`
 - 単体テスト：
-    - ファイルパス指定は`/`でないと機能しない<br>
+    - ファイルパス指定は`/`でないと機能しない
     ※WindowsOSでのファイルパスコピー時は`\`（バックスラッシュ）となるので要注意
-    - ファイル名にコロンは不要<br>
-    ※書籍では`npm test 'ファイル名'`で紹介されているので注意
+    - ファイル名にコロンは不要（NG：`npm test 'ファイル名'`）
 
 ```bash
-npm test src/03/02/index.test.ts
+npm test src/feat/special/index.test.ts
 ```
 
-#### VSCode拡張機能`Jest Runner`を利用
-テストファイルのコード上で`Run|Debug`を実行できる
+### VSCode拡張機能`Jest Runner`を利用
+`Jest Runner`という拡張機能を用いると、テストファイルのコード上で`Run|Debug`を実行できます。
+
+## さいごに
+環境構築で躓くのは少なくないと思いますので、本記事が筆者と同じように詰まった方のお役に立てると幸いです。
+
+読んでいただき、ありがとうございました。
+
