@@ -101,6 +101,10 @@ JavaScript でいうとオブジェクトのプロパティやメソッドチェ
 import モジュール名
 ```
 
+::: note info
+一般的には、各種モジュールやパッケージのインストールでは **相対インポート（`from . import モジュール名`）** よりも **絶対インポート（`from パッケージ名.モジュール名 import クラスまたは関数名`）** の方が、依存関係が明確になりコードの可読性と保守性が向上します。
+:::
+
 - 具体例：標準ライブラリ`random`モジュールを使用
 
 ::: note alert
@@ -181,10 +185,103 @@ print(url_parse_result)
 
 :::
 
-### Python標準ライブラリをいくつか紹介
+#### 補足： ロジックを切り分けた自作モジュールやパッケージの格納ディレクトリには`__init__.py`を置いておく
+
+`__init__.py`とは、ディレクトリをPythonパッケージとして認識させるためのファイルです。
+
+```
+specific_feature/
+├── __init__.py  # 中身は空ファイルでもok
+└── feature.py
+```
+
+Python 3.3 以降では必須ではありません（※`Namespace Package`として扱われるため）が、配置することで**明示的にパッケージとして管理**できます。中身は空ファイルでも問題ありませんが、パッケージの初期化コードや`__all__`によるエクスポート制御を記述できます。
+
+- `__init__.py`： パッケージ初期化コード例
+```py
+# パッケージのバージョン情報を定義
+__version__ = '1.0.0'
+
+# 必要に応じて初期化処理を実施
+# 先ほども記載したが`__init__.py`は中身が空でも良い
+```
+
+- `__init__.py`： `__all__`によるエクスポート制御の例
+```py
+from .module_a import UserLogic
+from .module_b import calc_price
+
+# "from package import *" で公開する対象を制限する
+__all__ = ['UserLogic', 'calc_price']
+```
+
+::: note info
+`__init__.py`については以下記事がより詳しいです。
+:::
+
+https://nikkie-ftnext.hatenablog.com/entry/lets-touch-dunder-init-py-mark-directory-as-regular-package-202601
+
+#### 補足： 循環インポートエラー
+循環インポートエラーとは、2つ以上のモジュールが互いにインポートし合うことで発生するエラーです。
+
+React を例にすると、関心ごとや責務分離の観点からコンポーネントやカスタムフックなどに切り分けて適宜必要箇所で読み込む（インポートする）ケースは多いと思います。
+これはモジュールバンドラー（Webpack や Vite など）が依存関係を適切に解決してくれているためスムーズにインポートできます。
+
+一方、バニラの JavaScript（モジュールバンドラーを使わず script タグで直接読み込む場合や CommonJS など一部の環境）では開発者自らが各ファイルの依存関係を管理・解決しなければなりません。
+
+Pythonでもこれと同様の事態が生じます。
+つまり、うまく順序立ててインポートしないとロジックが機能しなくなるのです。特に、Python は import 時に即実行されるため、よりエラーとして顕在化しやすい傾向があります。
+
+具体的には、モジュールA がモジュールB をインポートし、モジュールB もモジュールA をインポートしている場合、Pythonが「片方のモジュールがまだ完全に初期化されていない状態で参照される」ため **属性が存在せずエラー（`AttributeError`, `ImportError`）** となってしまいます。
+
+```py
+module_a.py がfrom module_b import something
+module_b.py がfrom module_a import something
+```
+
+循環インポートエラーの対策としては以下が挙げられます。
+
+- モジュール間の依存関係を一方向にする
+- 必要に応じて関数内でインポートする
+- 共通の依存を別モジュールに分離する
+
+#### 補足： ライブラリのアップデート情報確認とアップデート方法、`requirements.txt`の更新方法
+
+- `requirements.txt`：仮想環境にインストールしたものを管理するためのファイル
+
+::: note info
+以下工程は仮想環境をアクティベートした状態で実施してください。
+さもないと**グローバル環境に各種ライブラリがインストールされてしまい**ます。
+:::
+
+##### 1. `pip list --outdated`でpipでインストールされているライブラリのうち、アップデート可能なものを確認
+`pip list --outdated`は、`npm`でいう`npm outdated`に相当します。
+
+##### 2. ライブラリのアップデートを実施
+###### サードパーティツールの`pip-review`を実施
+※インストールが済んでいない場合は`pip install pip-review`でインストール
+
+- `pip-review --interactive`：一つずつ `[Y]es / [N]o / [A]ll` で選択して更新
+- `pip-review --auto`：全自動更新
+
+###### `pip`コマンドを直接使用（標準的な方法）
+```bash
+# 個別アップデート
+pip install --upgrade パッケージ名
+
+# 複数同時アップデート
+pip install --upgrade パッケージ1 パッケージ2
+```
+
+##### 3. `requirements.txt`を最新の状態に更新
+```bash
+python -m pip freeze > ファイルパス/requirements.txt
+```
+
+## Python標準ライブラリをいくつか紹介
 筆者の独断と偏見で選んだパッケージであり、関連モジュールも全てを網羅してはいません。**これを知っておくと便利**という観点で選抜しています。
 
-#### `random`
+### `random`
 文字列や数値を対象に、様々なランダム処理を持ったライブラリ。
 
 - `choice`関数
@@ -205,7 +302,7 @@ target_list = ["Morning", "Afternoon", "Evening", "Night"]
 random.shuffle(target_list)
 ```
 
-#### `time`
+### `time`
 時刻の取得や変換を行うモジュール。現在時刻（エポックからの経過秒数）を`float`（浮動小数点数）で返す。
 ※エポック（UNIXエポック）とは大抵のシステムにおいて「1970年 1月 1日 0時 0分 0秒」を指す。
 
@@ -242,7 +339,7 @@ import time
 time.sleep(3)
 ```
 
-#### [`urllib`](https://docs.python.org/ja/3.13/library/urllib.html)
+### [`urllib`](https://docs.python.org/ja/3.13/library/urllib.html)
 webページを取得できる標準ライブラリ。
 
 ```py
@@ -264,7 +361,7 @@ with urlopen("https://example.co.jp/") as sitedate:
 <details>
 <summary>Python ではデータベースをわざわざ用意しなくても SQLite が使える</summary>
 
-#### `sqlite3`
+### `sqlite3`
 データベースをわざわざ用意する必要なく、RDBMS（リレーショナルデータベース・マネジメント・システム）の一種である`SQLite`を利用できる標準ライブラリ。
 
 ::: note info
@@ -320,7 +417,7 @@ connection.close()
 
 ---
 
-### Python非標準ライブラリをいくつか紹介
+## Python非標準ライブラリをいくつか紹介
 フロントエンドで親しみ深い`npm`と同じ要領でライブラリをインストールして使用します。
 `Python`で`npm`にあたるコマンドは`pip`（Windows） / `pip3`（Mac | Linux）です。
 
@@ -331,14 +428,14 @@ Pythonでは「**仮想環境を使わない場合、`pip install パッケー�
 
 フロントエンド開発でもそうですが、何でもかんでも`npm`などをグローバルインストールしていたらverの競合が起きたり、PCのパフォーマンスに影響が出たりします。
 
-そのため、特定のプロジェクトでは専用または特化した環境を用意するのが一般的です。
+そのため、特定のプロジェクトでは**専用または特化した仮想環境を用意する**のが一般的です。
 :::
 
 ---
 
 ※実際に使ってみて便利だったもの、汎用性の高いものには<font color="red">★</font>マークを付けています（もちろん筆者の独断と偏見です）
 
-#### `NumPy`（ナムパイ）
+### `NumPy`（ナムパイ）
 **数値計算**でよく使われるライブラリ。
 
 主要な機能は、数値を格納するための配列と、配列に対する各種の演算です。
@@ -348,7 +445,7 @@ Pythonでは「**仮想環境を使わない場合、`pip install パッケー�
 pip install numpy
 ```
 
-#### `Pandas`（パンダス）
+### `Pandas`（パンダス）
 **データ処理**でよく使われるライブラリ。
 
 データの読込、指定したデータの取得、統計量の計算などを簡単なプログラムで実現できます。
@@ -361,7 +458,7 @@ pip install pandas
 `Pandas`にはデータフレームという独自のオブジェクトがあるので、分かりやすくデータを表示したり、扱ったりしたい場合は`NumPy`より`Pandas`のほうが良いです。
 :::
 
-#### `Matplotlib`（マットプロットリブ）
+### `Matplotlib`（マットプロットリブ）
 **インフォグラフィック（可視化）** ライブラリ。
 
 `NumPy`の配列や`Pandas`のデータフレームなどから色々な種類の図を作成できます。
@@ -385,7 +482,7 @@ pip install matplotlib
 ※ただし、使用するAIによって（※特に無料プランの場合）は**機密情報を渡さないよう注意が必要**です。
 :::
 
-#### `scikit-learn`（サイキットラーン）
+### `scikit-learn`（サイキットラーン）
 機械学習ライブラリ。
 
 データに対して、分類、回帰、クラスタリング、次元削減といった機械学習に関する色々な手法を適用することができます。
@@ -394,7 +491,7 @@ pip install matplotlib
 pip install scikit-learn
 ```
 
-#### <font color="red">★</font> `Pillow`（ピロー）
+### <font color="red">★</font> `Pillow`（ピロー）
 画像ファイルの入出力や編集でよく使われるライブラリ。
 
 筆者が使用した場面では、AIと組み合わせて画像からテキスト抽出または読み込み、別ライブラリ（`pdf2image`, `pypdf`など）と組み合わせてPDFからの画像生成など汎用性が高かったです。
@@ -406,7 +503,7 @@ pip install Pillow
 # ライブラリ名は`Pillow`だがインストール後のパッケージ名は`PIL`となる
 ```
 
-#### `pypdf`
+### `pypdf`
 PDFファイルを扱う時に利用するライブラリ。
 
 https://qiita.com/ryutarom128/items/6e5d36efb136f9595f07
@@ -417,7 +514,7 @@ pip install pypdf
 
 <details><summary>PDFファイルを画像（JPG）に変換したい場合</summary>
 
-#### `Poppler`（PDF -> 画像変換）
+### `Poppler`（PDF -> 画像変換）
 PDFファイルを画像（JPG）へ変換するために`pdf2image`という非標準ライブラリと、それと併用する`Poppler`というC++製の外部ツールがあります。
 `Poppler`のインストールが必要なので、利用OS別に以下の手順で`Poppler`をインストールしてください。
 
@@ -450,7 +547,7 @@ sudo apt-get install poppler-utils
 ```
 
 ::: note info
-##### 「PDF → 画像, 画像 → PDF」という両方向の処理フローの違いについて
+#### 「PDF → 画像, 画像 → PDF」という両方向の処理フローの違いについて
 PDFの読み込み・解析には専用のツール（`Poppler`）が必要となるものの、PDFの生成自体は既存の Python ライブラリだけで十分です。
 というのも、**PDF形式は造りが複雑なのでPDFを読み取るには高度な解析が必要**となりますが、作成する分には比較的シンプルに行えるのです。
 
@@ -461,7 +558,7 @@ PDFの読み込み・解析には専用のツール（`Poppler`）が必要と�
 </details>
 
 
-#### <font color="red">★</font> `openpyxl`（オープンパイエックスエル）
+### <font color="red">★</font> `openpyxl`（オープンパイエックスエル）
 Excelファイルを扱う時に利用するライブラリの一つ。
 
 ```bash
@@ -475,7 +572,7 @@ pip install openpyxl
 ただし、処理を微調整したい際になど当該ライブラリの知識を持っておくと適切なプロンプトを作れる確率が高まると思います。
 :::
 
-#### <font color="red">★</font> `Requests`（リクエスツ）
+### <font color="red">★</font> `Requests`（リクエスツ）
 webスクレイピング（webアクセス）用のライブラリ。
 
 標準ライブラリ[`urllib`](#urllib)よりも簡潔なプログラミングで手軽にWebを扱えます。
@@ -489,7 +586,7 @@ pip install requests
 webスクレイピングは、受けるサイトの負荷が大きく（程度によっては）犯罪にもなり得る危険な行為なので、第三者のサイトや自身と関係のサイトへ行うのは控えるべき。
 :::
 
-#### <font color="red">★</font> [`BeautifulSoup`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
+### <font color="red">★</font> [`BeautifulSoup`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
 HTMLファイル構造を解析して必要なデータを抽出するためのライブラリ。
 
 要素の階層構造に基づいた処理が可能なので文字列のパターンマッチ（正規表現）よりも確実かつ容易にデータを取り出せる（可能性がある）
@@ -499,7 +596,7 @@ pip install beautifulsoup4
 ```
 
 ```py
-スープ = BeautifulSoup(HTMLの文字列, 'html.parser')
+soup = BeautifulSoup(HTMLの文字列, 'html.parser')
 ```
 
 <details>
@@ -507,7 +604,10 @@ pip install beautifulsoup4
 
 ```py
 res = requests.get("取得したいサイトURL文字列")
-res.encoding = res.apparent_encoding # エンコーディング処理
+
+# サイトの文字コードを自動推定して設定
+# 日本語サイトの文字化けを防ぐエンコーディング処理
+res.encoding = res.apparent_encoding
 
 # BeautifulSoup で、取得したwebページの各コンテンツ（res.text）をHTML解析
 soup = BeautifulSoup(res.text, "html.parser")
@@ -516,19 +616,19 @@ soup = BeautifulSoup(res.text, "html.parser")
 - 実装例
 ```py
 # find メソッド： 該当する最初の要素を返す（存在しなければ None）
-スープ.find(要素名)
-# スープ.find("a")
+soup.find(要素名)
+# soup.find("a")
 
-スープ.find(要素名, 属性名=値, ...) # 属性名はオプショナル
+soup.find(要素名, 属性名=値, ...) # 属性名はオプショナル
 # class 属性を指定する場合は Python の class と競合するため class_ と記述（指定）する
-# スープ.find("span", class_="release-number")
+# soup.find("span", class_="release-number")
 
 # find_all メソッド： 該当する全ての要素を返す（存在しなければ None）
 # 返り値はイテラブルなのでループ処理可能
-スープ.find_all(要素名)
-# スープ.find_all("li")
+soup.find_all(要素名)
+# soup.find_all("li")
 
-スープ.find_all(要素名, 属性名=値, ...) # 属性名はオプショナル
+soup.find_all(要素名, 属性名=値, ...) # 属性名はオプショナル
 ```
 
 上記`html.parser`とは、 Python 標準の HTML用パーサー（構文解析器）のことで、サードパーティ制のHTMLパーサーを利用（指定）することも可能です。
@@ -536,7 +636,7 @@ soup = BeautifulSoup(res.text, "html.parser")
 
 </details>
 
-#### `schedule`
+### `schedule`
 あらかじめ設定したスケジュールに基づいて、指定した処理（関数）を定期的に実行する非標準ライブラリ。
 
 ```bash
@@ -548,18 +648,18 @@ pip install schedule
 
 `hours`や`minutes`といった複数形の部分は`hour`,`minute`など単数形でも問題ありません。
 
-##### 基本的な間隔設定
+#### 基本的な間隔設定
 - `.seconds`: `schedule.every(10).seconds.do(関数)` ……… 10秒ごとに実行
 - `.minutes`: `schedule.every(30).minutes.do(関数)` ……… 30分ごとに実行
 - `.hours`: `schedule.every(2).hours.do(関数)` ……… 2時間ごとに実行
 - `.days`: `schedule.every(3).days.do(関数)` ……… 3日ごとに実行
 - `.weeks`: `schedule.every(2).weeks.do(関数)` ……… 2週間ごとに実行
 
-##### 特定時刻の設定
+#### 特定時刻の設定
 - `.at()`: `schedule.every().day.at("10:30").do(関数)` ……… 毎日10:30に実行
 - `.hour.at()`: `schedule.every().hour.at(":00").do(関数)` ……… 毎時00分に実行
 
-##### 曜日指定
+#### 曜日指定
 - `.monday`: `schedule.every().monday.do(関数)` ……… 毎週月曜に実行
 - `.tuesday`: `schedule.every().tuesday.do(関数)` ……… 毎週火曜に実行
 - `.wednesday`: `schedule.every().wednesday.at("13:15").do(関数)` ……… 毎週水曜13:15に実行
@@ -568,19 +668,19 @@ pip install schedule
 - `.saturday`: `schedule.every().saturday.do(関数)` ……… 毎週土曜に実行
 - `.sunday`: `schedule.every().sunday.do(関数)` ……… 毎週日曜に実行
 
-##### タグ付け管理
+#### タグ付け管理
 - `.tag()`: `schedule.every().day.do(関数).tag('daily')` ……… タグ付けしてジョブを管理
 - `.clear()`: `schedule.clear('daily')` ……… 特定タグのジョブをキャンセル
 
-##### 引数付き関数
+#### 引数付き関数
 - `.do()`: `schedule.every().day.do(greet, name="Alice")` ……… 関数に引数を渡して実行
 
-##### 条件付き実行
+#### 条件付き実行
 - `CancelJob`: `return schedule.CancelJob` ……… 条件に応じて実行を停止
 
 </details>
 
-##### `run_pending`関数
+#### `run_pending`関数
 所定のタイミングになったスケジュール（に登録した）関数を実行する
 ```py
 # 1行ごとにスケジュールを（延々と）実行
