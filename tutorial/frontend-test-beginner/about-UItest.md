@@ -1,15 +1,16 @@
 ## UIコンポーネントテスト
 MPAと異なり、SPAでは再利用性を考慮してコンポーネント指向ベースの開発が主流となる。
 
-- MPA（Multi Page Application）：<br>
+- MPA（Multi Page Application）：  
 複数のHTMLページとHTTPリクエストで構築されるWebアプリケーション
 
-- SPA（Single Page Application）：<br>
+- SPA（Single Page Application）：  
 1枚のHTMLページ上にWebアプリケーションを展開し、操作や変更に応じて部分的に表示を差し替えていく（再レンダリング）。具体的には、Webサーバーがレスポンスした初回ページのHTMLを軸とし、ユーザー操作によってHTMLを部分的に置き換えていく ──この置き換える部分・単位＝UIコンポーネントとなる。
 
 ---
 
-昨今フロントエンド開発で主流なReact（Next.js）はコンポーネント指向で、各コンポーネントを組み合わせて一つの機能やページを構成する仕組みを採っている。<br>その性質上、一部の不具合が他の部分にも影響する可能性があるので、UIコンポーネントテストもまた重要なテストとなる。
+昨今フロントエンド開発で主流なReact（Next.js）はコンポーネント指向で、各コンポーネントを組み合わせて一つの機能やページを構成する仕組みを採っている。  
+その性質上、一部の不具合が他の部分にも影響する可能性があるので、UIコンポーネントテストもまた重要なテストとなる。
 
 ### UIコンポーネントの基本機能
 - データの表示（描画）
@@ -20,15 +21,15 @@ MPAと異なり、SPAでは再利用性を考慮してコンポーネント指�
 主に**意図した挙動・振る舞い**かどうか、**リグレッションが発生**していないかどうかがチェック項目となる。
 
 #### Webアクセシビリティ
-挙動や振る舞いの検証、レイアウト崩れの他、支援技術に対するチェックも重要となる。ユーザーの心身特性に隔てなくWebが利用できる水準であるWebアクセシビリティを順守し、どのようなユーザーにも安定したクオリティを提供する必要があることから、Webアクセシビリティに関するテストも意識しておく。<br>
+挙動や振る舞いの検証、レイアウト崩れの他、支援技術に対するチェックも重要となる。ユーザーの心身特性に隔てなくWebが利用できる水準であるWebアクセシビリティを順守し、どのようなユーザーにも安定したクオリティを提供する必要があることから、Webアクセシビリティに関するテストも意識しておく。  
 例えば、見た目を意識しすぎてチェックボックス（`input`要素）をCSSで消去（非表示化）してしまうなどが代表的な失敗例。
 
 ### UIコンポーネントテストで利用するテスティングフレームワーク・ライブラリ
 #### [jsdom](https://www.npmjs.com/package/jsdom)
-バックエンド（サーバーサイド）での JavaScript 実行環境である`Node.js`上で、HTMLやDOM操作を実現するライブラリ。<br>これにより、ブラウザがなくてもWebブラウザの一部機能をエミュレートできるため、ウェブアプリケーションのテストやスクレイピングなどに利用できる。
+バックエンド（サーバーサイド）での JavaScript 実行環境である`Node.js`上で、HTMLやDOM操作を実現するライブラリ。  これにより、ブラウザがなくてもWebブラウザの一部機能をエミュレートできるため、ウェブアプリケーションのテストやスクレイピングなどに利用できる。
 
 ##### 使用するには別途インストールして設定する必要がある
-- インストール<br>
+- インストール  
 **Jestで使う場合、Jest 28以降では`jest-environment-jsdom`も別途必要**
 ```bash
 npm install --save-dev jsdom
@@ -48,7 +49,7 @@ module.exports = {
 ```
 
 > [!NOTE]
-> - Next.jsのようなフルスタックフレームワークの場合<br>
+> - Next.jsのようなフルスタックフレームワークの場合  
 > テストファイル冒頭で以下のコメントを記述することでテストファイルごとにテスト環境を切り替えられる
 ```ts
 /**
@@ -66,7 +67,7 @@ import { render } from '@testing-library/react'
 ```
 
 #### [Testing Library](https://testing-library.com/)
-UIコンポーネントのテスト用ライブラリ。<br>
+UIコンポーネントのテスト用ライブラリ。  
 基本原則として**テストがソフトウェアの使用方法に似ている**ことを推奨していて、具体的にはクリックやマウスホバー、キーボード入力など**Web操作と同じようなテストを書く**ことを推奨している。
 
 ---
@@ -96,7 +97,7 @@ npm install --save-dev @testing-library/user-event
 npm install --save-dev jest-environment-jsdom
 ```
 
-- 各種設定（**React16＊＊以降**）<br>
+- 各種設定（**React16＊＊以降**）  
 すべてのテストで自動的に`jest-dom`マッチャーが使用可能になるよう設定する。
 
 - `setupTests.ts`
@@ -114,18 +115,18 @@ module.exports = {
 ```
 
 > [!NOTE]
-> Testing Library は他にも様々なUIコンポーネントライブラリに向けて提供されているが、中核となるAPIは同じもの（[`@testing-library/dom`](https://www.npmjs.com/package/@testing-library/dom)）を使用する<br>
-> そのため、**UIコンポーネントライブラリが違っても、同じようなテストコードになる**<br>
+> Testing Library は他にも様々なUIコンポーネントライブラリに向けて提供されているが、中核となるAPIは同じもの（[`@testing-library/dom`](https://www.npmjs.com/package/@testing-library/dom)）を使用する  
+> そのため、**UIコンポーネントライブラリが違っても、同じようなテストコードになる**  
 > **※`@testing-library/dom`は`@testing-library/react`の依存パッケージなので明示的にインストールする必要はない**
 
 ##### カスタムマッチャーを利用してテストの検証精度を高める
 UIコンポーネントのテストでもJestのアサーションやマッチャーを利用できるものの、DOMの状態を検証するにはJest標準だけでは不十分な場合がある。そのため[`@testing-library/jest-dom`](https://www.npmjs.com/package/@testing-library/jest-dom)をインストールして、Jestの拡張機能であるカスタムマッチャーを扱えるようにする。`jest-dom`によって、UIコンポーネントテストに便利なマッチャーが多数追加される。
 
 ##### インタラクションを検知する
-Testing Library には、各種イベントハンドラー検知を目的とした`fireEvent`というAPIが用意されている。<br>
-`fireEvent`では指定した単一のイベントのみが実行されるが、実際にユーザがボタンをクリックすると clickイベントだけではなく pointerDownイベント、mouseOverイベントなど様々なイベントが連続して発生する。<br>
-`userEvent`を利用するとそれらの一連のイベントシーケンスも実行されて、ユーザがブラウザ上で行う操作と同じ処理を再現することができる。<br>
-つまり、[`@testing-library/user-event`](https://www.npmjs.com/package/@testing-library/user-event)を追加することで**実際のユーザー操作に近いシミュレーションを行える**ようになる。<br>
+Testing Library には、各種イベントハンドラー検知を目的とした`fireEvent`というAPIが用意されている。  
+`fireEvent`では指定した単一のイベントのみが実行されるが、実際にユーザがボタンをクリックすると clickイベントだけではなく pointerDownイベント、mouseOverイベントなど様々なイベントが連続して発生する。  
+`userEvent`を利用するとそれらの一連のイベントシーケンスも実行されて、ユーザがブラウザ上で行う操作と同じ処理を再現することができる。  
+つまり、[`@testing-library/user-event`](https://www.npmjs.com/package/@testing-library/user-event)を追加することで**実際のユーザー操作に近いシミュレーションを行える**ようになる。  
 こうした理由から`fireEvent`ではなく、よりユーザー行動に即した形でイベントをトリガーできる`@testing-library/user-event`の使用が推奨されている。
 
 > [!NOTE]
@@ -134,13 +135,13 @@ Testing Library には、各種イベントハンドラー検知を目的とし�
 import userEvent from "@testing-library/user-event";
 ```
 
-- **`userEvent`では`async/await`が必須**<br>
+- **`userEvent`では`async/await`が必須**  
 **`userEvent`のメソッドは非同期**なので必ず`await`する
 
-- **`userEvent.setup()`の使用を推奨（初期化処理）**<br>
+- **`userEvent.setup()`の使用を推奨（初期化処理）**  
 各テストでインスタンスを作成するのがベストプラクティス。**必ず各テストの最初に呼ぶこと**
 
-- **`fireEvent`との違い**<br>
+- **`fireEvent`との違い**  
 `fireEvent`は同期的、`userEvent`は非同期的かつよりユーザー操作に近い動作をシミュレート
 
 ###### インタラクション（機能・操作）テスト
@@ -200,21 +201,21 @@ import userEvent from "@testing-library/user-event";
 const user = userEvent.setup();
 ```
 
-- **user.click**<br>
+- **user.click**  
 クリック操作を再現（エミュレート）
 ```js
 const button = screen.getByRole("button", { name: "送信" });
 await user.click(button);
 ```
 
-- **user.type**<br>
+- **user.type**  
 入力操作を再現
 ```js
 const textbox = screen.getByRole("textbox", { name: "メールアドレス" });
 await user.type(textbox, value);
 ```
 
-- **user.selectOptions**<br>
+- **user.selectOptions**  
 セレクトボックス（`combobox`）から任意の項目を選択するインタラクション関数
 ```js
 const combobox = screen.getByRole("combobox", { name: "公開ステータス" });
@@ -224,7 +225,7 @@ async function selectOption(label: string) {
 }
 ```
 
-- **user.upload**<br>
+- **user.upload**  
 ファイルアップロード操作を再現
 ```js
 const file = new File([content], fileName, { type: "image/png" });
@@ -274,8 +275,8 @@ test('ボタンクリック後にデータが表示される', async () => {
   - 条件が満たされたらテストを続行
 
 ### Testing Library 実装例
-Testing Library を使う際の**レンダリングした内容から特定DOM要素を取得する各種API**の紹介をしていく。<br>
-**結論として、アクセシビリティを重視した優先順位から基本的には`...ByRole`を用いる**。<br>
+Testing Library を使う際の**レンダリングした内容から特定DOM要素を取得する各種API**の紹介をしていく。  
+**結論として、アクセシビリティを重視した優先順位から基本的には`...ByRole`を用いる**。  
 
 ```ts
 // 1. getByRole
@@ -304,8 +305,8 @@ screen.getByTestId("user-form");
 ```
 
 #### `...ByTestId`について
-`getByRole`, `getByText`などどの方法でもDOM要素を見つける方法がない場合は`getByTestId`が最終手段となる。<br>
-テストで利用したい要素に`data-testid`属性を設定して任意の値を設定する。<br>
+`getByRole`, `getByText`などどの方法でもDOM要素を見つける方法がない場合は`getByTestId`が最終手段となる。  
+テストで利用したい要素に`data-testid`属性を設定して任意の値を設定する。  
 設定した値は`getByTestId`で利用する。
 
 ```html
@@ -319,7 +320,7 @@ expect(element).toBeInTheDocument();
 
 > [!NOTE]
 > #### `getBy...`, ``queryBy...`, `findBy...`の違い
-> - [Types of Queries | Testing Library](https://testing-library.com/docs/queries/about/#types-of-queries)<br>
+> - [Types of Queries | Testing Library](https://testing-library.com/docs/queries/about/#types-of-queries)  
 > 上記の公式ドキュメントページ（の Summary Table という箇所）で各APIの比較表が確認できる。
 
 ---
@@ -404,7 +405,7 @@ test("ボタンを押下すると、イベントハンドラーが呼ばれる",
 </details>
 
 ##### フォームUIにおけるサンプル例
-**任意の文字列が入力**された入力フォーム（`input[type="text"], [type="password"]`）が**あるかどうかを検証**<br>
+**任意の文字列が入力**された入力フォーム（`input[type="text"], [type="password"]`）が**あるかどうかを検証**  
 `userEvent`は非同期処理なので`async/await`が必須。
 
 ```ts
@@ -609,7 +610,7 @@ test("ID に紐づいたリンクが表示される", () => {
 });
 ```
 
-- 事例3：アクセシビリティに沿ったDOMツリー構成になっているか検証<br>
+- 事例3：アクセシビリティに沿ったDOMツリー構成になっているか検証  
 `legend`要素は`fieldset: group`の子要素として利用するHTML要素。
 ```tsx
 export const Agreement = ({ onChange }: Props) => {
@@ -625,7 +626,7 @@ export const Agreement = ({ onChange }: Props) => {
 };
 ```
 
-- テストコード<br>
+- テストコード  
 `getByRole`で`fieldset: group`を指定し、`legend`要素の有無（正しく使用しているかどうか）を検証している
 ```ts
 test("fieldset のアクセシブルネームは、legend を引用している", () => {
@@ -1012,7 +1013,7 @@ test("Snapshot: 一覧要素が表示される", () => {
 });
 ```
 
-- `__snapshots__`<br>
+- `__snapshots__`  
 各スナップショットデータを格納するためのフォルダで、テストを実施すると`対象テストファイル名.snap`というファイルが生成される。中身はHTML構造が文字列化されたもので、各`snap`ファイルはリグレッションの差分検証のために`git`管理対象とするのが一般的。
 
 #### スナップショットの更新
@@ -1033,7 +1034,7 @@ npx jest --updateSnapshot
 npx jest path/YourComponent.test.js -u
 ```
 
-- インタラクション（ユーザー操作）が実施された状態のスナップショットも記録可能<br>
+- インタラクション（ユーザー操作）が実施された状態のスナップショットも記録可能  
 下記はインタラクション（ユーザー操作）実施前のスナップショットだが、コメントアウトしているコードを有効化することで「インタラクション（ユーザー操作）実施後のスナップショット」を記録できる。
 ```ts
 test("Snapshot: 登録フォームが表示される", async () => {
@@ -1047,8 +1048,8 @@ test("Snapshot: 登録フォームが表示される", async () => {
 ```
 
 ### ロールについて
-UIテストにおいて要素を特定する際は、`getByRole()`のように **ロール（role）** を利用するのが推奨されている。<br>
-ロールとはWeb技術標準化を定めているW3Cの`WAI-ARIA`仕様に含まれるHTML要素が持つ属性の1つである。<br>
+UIテストにおいて要素を特定する際は、`getByRole()`のように **ロール（role）** を利用するのが推奨されている。  
+ロールとはWeb技術標準化を定めているW3Cの`WAI-ARIA`仕様に含まれるHTML要素が持つ属性の1つである。  
 `WAI-ARIA`由来のテストコードを書くことで、支援技術を使用しているユーザーにも意図した形でコンテンツが届いているかどうかを検証できる。
 
 #### 暗黙のロール
@@ -1108,7 +1109,7 @@ screen.getByRole("checkbox", { name: "利用規約に同意する" });
 ```
 
 #### aria属性値を使った検証要素の絞り込み
-例えば、`<h1>`〜`<h6>` 要素などの「見出し（heading）」がページ内に複数混在することはよくある。<br>
+例えば、`<h1>`〜`<h6>` 要素などの「見出し（heading）」がページ内に複数混在することはよくある。  
 見出し系のタグはどれも暗黙的に`heading`ロールを持っており、`aria-level`属性またはタグ階層で定められた`level`が指定されている。
 
 ```jsx
@@ -1145,10 +1146,10 @@ test("見出しのアクセシブルネームで要素を特定できる", () =>
 });
 ```
 
-- `name`<br>
+- `name`  
 当該HTML要素のテキスト内容
 
-- `level`<br>
+- `level`  
 `<h1>`〜`<h6>`または`aria-level`で指定される値
 
 ---
@@ -1175,7 +1176,7 @@ test("見出しのアクセシブルネームで要素を特定できる", () =>
 screen.getByRole('button', { name: '閉じる' });
 ```
 
-不慣れなうちはデバッグツールを活用しながら、どのようなアクセシブルネームが算出されているかを確認するのが良い。<br>
+不慣れなうちはデバッグツールを活用しながら、どのようなアクセシブルネームが算出されているかを確認するのが良い。  
 ※アクセシブルネームの決定には様々な要因が絡み、[`accessible name and description computation 1.2`](https://www.w3.org/TR/accname-1.2/)という仕様に基づいて算出される。
 
 #### ロールとアクセシブルネームの確認
@@ -1350,7 +1351,7 @@ export const ToastProvider = ({
 ```
 
 > [!NOTE]
-> - React19 からは`.Provider`は不要<br>
+> - React19 からは`.Provider`は不要  
 > [`<Context>`がプロバイダに ](https://ja.react.dev/blog/2024/12/05/react-19#context-as-a-provider)
 
 - `useToastProvider.tsx`で定義したアクション（`showToast`）の使用例
@@ -1441,7 +1442,7 @@ test.each([
 ```
 
 > [!NOTE]
-> `test.each([])`<br>
+> `test.each([])`  
 > 同じテストをパラメータだけ変更してイテレーション（反復）したいときに有用
 ```tsx
 test.each([
