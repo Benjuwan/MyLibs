@@ -43,7 +43,7 @@ export default defineConfig({
 - globals@15.15.0
 - react-dom@18.3.1
 - react@18.3.1
-- swiper@11.2.10
+- swiper@12.1.2
 - tailwindcss@4.2.0
 - typescript-eslint@8.56.0
 - typescript@5.6.3
