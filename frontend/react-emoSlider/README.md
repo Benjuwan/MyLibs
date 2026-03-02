@@ -33,7 +33,7 @@ export default defineConfig({
 
 ## 技術構成
 - @eslint/js@9.39.3
-- @tailwindcss/vite@4.2.0
+- @tailwindcss/vite@4.2.1
 - @types/react-dom@18.3.7
 - @types/react@18.3.28
 - @vitejs/plugin-react@4.7.0
@@ -44,8 +44,8 @@ export default defineConfig({
 - react-dom@18.3.1
 - react@18.3.1
 - swiper@12.1.2
-- tailwindcss@4.2.0
-- typescript-eslint@8.56.0
+- tailwindcss@4.2.1
+- typescript-eslint@8.56.1
 - typescript@5.6.3
 - vite@6.4.1
 
