@@ -11,15 +11,15 @@
   - 下層ページにて実装する場合は当該ディレクトリの`layout.tsx`で読み込ませて、かつルートパス（`src\constant\routingpass.ts`）を調整する
 
 ## 技術構成
-- @eslint/eslintrc@3.3.4
-- @tailwindcss/postcss@4.2.1
-- @types/node@25.3.3
+- @eslint/eslintrc@3.3.5
+- @tailwindcss/postcss@4.2.2
+- @types/node@25.5.0
 - @types/react-dom@19.2.3
 - @types/react@19.2.14
-- eslint-config-next@16.1.6
-- eslint@10.0.2
-- next@16.1.6
+- eslint-config-next@16.2.0
+- eslint@10.0.3
+- next@16.2.0
 - react-dom@19.2.4
 - react@19.2.4
-- tailwindcss@4.2.1
+- tailwindcss@4.2.2
 - typescript@5.9.3
