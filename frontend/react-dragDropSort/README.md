@@ -30,5 +30,5 @@ export default defineConfig({
 - react@19.2.5
 - typescript-eslint@8.59.0
 - typescript@5.9.3
-- uuid@13.0.0
+- uuid@14.0.0
 - vite@7.3.2
