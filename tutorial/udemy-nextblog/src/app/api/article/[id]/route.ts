@@ -7,12 +7,10 @@ import { NextResponse } from "next/server";
 /* Next13以降では function [GET] 部分は、投稿ならPOST、更新ならPUT、削除ならDELETE を指定 */
 export async function GET(
     req: Request,
-    { params }: { params: { id: string } },
-    _res: Response
+    { params }: { params: Promise<{ id: string }> }
 ) {
     /* エンドポイント：app/api/article */
-    // const id = req.url?.split('/article/')[1]; // http://localhost:3000/api/article 以下の内容（例：post-test）
-    const id = params.id;
+    const { id } = await params;
 
     /* fetch API の method のデフォルトは 'GET' */
     if (req.method === 'GET') {
@@ -35,15 +33,13 @@ export async function GET(
     }
 };
 
-
-
 /* 削除 */
 export async function DELETE(
     req: Request,
-    _res: Response
+    { params }: { params: Promise<{ id: string }> }
 ) {
     /* エンドポイント：app/api/article */
-    const id = req.url?.split('/article/')[1]; // http://localhost:3000/api/article 以下の内容（例：post-test）
+    const { id } = await params;
 
     const { error: deleteError } = await supabase
         .from('benjuwan-next13-udemy-posts')
@@ -57,12 +53,9 @@ export async function DELETE(
 
 };
 
-
-
 /* 更新 */
 export async function PUT(
-    req: Request,
-    _res: Response
+    req: Request
 ) {
     const { id, title, content } = await req.json();
 
