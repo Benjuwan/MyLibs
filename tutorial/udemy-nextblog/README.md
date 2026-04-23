@@ -612,3 +612,22 @@ yarn -v
         - 今まで記述した内容（変更）を**保存したい**場合は`:wq`
 
     参照情報：[gitのある画面から抜け出せません](https://terakoya.sejuku.net/question/detail/16555)
+
+## 技術構成
+- @eslint/eslintrc@3.3.5
+- @supabase/supabase-js@2.104.0
+- @types/node@20.19.39
+- @types/react-dom@18.3.7
+- @types/react@18.3.28
+- autoprefixer@10.5.0
+- eslint-config-next@16.2.4
+- eslint@9.39.4
+- html-react-parser@5.2.17
+- json-server@1.0.0-beta.3
+- next@16.2.4
+- postcss@8.5.10
+- react-dom@18.3.1
+- react@18.3.1
+- styled-components@6.4.1
+- tailwindcss@3.4.19
+- typescript@5.9.3

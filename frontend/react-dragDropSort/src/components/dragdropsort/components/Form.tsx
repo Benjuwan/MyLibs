@@ -1,5 +1,5 @@
 import ddsStyle from "../styles/style.module.css";
-import { ChangeEvent, useState } from "react";
+import { FormEvent, useState } from "react";
 import { listsType } from "../types/ddsListsType";
 import { v4 as uuidv4 } from 'uuid';
 import { useHandleInputValueSanitize } from "../../../hooks/useHandleInputValueSanitize";
@@ -14,8 +14,8 @@ export const Form = ({ props }: { props: formProps }) => {
 
     const [entryWord, setEntryWord] = useState<string>('');
     const { handleInputValueSanitize } = useHandleInputValueSanitize();
-    const handleEntryWord: (entry: ChangeEvent<HTMLInputElement>) => void = (entry: ChangeEvent<HTMLInputElement>) => {
-        setEntryWord(handleInputValueSanitize(entry.target.value));
+    const handleEntryWord: (entry: FormEvent<HTMLInputElement>) => void = (entry: FormEvent<HTMLInputElement>) => {
+        setEntryWord(handleInputValueSanitize(entry.currentTarget.value));
     }
 
     /* 新規リスト生成 */
@@ -33,11 +33,11 @@ export const Form = ({ props }: { props: formProps }) => {
     }
 
     return (
-        <form id="entryForm" className={ddsStyle.theForm} onSubmit={(e: ChangeEvent<HTMLFormElement>) => {
+        <form id="entryForm" className={ddsStyle.theForm} onSubmit={(e: FormEvent<HTMLFormElement>) => {
             e.preventDefault();
             handleSubmit();
         }}>
-            <input type="text" id="entry" value={entryWord} onInput={(e: ChangeEvent<HTMLInputElement>) => handleEntryWord(e)} />
+            <input type="text" id="entry" value={entryWord} onInput={(e: FormEvent<HTMLInputElement>) => handleEntryWord(e)} />
             <button type="button" id="entryBtn" onClick={handleSubmit} disabled={entryWord.length <= 0}>add word</button>
         </form>
     );
