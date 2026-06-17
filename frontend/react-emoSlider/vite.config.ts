@@ -9,4 +9,12 @@ export default defineConfig({
     tailwindcss(),
   ],
   // base: 'r0105/mylibs/emoslider'
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext'
+    }
+  },
+  build: {
+    target: 'esnext'
+  }
 })
