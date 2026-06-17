@@ -16,19 +16,19 @@ export default defineConfig({
 ```
 
 ### 技術構成
-- @eslint/js@9.11.1
-- @types/react@19.2.2
-- @types/react-dom@19.2.2
+- @eslint/js@9.39.4
+- @types/react@19.2.17
+- @types/react-dom@19.2.3
 - @types/uuid@10.0.0
-- @vitejs/plugin-react@5.1.0
-- eslint@9.11.1
+- @vitejs/plugin-react@5.2.0
+- eslint@9.39.4
 - eslint-plugin-react@7.37.5
-- eslint-plugin-react-hooks@7.0.1
-- eslint-plugin-react-refresh@0.4.12
+- eslint-plugin-react-hooks@7.1.1
+- eslint-plugin-react-refresh@0.4.26
 - globals@16.5.0
-- react@19.2.0
-- react-dom@19.2.0
-- typescript@5.5.3
-- typescript-eslint@8.7.0
+- react@19.2.7
+- react-dom@19.2.7
+- typescript@5.9.3
+- typescript-eslint@8.61.1
 - uuid@14.0.0
-- vite@7.1.12
+- vite@7.3.5
