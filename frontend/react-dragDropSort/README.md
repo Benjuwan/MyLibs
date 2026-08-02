@@ -32,3 +32,8 @@ export default defineConfig({
 - typescript-eslint@8.7.0
 - uuid@14.0.1
 - vite@8.1.5
+
+
+## セキュリティに関する特記事項
+本プロジェクトは、脆弱性対応のために `package.json` の `overrides` 機能を用いて、以下のライブラリのバージョンを強制的にアップデートしています。
+- `brace-expansion`: `^2.0.1`

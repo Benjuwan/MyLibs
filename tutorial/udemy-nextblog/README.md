@@ -631,3 +631,7 @@ yarn -v
 - styled-components@6.4.4
 - tailwindcss@4.3.3
 - typescript@5
+
+## セキュリティに関する特記事項
+本プロジェクトは、脆弱性対応のために `package.json` の `overrides` 機能を用いて、以下のライブラリのバージョンを強制的にアップデートしています。
+- `sharp`: `^0.35.0`

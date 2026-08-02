@@ -18,3 +18,10 @@
 - typescript@5.7.3
 - typescript-eslint@8.61.1
 - vite@6.4.3
+
+
+## セキュリティに関する特記事項
+本プロジェクトは、脆弱性対応のために `package.json` の `overrides` 機能を用いて、以下のライブラリのバージョンを強制的にアップデートしています。
+- `brace-expansion`: `^2.0.1`
+- `postcss`: `^8.4.31`
+- `js-yaml`: `^4.1.0`
