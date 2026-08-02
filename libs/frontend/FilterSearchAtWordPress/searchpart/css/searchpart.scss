@@ -1,0 +1,217 @@
+@use './forsearch'; // 検索項目（パーツ）関連のスタイル 
+
+// search.php(検索結果ページ)
+html {
+    font-size: 62.5%;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body.search {
+    padding-top: 5em;
+
+    & main {
+        padding: 2em;
+        width: 100%;
+        max-width: 1025px;
+        margin: auto;
+    }
+}
+
+// content
+ul.school_list {
+    list-style: none;
+
+    & li {
+        line-height: 2;
+        padding: 2em;
+        font-size: 1.4rem;
+        background-color: #fff0d6;
+        border-radius: .4rem;
+
+        &:not(:last-of-type) {
+            margin-bottom: 2%;
+        }
+
+        & p {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+
+            &:has(a) {
+                -webkit-line-clamp: 2;
+            }
+
+            & img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
+    }
+}
+
+// content
+
+.search_h2 {
+    font-weight: normal;
+    min-width: auto;
+    text-align: center;
+    padding: 3rem 0;
+    font-size: 1.4rem;
+    background-color: #fff0d6;
+
+    & #SerachKeywords {
+        display: block;
+    }
+
+    & .search_infotxt {
+        text-align: center;
+        font-size: 1.6rem;
+        color: #727272;
+        display: block;
+        width: 80%;
+        max-width: 75rem;
+        border: 1px solid;
+        padding: 1rem;
+        margin: 3rem auto 0;
+
+        & strong {
+            color: #ba3030;
+        }
+    }
+
+    & #array_word {
+        padding: 0 3em;
+
+        & span:last-of-type {
+            position: relative;
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+            margin: .5em 0 1em;
+            padding-bottom: .25em;
+
+            &::before {
+                content: "";
+                width: 8%;
+                height: 1px;
+                background-color: #1c1c1c;
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+
+        & small {
+            position: relative;
+            padding-right: 1.6rem;
+            font-size: 1.2rem;
+
+            &:not(:last-of-type) {
+                &::after {
+                    content: "／";
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                }
+            }
+        }
+    }
+}
+
+.searchAgain {
+    padding-top: 4em;
+}
+
+.pn_link {
+    // ページャー関連
+    width: 100%;
+    max-width: 760px;
+    margin: 6em auto;
+    text-align: center;
+    font-size: 1.4rem;
+
+    & a {
+        text-decoration: none;
+    }
+
+    & .current {
+        background-color: #fa9d04;
+        color: #fff;
+        border: none;
+    }
+
+    & .page-numbers {
+        padding: 5px 10px;
+        border: 1px solid;
+    }
+}
+
+@media screen and(min-width:600px) {
+    html {
+        font-size: 100%;
+    }
+
+    // content
+    ul.school_list {
+        list-style: none;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-around;
+        gap: 2%;
+
+        & li {
+            width: 49%;
+            padding: 16px;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+    }
+
+    // content
+
+    .search_h2 {
+        padding: 30px 0;
+        font-size: 14px;
+
+        & .search_infotxt {
+            font-size: 16px;
+            max-width: 750px;
+            padding: 10px;
+            margin: 30px auto 0;
+        }
+
+        & #array_word {
+            & span:last-of-type {
+                font-size: 20px;
+            }
+
+            & small {
+                padding-right: 16px;
+                font-size: 12px;
+            }
+        }
+    }
+
+    .pn_link {
+        // ページャー関連
+        font-size: 14px;
+    }
+}
+
+@media screen and(min-width:1025px) {
+
+    // content
+    ul.school_list {
+        & li {
+            width: 32%;
+        }
+    }
+
+    // content
+}
