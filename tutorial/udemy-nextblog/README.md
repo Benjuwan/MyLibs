@@ -614,20 +614,20 @@ yarn -v
     参照情報：[gitのある画面から抜け出せません](https://terakoya.sejuku.net/question/detail/16555)
 
 ## 技術構成
-- @eslint/eslintrc@3.3.5
-- @supabase/supabase-js@2.108.2
-- @types/node@20.19.43
-- @types/react-dom@18.3.7
-- @types/react@18.3.31
-- autoprefixer@10.5.0
-- eslint-config-next@16.2.9
-- eslint@9.39.4
-- html-react-parser@5.2.17
-- json-server@1.0.0-beta.15
-- next@16.2.9
-- postcss@8.5.15
-- react-dom@18.3.1
-- react@18.3.1
-- styled-components@6.4.2
-- tailwindcss@3.4.19
-- typescript@5.9.3
+- @eslint/eslintrc@3.3.1
+- @supabase/supabase-js@2.111.0
+- @types/node@26.1.2
+- @types/react-dom@19.2.3
+- @types/react@19.2.17
+- autoprefixer@10.5.4
+- eslint-config-next@16.1.6
+- eslint@9.39.2
+- html-react-parser@6.1.5
+- json-server@1.0.0-beta.15-beta.15
+- next@16.2.12
+- postcss@8.5.24
+- react-dom@19.2.8
+- react@19.2.8
+- styled-components@6.4.4
+- tailwindcss@4.3.3
+- typescript@5
