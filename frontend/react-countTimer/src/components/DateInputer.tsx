@@ -53,7 +53,7 @@ export const DateInputer = () => {
 
     return (
         <form action="" className="w-[calc(100vw/2)] my-[5em] mx-auto text-center">
-            <input id="datetime" className="border border-[#dadada] rounded py-[.5em] px-[1em]" type="datetime-local" value={isInputVal} onInput={(inputVal: ChangeEvent<HTMLInputElement>) => handleInput(inputVal.target.value)} />
+            <input id="datetime" className="border border-[#dadada] rounded py-[.5em] px-[1em]" type="datetime-local" value={isInputVal} onChange={(inputVal: ChangeEvent<HTMLInputElement>) => handleInput(inputVal.target.value)} />
             <button
                 type="button"
                 id="runBtn"

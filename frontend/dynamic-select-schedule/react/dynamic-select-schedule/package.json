@@ -30,6 +30,9 @@
     "vite": "^6.2.0"
   },
   "overrides": {
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "brace-expansion": "^2.0.1",
+    "postcss": "^8.4.31",
+    "js-yaml": "^4.1.0"
   }
 }
