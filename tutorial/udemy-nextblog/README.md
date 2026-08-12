@@ -623,7 +623,7 @@ yarn -v
 - eslint-config-next@16.1.6
 - eslint@9.39.2
 - html-react-parser@6.1.5
-- json-server@1.0.0-beta.15-beta.15
+- json-server@1.0.0-beta.15
 - next@16.2.12
 - postcss@8.5.24
 - react-dom@19.2.8
