@@ -614,23 +614,24 @@ yarn -v
     参照情報：[gitのある画面から抜け出せません](https://terakoya.sejuku.net/question/detail/16555)
 
 ## 技術構成
-- @eslint/eslintrc@3.3.1
-- @supabase/supabase-js@2.111.0
-- @types/node@26.1.2
-- @types/react-dom@19.2.3
-- @types/react@19.2.17
+- @eslint/eslintrc@3.3.6
+- @supabase/supabase-js@2.112.3
+- @tailwindcss/postcss@4.3.3
+- @types/node@26.2.0
+- @types/react-dom@19.2.4
+- @types/react@19.2.18
 - autoprefixer@10.5.4
-- eslint-config-next@16.1.6
-- eslint@9.39.2
-- html-react-parser@6.1.5
+- eslint-config-next@16.3.1
+- eslint@9.39.5
+- html-react-parser@6.1.7
 - json-server@1.0.0-beta.15
-- next@16.2.12
-- postcss@8.5.24
+- next@16.3.1
+- postcss@8.5.26
 - react-dom@19.2.8
 - react@19.2.8
-- styled-components@6.4.4
+- styled-components@6.5.3
 - tailwindcss@4.3.3
-- typescript@5
+- typescript@5.9.3
 
 ## セキュリティに関する特記事項
 本プロジェクトは、脆弱性対応のために `package.json` の `overrides` 機能を用いて、以下のライブラリのバージョンを強制的にアップデートしています。

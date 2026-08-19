@@ -16,22 +16,22 @@ export default defineConfig({
 ```
 
 ### 技術構成
-- @eslint/js@9.39.5
-- @types/react@19.2.18
-- @types/react-dom@19.2.4
+- @eslint/js@9.11.1
+- @types/react@19.2.17
+- @types/react-dom@19.2.3
 - @types/uuid@11.0.0
-- @vitejs/plugin-react@6.0.5
-- eslint@9.39.5
+- @vitejs/plugin-react@6.0.4
+- eslint@9.11.1
 - eslint-plugin-react@7.37.5
-- eslint-plugin-react-hooks@7.1.1
-- eslint-plugin-react-refresh@0.4.26
-- globals@17.11.0
+- eslint-plugin-react-hooks@7.0.1
+- eslint-plugin-react-refresh@0.4.12
+- globals@17.8.0
 - react@19.2.8
 - react-dom@19.2.8
-- typescript@5.9.3
-- typescript-eslint@8.67.0
+- typescript@5.5.3
+- typescript-eslint@8.7.0
 - uuid@14.0.1
-- vite@8.2.1
+- vite@8.1.5
 
 
 ## セキュリティに関する特記事項

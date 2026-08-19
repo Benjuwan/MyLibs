@@ -11,18 +11,18 @@
   - 下層ページにて実装する場合は当該ディレクトリの`layout.tsx`で読み込ませて、かつルートパス（`src\constant\routingpass.ts`）を調整する
 
 ## 技術構成
-- @eslint/eslintrc@3.3.6
+- @eslint/eslintrc@3
 - @tailwindcss/postcss@4.3.3
-- @types/node@26.2.0
-- @types/react@19.2.18
-- @types/react-dom@19.2.4
-- eslint-config-next@16.3.0
-- eslint@10.8.1
-- next@16.3.0
+- @types/node@26.1.2
+- @types/react@19.2.17
+- @types/react-dom@19.2.3
+- eslint-config-next@16.0.7
+- eslint@10.0.0
+- next@16.2.12
 - react@19.2.8
 - react-dom@19.2.8
 - tailwindcss@4.3.3
-- typescript@5.9.3
+- typescript@5
 
 
 ## セキュリティに関する特記事項
