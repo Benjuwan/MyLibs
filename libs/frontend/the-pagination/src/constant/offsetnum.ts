@@ -1,1 +1,0 @@
-export const OFFSET_NUMBER: number = 15;
