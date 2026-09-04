@@ -1,6 +1,9 @@
 ## Frontend Test Beginner
 書籍『[フロントエンド開発のためのテスト入門 今からでも知っておきたい自動テスト戦略の必須知識](https://www.shoeisha.co.jp/book/detail/9784798178639)』の個人用学習リポジトリ
 
+> [!NOTE]
+> Vitest を使う場合の差分は [about-vitest.md](./about-vitest.md) を参照してください。
+
 - [当該書籍公式リポジトリ](https://github.com/frontend-testing-book)
     - 3章から6章まで：[unittest](https://github.com/frontend-testing-book/unittest)
     - 7章から10章（+付録）まで：[nextjs](https://github.com/frontend-testing-book/nextjs)
@@ -41,7 +44,7 @@ Storybookでは以下のようにスコープを分類している。
 ### 条件分岐に注目
 複雑なプログラムにバグが混入する代表例として**条件分岐が原因**となっているケースがある。そのため**条件分岐に着目してテストを書いていくのが基本的な活動**となる。
 
-### テストを書く時は**汎用性、再利用性、共通化などDIYを意識しない**こと（過度な共通化をしない）
+### テストを書く時は**汎用性、再利用性、共通化などDRYを意識しない**こと（過度な共通化をしない）
 テスト対象に対して複数または異なるスタブを適用したい場合は**テストごとにファイルを分離**するほうが良い。テストは**そのケースを検証するためのもの**なので、統合したりするとテストケースの管理・把握や検証精度にも影響が出てしまう。テストは読みやすさと独立性を優先する。
 
 ### Testing Libraryの哲学
@@ -143,8 +146,8 @@ E2Eテストは最も忠実性の高いテストとなるが、テスト対象�
 
 ### テストピラミッド型
 #### 特徴
-- 単体テスト < 結合テスト < E2Eテスト < 手動テスト  
-ピラミッドのように、下層（結合・単体テスト＝土台部分）から上層（登頂部＝手動テスト）へとテストボリュームが増えていくモデル
+- 単体テスト > 結合テスト > E2Eテスト > 手動テスト  
+ピラミッドのように、下層（結合・単体テスト＝土台部分）から上層（登頂部＝手動テスト）へとテストボリュームが減っていくモデル
 
 #### 概要
 下層のテストを充実させることで、より安定した費用対効果の高いテスト戦略になる、という考えに基づいたモデル。上層のテストはコストが高いので、下層のテストにボリュームを取ることで安定かつ高速なテストを可能とする優れたテスト戦略である。
@@ -158,6 +161,9 @@ E2Eテストは最も忠実性の高いテストとなるが、テスト対象�
 - 単体テスト：35～40%
 - 静的解析：基盤（必須前提）
 
+> [!NOTE]
+> 上記の比率は本書籍における目安であり、Testing Trophy自体（Kent C. Dodds氏の提唱）に公式な比率の定義は存在しない。
+
 #### 概要
 前述のとおり、テスティングトロフィー型では**結合テストが最も重視**されている。フロントエンド開発において**UI単体で成立する機能はほとんどなく、多くが複数モジュールの連携によって構成されている特徴**に注目したモデルとなる。  
 フロントエンドでは、主にUIコンポーネントの操作（インタラクション）がアプリケーションの挙動起点となるので、 **ユーザー操作を起点とした結合テストを充実させることがより良いテスト戦略になる**という意図が込められている。
@@ -169,17 +175,17 @@ E2Eテストは最も忠実性の高いテストとなるが、テスト対象�
 
 ### `npm test`
 - 全体テスト：  
-プロジェクトに存在する`.test`ファイルを全て検証するので時間がかかる
+既定では`__tests__`ディレクトリ配下のファイル、および`.test` / `.spec`の接尾辞を持つファイルが対象となる（`jest.config`の`testMatch`で変更可能）。全件実行のため時間がかかる
 
 ### `npm test ファイルパス`
 - 単体テスト：
     - ファイルパス指定は`/`でないと機能しない  
     ※WindowsOSでのファイルパスコピー時は`\`（バックスラッシュ）となるので要注意
-    - （※`Windows OS`の場合のみ）ファイル名にクオーテーションは不要  
-    ※書籍では`npm test 'ファイルパス'`で紹介されているが、それだと`Windows OS`では実行できないので注意
+    - ファイルパスにクオーテーションは付けないほうが無難  
+    ※書籍では`npm test 'ファイルパス'`で紹介されているが、これは**OSではなくシェルに依存**する。bash / zsh / PowerShell では問題ないものの、`cmd.exe`（コマンドプロンプト）などシングルクォートをクオート文字として扱わないシェルでは、クオートが引数にそのまま渡りテストファイルを見つけられない場合がある
 
 ```bash
-# ※`Windows OS`の場合、ファイルパスにクオーテーションは不要
+# ※シェルによっては意図通り解釈されない場合があるため、クオーテーションは付けない
 npm test src/example.test.ts
 ```
 
@@ -265,8 +271,13 @@ export default {
 };
 ```
 
+> [!NOTE]
+> `jest.config.js`で`export default`を使えるのは`package.json`に`"type": "module"`の指定がありESMとして読み込まれる場合であり、`export default`が一律「誤り」というわけではない。ただし、[`about-UItest.md`](./about-UItest.md)側の`jest.config.js`例では`module.exports`（CJS形式）を使用しており表記が不統一なので、実プロジェクトでは**どちらかの形式に統一するか、`"type": "module"`前提である旨を明記**しておくとよい。
+
 - `jest.config.ts`ファイル
 ```ts
+import type { Config } from '@jest/types';
+
 const config: Config.InitialOptions = {
   preset: 'ts-jest',
   testEnvironment: 'node',
@@ -314,7 +325,7 @@ open coverage/lcov-report/index.html
 実装内部構造を把握して論理的に書く「ホワイトボックステスト」がカバレッジレポートでは大切になる。
 
 ```
-1 6x export function greetByTime() {
+1 3x export function greetByTime() {
 2 3x   const hour = new Date().getHours();
 3 3x   if (hour < 12) {
 4 1x     return "おはよう";
@@ -367,18 +378,18 @@ GUI（グラフィカル・ユーザー・インターフェース）を備え�
 
 ## 備忘録・メモ
 - GitHub Actions  
-`workflow`の記述において`jobs` -> `build` -> `steps` -> `with` で指定する`fetch-depth`の値は0にしないと親のコミットが取得できずに失敗する
+`workflow`の記述において`jobs` -> 各ジョブ（例：下記の`vrt-storybook`） -> `steps` -> `with` で指定する`fetch-depth`の値は0にしないと親のコミットが取得できずに失敗する
 ```yml
 jobs:
   install:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       - name: Cache node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: node_modules_cache
         with:
           path: node_modules
@@ -393,7 +404,7 @@ jobs:
     ..
     .
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # この指定がないと比較に失敗する
 ```

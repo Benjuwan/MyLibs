@@ -1,4 +1,8 @@
 ## モック（テストダブル）
+
+> [!NOTE]
+> Vitest を使う場合の差分は [about-vitest.md](./about-vitest.md) を参照してください。
+
 外部システムやAPIなどこちらでコントロール不能なものをテスト対象に含む場合、テストの安定性を確保するためにモックを活用する。  
 モックは**取得したデータまたはコンポーネントなどの代用品**で、関連するシステムやAPIが提供する本来の機能をエミュレート（模倣・再現）する。これにより、外部システムの状態に依存せずに一貫したテスト環境を構築できる。
 
@@ -55,6 +59,15 @@ Jestではスタブ・スパイを機能別に分けておらず、**モック�
   (obj.greet as jest.Mock).mockReturnValue('Hi'); // 処理結果の上書き（'Hi'となるように設定）
   expect(obj.greet('Taro')).toBe('Hi');
   ```
+
+> [!NOTE]
+> 上記では`(obj.greet as jest.Mock)`のように`as`でキャストしているが、`jest.spyOn`の戻り値（型は`jest.Spied<typeof obj.greet>`）を変数で受け取って直接使えば、このようなキャストは不要になる。
+> ※かつて使われていた`jest.SpyInstance`は **Jest 30 で公開APIから削除**されているため、型を明示する場合は`jest.Spied`を使うこと。
+> ```ts
+> const spy = jest.spyOn(obj, 'greet');
+> spy.mockReturnValue('Hi');
+> expect(obj.greet('Taro')).toBe('Hi');
+> ```
 
 #### スタブの実装例
 - 対象コード
@@ -137,10 +150,10 @@ jest.mock('next/router', () => require('next-router-mock'));
 ```
 
 > [!IMPORTANT]
-> `next-router-mock`は、Nextの古いverであるPages Router（Next.js 13より前）用のライブラリで、App Routerでは機能しないので注意
+> `next-router-mock`は`next/router`（Pages Router）向けのライブラリ。Pages RouterはNext.js 13以降も併存しており「13より前」限定というわけではない。App Routerでは`next-router-mock/navigation`という別エントリで部分サポートされるが機能は限定的なので注意
 
 > [!NOTE]
-> モジュール読み込み方法には、`import`が使えるESM（ES Modules）と`require`で読み込むCJS（Commom JS Modules）がある。上記「ライブラリの置き換え」では`require`を使っているのでCJS（Commom JS Modules）の書き方となる。  
+> モジュール読み込み方法には、`import`が使えるESM（ES Modules）と`require`で読み込むCJS（Common JS Modules）がある。上記「ライブラリの置き換え」では`require`を使っているのでCJS（Common JS Modules）の書き方となる。  
 > 他方、ESMの場合は`import`を使用してテスト冒頭で`jest.mock`を呼び出す。
 
 ---
@@ -304,8 +317,8 @@ export async function getMyArticleLinksByCategory(category: string) {
   // データを取得する関数
   const data: Articles = await getMyArticles();
   // 取得したデータのうち、指定したタグが含まれる記事に絞り込む
-  const articles: Articles = data.articles.filter((article: Article) =>
-    article.tags.includes(category);
+  const articles: Article[] = data.articles.filter((article: Article) =>
+    article.tags.includes(category)
   );
 
   if (!articles.length) {
@@ -441,18 +454,17 @@ Web API 用のモックサーバーライブラリで、ネットワークレベ
 Web API サーバーが起動していなくてもレスポンスを再現できるのでインテグレーションテストのモックサーバーとして利用できる。
 
 - `リクエストハンドラー`を用いて Web API リクエストをインターセプトする  
-`リクエストハンドラー`は`rest.post`関数で作成される。
+`リクエストハンドラー`は`http`名前空間のメソッド（`http.get` / `http.post` / `http.put` / `http.patch` / `http.delete` / `http.head` / `http.options`、および全HTTPメソッドにマッチする`http.all`）で作成する。以下の例では`http.post`を使用している。
 ```js
-import { setupWorker, rest } from "msw";
+import { http, HttpResponse } from "msw";
+import { setupWorker } from "msw/browser";
 
 const worker = setupWorker(
-  rest.post("https://myapi.dev/csr", (req, res, ctx) => {
-    return res(
-      ctx.json({
-        title: "CSR Source",
-        text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
-      })
-    );
+  http.post("https://myapi.dev/csr", () => {
+    return HttpResponse.json({
+      title: "CSR Source",
+      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
+    });
   })
 );
 
@@ -476,12 +488,12 @@ Jest向けのセットアップ関数`setupServer`を使う。
 //   mock?: jest.Mock<any, any>;
 //   status?: number;
 // }) {
-//   return rest.get(path(), async (_, res, ctx) => {
+//   return http.get(path(), async () => {
 //     args?.mock?.();
 //     if (args?.status) {
-//       return res(ctx.status(args.status));
+//       return new HttpResponse(null, { status: args.status });
 //     }
-//     return res(ctx.status(200), ctx.json(getMyProfileData));
+//     return HttpResponse.json(getMyProfileData);
 //   });
 // }
 // export const handlers = [handleGetMyProfile()];
@@ -508,7 +520,7 @@ import { getMyPostsData } from "@/services/server/MyPosts/__mock__/fixture";
 ---
 
 > [!NOTE]
-> 以前まで`MSW`では Fetch API を使用できず、polyfil が必要だった。が、今は不要となった。
+> 以前まで`MSW`では Fetch API を使用できず、polyfill が必要だった。が、今は不要となった。
 
 - 参考記事：[Mock Service Worke（MSW） v2 では Web 標準の Fetch API をサポートしました。](https://azukiazusa.dev/blog/shorts/73zH9ULSIWeA55tA6corT8/)
 
@@ -576,6 +588,7 @@ function mockPostMyArticle(input: ArticleInput, status = 200) {
     checkLength(input.body);
     return jest
       .spyOn(Fetchers, "postMyArticle")
+      // ここだけ`Once`が付いていないのは、成功レスポンスを継続して返すため（失敗系は`mockRejectedValueOnce`で1回限り）
       .mockResolvedValue({ ...postMyArticleData, ...input });
   } catch (err) {
     return jest
@@ -603,7 +616,27 @@ function inputFactory(input?: Partial<ArticleInput>) {
 ```
 
 ##### テストコード
+
+> [!NOTE]
+> **この例のテスト構造について（読む際の注意）**
+>
+> 以下のテストは `jest.mock("../fetchers")` で `../fetchers` モジュール全体を自動モック化したうえで、同じモジュールから import した `postMyArticle` を呼び出している。
+> つまり `await postMyArticle(input)` が実行しているのは**本来の実装ではなく、`mockPostMyArticle` が仕込んだモック**であり、`expect(data).toMatchObject(...)` が検証しているのは**モックに設定した戻り値そのもの**である。
+>
+> 入力値に応じた成功／失敗の分岐ロジック（`checkLength` による判定）も、プロダクションコードではなく**テストヘルパー `mockPostMyArticle` の内部**に書かれている。
+> したがって本節の主眼は「`postMyArticle` の実装が正しいことの検証」ではなく、**「入力値に応じてレスポンスを切り替えるモックをどう組み立てるか」というモック生成関数の書き方の学習**にある。
+>
+> 実務でプロダクションコードの振る舞いを検証したい場合は、
+> - モック対象を「テスト対象そのもの」ではなく**その依存先**（例：`fetch` や API クライアント層）に限定する
+> - あるいは [MSW](#mswmock-service-worker) のようにネットワーク層でモックし、テスト対象の関数は実装のまま通す
+>
+> といった切り分けを行うこと。
+
 - 一部
+
+> [!NOTE]
+> 以下は説明用の抜粋のため、各`test`の**本体と閉じ括弧を省略している**。このまま実行すると構文エラーになるため、動作するコードは下の「コード全文」を参照すること。
+
 ```ts
 test("バリデーションに成功した場合、成功レスポンスが返る", async () => {
   // バリデーションに通過する入力値を用意
@@ -692,7 +725,7 @@ export function greetByTime() {
 ```ts
 import { greetByTime } from ".";
 
-describe("greetByTime(", () => {
+describe("greetByTime", () => {
   // `beforeEach`, `afterEach`で偽のタイマー切替を実施
   beforeEach(() => {
     jest.useFakeTimers();
@@ -725,7 +758,7 @@ describe("greetByTime(", () => {
 Jestに偽のタイマーを使用するように指示
 
 - `jest.useRealTimers();`  
-Jest真のタイマーを使用するように指示
+Jestに真のタイマーを使用するように指示
 
 - `jest.setSystemTime();`  
 偽のタイマーで使用される現在システム時刻を設定
@@ -757,7 +790,7 @@ describe("getGreet: スイートのセットアップ組み合わせ", () => {
   beforeAll(() => {
     // テスト環境フラグ
     // `globalThis`を用いることで「フロントエンドとバックエンドどちらの環境でもグローバルに操作可能なテスト環境設定用の変数（定数）」となる
-    globalThis.__TEST_ENV__ = { ready: true };
+    (globalThis as any).__TEST_ENV__ = { ready: true };
 
     // 全テスト共通のデフォルト戻り値（必要に応じて上書きされる）
     (Fetchers.getMyProfile as jest.Mock).mockResolvedValue({ name: "Default" });
@@ -799,20 +832,6 @@ describe("getGreet: スイートのセットアップ組み合わせ", () => {
     // このテストでは失敗をシミュレート
     (Fetchers.getMyProfile as jest.Mock).mockRejectedValueOnce(new Error("network"));
     await expect(getGreet()).rejects.toThrow("network");
-  });
-
-  test("spyOn で時刻依存挙動を検証する（同期テストの例）", () => {
-    // `Date.now`を一時的にモックして`greetByTime`の挙動を固定化
-    // ※あくまで「処理の挙動・振る舞いをチェックすることが目的」なので、確認後は固定値指定を排除したほうがテスト検証精度が高くなる
-    const spy = jest.spyOn(Date, "now").mockImplementation(() =>
-      new Date("2020-01-01T09:00:00Z").getTime()
-    );
-
-    const out = greetByTime(); // 例: "Good morning" を含むことを期待
-    expect(out).toMatch(/Good morning|Morning/);
-
-    // spy を元に戻す（afterAll でも restoreAllMocks をしているが、明示的に復元）
-    spy.mockRestore();
   });
 });
 ```
