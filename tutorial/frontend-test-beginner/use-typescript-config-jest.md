@@ -5,6 +5,10 @@ author: benjuwan
 slide: false
 ---
 ## はじめに
+
+> [!NOTE]
+> Vitest を使う場合の差分は [about-vitest.md](./about-vitest.md) を参照してください。
+
 Vite × React × TypeScript を前提にしています。
 
 また、本記事ではロジックテストを軸にした TypeScript関数（`.ts`ファイル）の基本的な Jestセットアップを解説します。
@@ -33,21 +37,19 @@ Vite といえば Vitest がテストツールとして相性が良いものの�
 - [Jest config file | Installation](https://kulshekhar.github.io/ts-jest/docs/getting-started/installation#jest-config-file)
 - [ESM Support](https://kulshekhar.github.io/ts-jest/docs/guides/esm-support)
 
-::: note warn
-そもそも、Jest では ESM：ECMAScript Modules（※Vite成果物はESM）が実験的サポートの段階だそうで設定が複雑になりがち。
-
-Viteプロジェクトの`package.json`には通常`"type": "module"`と書かれています。これがあると、Node.js はすべてのファイルを ESM として扱おうとしますが、Jest（および一部の関連ツール）は CommonJS での動作を期待している部分があり、そこで「衝突」が起きるのです。
-:::
+> [!WARNING]
+> そもそも、Jest では ESM：ECMAScript Modules（※Vite成果物はESM）が実験的サポートの段階だそうで設定が複雑になりがち。
+>
+> Viteプロジェクトの`package.json`には通常`"type": "module"`と書かれています。これがあると、Node.js はすべてのファイルを ESM として扱おうとしますが、Jest（および一部の関連ツール）は CommonJS での動作を期待している部分があり、そこで「衝突」が起きるのです。
 
 > Jest ships with experimental support for ECMAScript Modules (ESM).
 
-https://jestjs.io/docs/ecmascript-modules?utm_source=chatgpt.com
+https://jestjs.io/docs/ecmascript-modules
 
 そこで、Claude 経由で調べた解決策を備忘録＆情報共有として記事にしていきます。
 
-::: note info
-そもそも現代では、この設定含めてAIに任せれば済むのですが知識として持っておきたかった部分もあって手動検証した次第です。
-:::
+> [!NOTE]
+> そもそも現代では、この設定含めてAIに任せれば済むのですが知識として持っておきたかった部分もあって手動検証した次第です。
 
 ## 解決策
 ### 1. 必要なパッケージをインストール 
@@ -57,6 +59,9 @@ npm install --save-dev jest
 
 # Jest のts関連設定
 npm install --save-dev @types/jest ts-jest
+
+# jest.config.ts をロードするために必要（TypeScript製の設定ファイルを実行時に変換するローダー）
+npm install --save-dev ts-node
 ```
 
 ### 2. `package.json`にテストコマンドを追加
@@ -109,9 +114,8 @@ export default config;
 ts-jest[config] (WARN) message TS151001: If you have issues related to imports, you should consider setting `esModuleInterop` to `true` in your TypeScript configuration file (usually `tsconfig.json`). See https://blogs.msdn.microsoft.com/typescript/2018/01/31/announcing-typescript-2-7/#easier-ecmascript-module-interoperability for more information.
 ```
 
-::: note info
-`esModuleInterop`は、CommonJS形式のモジュール（require）とESモジュール形式（import）の相互運用性を改善する働きを持つ。将来的にモジュールのインポートで問題が起きる可能性があるため設定推奨。
-:::
+> [!NOTE]
+> `esModuleInterop`は、CommonJS形式のモジュール（require）とESモジュール形式（import）の相互運用性を改善する働きを持つ。将来的にモジュールのインポートで問題が起きる可能性があるため設定推奨。
 
 ```ts
 {
@@ -164,13 +168,14 @@ coverage/
 ## テストの実行
 ### `npm test`
 - 全体テスト：
-プロジェクトに存在する`.test`ファイルを全て検証するので時間がかかる
+本記事の`jest.config.ts`では`testMatch: ['**/*.test.ts']`を指定しているため、これに一致するファイルを全て検証する（そのぶん時間がかかる）  
+※`testMatch`を指定しない場合、既定では`__tests__`ディレクトリ配下のファイル、および`.test` / `.spec`の接尾辞を持つファイルが対象となる
 
 ### `npm test ファイルパス名`
 - 単体テスト：
-    - ファイルパス指定は`/`でないと機能しない
+    - ファイルパス指定は`/`でないと機能しない  
     ※WindowsOSでのファイルパスコピー時は`\`（バックスラッシュ）となるので要注意
-    - ファイル名にコロンは不要（NG：`npm test 'ファイル名'`）
+    - ファイルパスにクオーテーションは付けないほうが無難（`npm test 'ファイルパス'`は**OSではなくシェルに依存**し、`cmd.exe`（コマンドプロンプト）などシングルクォートをクオート文字として扱わないシェルでは意図通り解釈されない場合がある）
 
 ```bash
 npm test src/feat/special/index.test.ts

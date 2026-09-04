@@ -1,4 +1,8 @@
 ## UIコンポーネントテスト
+
+> [!NOTE]
+> Vitest を使う場合の差分は [about-vitest.md](./about-vitest.md) を参照してください。
+
 MPAと異なり、SPAでは再利用性を考慮してコンポーネント指向ベースの開発が主流となる。
 
 - MPA（Multi Page Application）：  
@@ -38,13 +42,16 @@ npm install --save-dev jsdom
 npm install --save-dev jest-environment-jsdom
 ```
 
+> [!NOTE]
+> `jest-environment-jsdom`は内部で`jsdom`を依存パッケージとして含んでいるため、Jestで使う場合は通常`npm install --save-dev jsdom`を個別に実行する必要はない（`jest-environment-jsdom`のみのインストールで足りる）。
+
 - 各種設定
 ```js
 // jest.config.js
 module.exports = {
   testEnvironment: 'jsdom',
-  // または
-  testEnvironment: 'jest-environment-jsdom',
+  // 上記は下記と同義（パッケージ名をフルで指定する場合）
+  // testEnvironment: 'jest-environment-jsdom',
 }
 ```
 
@@ -97,7 +104,7 @@ npm install --save-dev @testing-library/user-event
 npm install --save-dev jest-environment-jsdom
 ```
 
-- 各種設定（**React16＊＊以降**）  
+- 各種設定  
 すべてのテストで自動的に`jest-dom`マッチャーが使用可能になるよう設定する。
 
 - `setupTests.ts`
@@ -106,7 +113,7 @@ import '@testing-library/jest-dom';
 ```
 
 - `jest.config.js`
-```ts
+```js
 module.exports = {
   testEnvironment: 'jsdom',
   // 先ほど設定した`setupTests.ts`を指定
@@ -117,10 +124,10 @@ module.exports = {
 > [!NOTE]
 > Testing Library は他にも様々なUIコンポーネントライブラリに向けて提供されているが、中核となるAPIは同じもの（[`@testing-library/dom`](https://www.npmjs.com/package/@testing-library/dom)）を使用する  
 > そのため、**UIコンポーネントライブラリが違っても、同じようなテストコードになる**  
-> **※`@testing-library/dom`は`@testing-library/react`の依存パッケージなので明示的にインストールする必要はない**
+> **※React Testing Library v16.0.0（2024-06-03）以降、`@testing-library/dom`はpeerDependencyに変更されたため、明示的なインストールが必須となっている（v15以前の依存パッケージ扱いとは異なる点に注意）**
 
 ##### カスタムマッチャーを利用してテストの検証精度を高める
-UIコンポーネントのテストでもJestのアサーションやマッチャーを利用できるものの、DOMの状態を検証するにはJest標準だけでは不十分な場合がある。そのため[`@testing-library/jest-dom`](https://www.npmjs.com/package/@testing-library/jest-dom)をインストールして、Jestの拡張機能であるカスタムマッチャーを扱えるようにする。`jest-dom`によって、UIコンポーネントテストに便利なマッチャーが多数追加される。
+詳細は[用途別マッチャー | カスタムマッチャー（`jest-dom`）](./about-matcher.md#カスタムマッチャーjest-dom)を参照。
 
 ##### インタラクションを検知する
 Testing Library には、各種イベントハンドラー検知を目的とした`fireEvent`というAPIが用意されている。  
@@ -150,6 +157,9 @@ import userEvent from "@testing-library/user-event";
 - セットアップ関数例：
 ```js
 function setup() {
+  // インタラクションを実行するインスタンス（各テストで setup() を呼ぶたびに再生成される）
+  const user = userEvent.setup();
+
   // アサーション用のモック関数
   const onClickSave = jest.fn();  // 保存ボタンのクリック時に実行される
   const onValid = jest.fn();      // 成功：適正内容で送信を試みた場合に実行される
@@ -197,8 +207,11 @@ function setup() {
 ```js
 import userEvent from "@testing-library/user-event";
 
-// 初期化処理（必ず各テストの最初に記載）
-const user = userEvent.setup();
+test("(各テストの一例)", async () => {
+  // 初期化処理（各テストの最初に記載する）
+  const user = userEvent.setup();
+  // ...
+});
 ```
 
 - **user.click**  
@@ -338,7 +351,7 @@ test("名前の表示", () => {
 #### `getByRole`
 **特定のDOM要素をロール（属性の一致）で一つだけ取得する**API。見つかった場合はその要素の参照が得られて、見つからなかった場合はエラーが発生してテストが失敗する。
 
-> ![NOTE]
+> [!NOTE]
 > `...ByRole`は**暗黙的なロール**も識別する。つまり、明示的に`role`属性が指定されていなくとも当該DOM要素に元々あるロールを認識できる。
 
 ```ts
@@ -413,9 +426,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { InputAccount } from "./InputAccount";
 
-const user = userEvent.setup(); // インスタンス初期化
-
 test("メールアドレス入力欄", async () => {
+  const user = userEvent.setup(); // インスタンス初期化
   render(<InputAccount />);
   const textbox = screen.getByRole("textbox", { name: "メールアドレス" });
   const value = "taro.tanaka@example.com";
@@ -427,24 +439,25 @@ test("メールアドレス入力欄", async () => {
   expect(screen.getByDisplayValue(value)).toBeInTheDocument();
 });
 
-test("パスワード入力欄", async () => {
+test("パスワード入力欄（ロールとプレースホルダーの検証）", async () => {
   render(<InputAccount />);
   /* input[type="password"]は「ロールを持たない」のでラベル名（テキスト）とプレースホルダーの内容で検証 */
   
-  // 非推奨: getBy...とtoThrow()の組み合わせは適切に動作しない
+  // 非推奨: getBy...とtoThrow()の組み合わせは動作はするが推奨されない（queryBy...と組み合わせる方が適切）
   // expect(() => screen.getByRole("textbox", { name: "パスワード" })).toThrow();
 
   // パスワード入力欄は`textbox`ロールを持たない
   expect(screen.queryByRole("textbox", { name: "パスワード" })).not.toBeInTheDocument();
 
-  // 非推奨: not.toThrow()は意味のない検証になる
+  // 非推奨: not.toThrow()も動作はするが、意味のある検証にはなりにくいため推奨されない
   // expect(() => screen.getByPlaceholderText("8文字以上で入力")).not.toThrow();
 
   // "8文字以上で入力"というプレースホルダーを持った要素の存在を検証
   expect(screen.queryByPlaceholderText("8文字以上で入力")).not.toBeNull();
 });
 
-test("パスワード入力欄", async () => {
+test("パスワード入力欄（入力値の反映）", async () => {
+  const user = userEvent.setup(); // インスタンス初期化
   render(<InputAccount />);
   const password = screen.getByPlaceholderText("8文字以上で入力");
   const value = "abcd1234";
@@ -478,11 +491,23 @@ test("見出しの表示", () => {
 });
 
 test("h1の見出し", () => {
+  render(
+    <>
+      <h1>アカウント情報</h1>
+      <h2>詳細</h2>
+    </>
+  );
   // levelオプションで特定（h1, h2など）
   expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("アカウント情報");
 });
 
 test("特定の見出し", () => {
+  render(
+    <>
+      <h1>アカウント情報</h1>
+      <h2>詳細</h2>
+    </>
+  );
   // level, name 両方組み合わせ
   expect(screen.getByRole("heading", { level: 2, name: "詳細" })).toBeInTheDocument();
 });
@@ -646,7 +671,9 @@ test("fieldset のアクセシブルネームは、legend を引用している"
 - アクセシブルネーム：支援技術が認識するノードの名称
 
 #### `form`
-例えば、`form`要素は常に`form`ロールを持つが、アクセシブルネームを持つ場合のみアクセシビリティツリーに明示的なランドマークとして公開される。
+例えば`form`要素は、WAI-ARIA マッピング上は`form`ロールが割り当てられるものの、アクセシブルネームを持たない場合はランドマークとして公開しないと規定されている（HTML-AAM 1.0）。  
+Testing Library が内部で用いる`aria-query`もこれに従っており、`aria-label`・`aria-labelledby`・`name`属性のいずれも持たない`form`には暗黙のロールを付与しない。  
+そのため`getByRole("form")`で取得するには、これらいずれかの属性が必要となる。
 
 - 検証用コンポーネントの一部
 ```tsx
@@ -681,7 +708,11 @@ import userEvent from "@testing-library/user-event";
 import { deliveryAddresses } from "./fixtures";
 import { Form } from "./Form";
 
-const user = userEvent.setup(); // 初期化
+// `user`は各テストの最初に`setup()`を呼んで再生成する（テスト間でインスタンスを使い回さない）
+let user: ReturnType<typeof userEvent.setup>;
+function setup() {
+  user = userEvent.setup();
+}
 
 type inputValuesType = {
   name: string;
@@ -746,12 +777,14 @@ async function inputDeliveryAddress(inputDeliveryAddressValues: inputValuesType 
 ```ts
 describe("過去のお届け先がない場合", () => {
   test("入力・送信すると、入力内容が送信される", async () => {
+    setup();
     const contactNumber = await inputContactNumber();
     const deliveryAddress = await inputDeliveryAddress();
   });
 });
 
 test("「はい」を選択・入力・送信すると、入力内容が送信される", async () => {
+  setup();
   const contactNumber = await inputContactNumber();
   const deliveryAddress = await inputDeliveryAddress();
 });
@@ -789,6 +822,7 @@ function mockHandleSubmit() {
 - 使用例
 ```ts
 test("入力・送信すると、入力内容が送信される", async () => {
+  setup();
   const [mockFn, onSubmit] = mockHandleSubmit();
   render(<Form onSubmit={onSubmit} />);
   const contactNumber = await inputContactNumber();
@@ -813,7 +847,7 @@ export function checkPhoneNumber(value: any) {
 }
 ```
 
-##### `origin.ts`
+##### `fetchers/index.ts`
 モック対象のメソッドが記述されたコードで、当該メソッドがWebAPI（データフェッチ処理）を実施する`postMyAddress`となる。
 ```ts
 import { Result } from "./type";
@@ -843,9 +877,9 @@ export function postMyAddress(values: unknown): Promise<Result> {
 ```
 
 ##### `mock.ts`
-`origin.ts`のWebAPI（データフェッチ処理）を担う`postMyAddress`のモック関数を用意するコード
+`fetchers/index.ts`のWebAPI（データフェッチ処理）を担う`postMyAddress`のモック関数を用意するコード
 ```ts
-// `origin.ts`内の各関数や変数など全てインポートし、
+// `fetchers/index.ts`（同一ディレクトリの`index.ts`）内の各関数や変数など全てインポートし、
 // それらを`Fetchers`という一つのオブジェクトとして扱う
 import * as Fetchers from ".";
 import { httpError, postMyAddressMock } from "./fixtures";
@@ -996,22 +1030,7 @@ test("不明なエラー時「不明なエラーが発生しました」が表�
 UIコンポーネントの予期せぬリグレッション（デザイン崩れ）の検証にはスナップショットテストが活用できる。
 
 #### `toMatchSnapshot`マッチャー
-`Jest`に組み込まれているスナップショットテスト用のマッチャー。初回実行時にスナップショットファイル（`__snapshots__`ディレクトリ内）を自動生成し、以降のテスト実行時にはそのスナップショットと比較する。
-
-```ts
-const item: ItemProps = {
-  id: "howto-testing-with-typescript",
-  title: "TypeScript を使ったテストの書き方",
-  body: "テストを書く時、TypeScript を使うことで、テストの保守性が向上します…",
-};
-
-test("Snapshot: 一覧要素が表示される", () => {
-  // スプレッド構文で各種`props`（`id`, `title`, `body`）を展開した形で渡す
-  const { container } = render(<ArticleListItem {...item} />);
-  // スナップショットを作成・比較
-  expect(container).toMatchSnapshot();
-});
-```
+詳細は[用途別マッチャー | `toMatchSnapshot`](./about-matcher.md#tomatchsnapshot)を参照。
 
 - `__snapshots__`  
 各スナップショットデータを格納するためのフォルダで、テストを実施すると`対象テストファイル名.snap`というファイルが生成される。中身はHTML構造が文字列化されたもので、各`snap`ファイルはリグレッションの差分検証のために`git`管理対象とするのが一般的。
@@ -1059,10 +1078,10 @@ UIテストにおいて要素を特定する際は、`getByRole()`のように *
 |-----------|----------------|------|
 | `<button>` | `button` | 明示的な `role="button"` は不要 |
 | `<a href="#">` | `link` | `href` 属性がない場合はロールなし |
-| `<form>` | `form` | アクセシブルネーム（を持った子要素）がある場合のみ暗黙のロールが付与される |
+| `<form>` | `form` | `aria-label`・`aria-labelledby`・`name`属性のいずれもないときはロールなし |
 | `<ul>` | `list` | |
 | `<li>` | `listitem` | |
-| `<img alt="..." />` | `img` | `alt` がない場合は無視される場合あり |
+| `<img alt="..." />` | `img` | `alt=""`（空文字）の場合は`presentation`/`none`ロールとなり無視される。`alt`属性自体が無い場合は`img`ロールのまま |
 | `<input type="checkbox" />` | `checkbox` | |
 | `<input type="text" />` | `textbox` | |
 
@@ -1159,15 +1178,15 @@ test("見出しのアクセシブルネームで要素を特定できる", () =>
 #### アクセシブルネームを使った検証要素の絞り込み
 アクセシブルネームとは「支援技術が認識するノードの名称」を指す。噛み砕くと、要素がスクリーンリーダーなどで読み上げられる際の「ラベル」のようなもの。多くの場合、以下の順序で決定される。
 
-1. `aria-label`属性
-2. `aria-labelledby`属性
+1. `aria-labelledby`属性
+2. `aria-label`属性
 3. `<label>`要素のテキスト
 4. 要素内のテキストノード（ボタンやリンクなど）。画像の場合は`alt`属性値の文字列
 
 ```jsx
 <button aria-label="閉じる">×</button>
 <button>閉じる</button>
-<button><img src="path/to/closeBtn.png" alt="閉じる"></button>
+<button><img src="path/to/closeBtn.png" alt="閉じる" /></button>
 ```
 
 上記のボタンは`"閉じる"`というアクセシブルネームを持つため、テストでは以下のように記述する。
@@ -1204,13 +1223,14 @@ Testing Library は内部的に`aria-query`というライブラリを使用し�
 | `<article>`                            | `article`                    |                                    |
 | `<aside>`                              | `complementary`              |                                    |
 | `<button>`                             | `button`                     |                                    |
-| `<form>`                               | `form`                       | `aria-label` や `title` がないときはロールなし |
+| `<form>`                               | `form`                       | `aria-label`・`aria-labelledby`・`name`属性のいずれもないときはロールなし |
 | `<h1>` ～ `<h6>`                        | `heading`                    | `aria-level` に対応                   |
 | `<img alt>`                            | `img`                        | `alt=""` は無視される                    |
 | `<input type="checkbox">`              | `checkbox`                   |                                    |
 | `<input type="radio">`                 | `radio`                      |                                    |
 | `<input type="range">`                 | `slider`                     |                                    |
-| `<input type="email/text/search/...">` | `textbox`                    |                                    |
+| `<input type="email/text/...">`        | `textbox`                    |                                    |
+| `<input type="search">`                | `searchbox`                  | `list`属性がない場合                  |
 | `<li>`                                 | `listitem`                   |                                    |
 | `<nav>`                                | `navigation`                 |                                    |
 | `<ol>` / `<ul>`                        | `list`                       |                                    |
@@ -1219,7 +1239,7 @@ Testing Library は内部的に`aria-query`というライブラリを使用し�
 | `<td>`                                 | `cell`                       |                                    |
 | `<th>`                                 | `columnheader` / `rowheader` |                                    |
 | `<textarea>`                           | `textbox`                    |                                    |
-| `<header>`                             | `banner`                     | ページ内で最初の `<header>` のみ暗黙ロール付与      |
+| `<header>`                             | `banner`                     | `article`/`aside`/`main`/`nav`/`section`の子孫でない場合に限り暗黙ロール付与（出現順は無関係） |
 | `<footer>`                             | `contentinfo`                | 同上                                 |
 | `<main>`                               | `main`                       |                                    |
 
@@ -1336,9 +1356,9 @@ export const ToastProvider = ({
   const { isShown, message, style, showToast, hideToast } =
     useToastProvider(defaultState);
   return (
-    {/* Context.Providerでラップすることで、子コンポーネントツリー全体から
-        グローバルステート（isShown, message, style）と
-        アクション（showToast, hideToast）を参照可能にする */}
+    // Context.Providerでラップすることで、子コンポーネントツリー全体から
+    // グローバルステート（isShown, message, style）と
+    // アクション（showToast, hideToast）を参照可能にする
     <ToastStateContext.Provider value={{ isShown, message, style }}>
       <ToastActionContext.Provider value={{ showToast, hideToast }}>
         {children}
@@ -1379,8 +1399,6 @@ return (
 
 ##### 方法1. テスト用のコンポーネントを用意してインタラクションを実施
 ```tsx
-const user = userEvent.setup();
-
 const TestComponent = ({ message }: { message: string }) => {
   const { showToast } = useToastAction(); // <Toast> を表示するためのフック
   return <button onClick={() => showToast({ message })}>show</button>;
@@ -1388,12 +1406,13 @@ const TestComponent = ({ message }: { message: string }) => {
 
 // `userEvent`のメソッドは非同期なので必ず`async`, `await`
 test("showToast を呼び出すと Toast コンポーネントが表示される", async () => {
+  const user = userEvent.setup(); // 各テストの最初に初期化
+  const message = "test";
   render(
     <ToastProvider>
       <TestComponent message={message} />
     </ToastProvider>
   );
-  const message = "test";
   // 初めは表示されていない
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   // クリックして表示されることを確認
@@ -1405,22 +1424,22 @@ test("showToast を呼び出すと Toast コンポーネントが表示される
 ##### 方法2. 初期値を注入して表示確認
 ```tsx
 test("Succeed", () => {
-  render(<ToastProvider defaultState={state}>{null}</ToastProvider>);
   const state: ToastState = {
     isShown: true,
     message: "成功しました",
     style: "succeed",
   };
+  render(<ToastProvider defaultState={state}>{null}</ToastProvider>);
   expect(screen.getByRole("alert")).toHaveTextContent(state.message);
 });
 
 test("Failed", () => {
-  render(<ToastProvider defaultState={state}>{null}</ToastProvider>);
   const state: ToastState = {
     isShown: true,
     message: "失敗しました",
     style: "failed",
   };
+  render(<ToastProvider defaultState={state}>{null}</ToastProvider>);
   expect(screen.getByRole("alert")).toHaveTextContent(state.message);
 });
 
