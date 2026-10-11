@@ -1,8 +1,5 @@
 # MyLibs
-
 フロントエンド開発、WordPress、Web開発手法、サイト分析・改善のナレッジや自作コンポーネント、学習チュートリアル、技術記事バックアップを集約した個人リポジトリです。
-
----
 
 ## 📁 ディレクトリ構成
 
@@ -13,10 +10,6 @@
 | [`tutorial/`](tutorial/) | 書籍・教材に基づくハンズオン学習リポジトリ & 検証メモ | フロントエンドテスト入門（Vitest対応）、りあクト！応用編 |
 | [`others/`](others/) | 環境構築、Web開発手法比較、WordPress運用などの実務・備忘メモ | GitHub SSH、モダンWeb開発比較、FSE、Local移行手順など |
 | [`articles/`](articles/) | Qiita・Zenn向けに執筆した技術記事の原稿・バックアップ | Qiita（60本）、Zenn（30本）を連番管理 |
-
-> **Note**: 過去に存在した `frontend/` 配下の個別サンプル群（スライダー、D&D並べ替え、タイマー、ページネーション等）は、現代的ベストプラクティス（React 19 / Next.js 15+ App Router）に適合するよう再編・蒸留され、[`references/knowledge-catalog/`](references/knowledge-catalog/) へ統合されました。
-
----
 
 ## 📚 主要コンテンツ詳細
 
